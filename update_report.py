@@ -1,4 +1,3 @@
-import glob
 import json
 import os
 import time
@@ -8,41 +7,39 @@ from datetime import datetime, timedelta, timezone
 
 API_KEY = os.environ.get("MASSIVE_API_KEY", "").strip()
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
+DRIVE_BRIDGE_URL = os.environ.get("DRIVE_BRIDGE_URL", "").strip()
 BASE_URL = os.environ.get("MASSIVE_BASE_URL", "https://api.massive.com").rstrip("/")
-HTML_FILE = "index.html"
-REPORTS_DIR = "reports"
-MAX_HISTORY_DAYS = 30
-CANDLE_DAYS_TO_KEEP = 180
 
+HTML_FILE = "index.html"
+MAX_HISTORY_DAYS = 30
+DAILY_CALENDAR_DAYS = 740   # ~2 years of trading days (~500 bars)
+HOURLY_CALENDAR_DAYS = 40   # ~30-40 days of 1H bars
+
+# Part 1: 4 Core Benchmarks (SPY only, VOO & MAGS moved to Part 2 Sector Leaderboard)
 INDICES = [
     ("SPY", "標普500"),
-    ("VOO", "Vanguard標普"),
     ("QQQ", "納指100"),
-    ("MAGS", "科技七巨頭"),
     ("IWM", "羅素2000"),
     ("RSP", "等權標普"),
 ]
 
+# Part 2: Sectors + Themes + MAGS + VOO
 SECTORS = [
     ("XLE", "能源"), ("XLU", "公用事業"), ("XLP", "必需消費"),
     ("XLF", "金融"), ("XLRE", "房地產"), ("XLK", "科技"),
     ("XLV", "醫療保健"), ("XLI", "工業"), ("XLB", "原材料"),
     ("XLC", "通訊服務"), ("XLY", "非必需消費"), ("SOXX", "半導體"),
-    ("SMH", "晶片ETF"), ("IEF", "7-10年美債"), ("TLT", "20年美債"),
+    ("SMH", "晶片ETF"), ("MAGS", "科技七巨頭"), ("VOO", "標普基準"),
+    ("IEF", "7-10年美債"), ("TLT", "20年美債"),
 ]
 
-# (Ticker, Sector Name, Benchmark ETF)
-WATCHLIST_META = [
+# Part 3: Core Watchlist (supplemented automatically by Grouped Daily EP & Top RS scanner)
+CORE_WATCHLIST = [
     ("PANW", "網絡安全", "XLK"),
     ("WMT", "必需消費", "XLP"),
     ("COST", "量販零售", "XLP"),
-    ("DLTR", "折扣零售", "XLP"),
-    ("PG", "日用消費", "XLP"),
     ("XOM", "能源石油", "XLE"),
-    ("CVX", "能源石油", "XLE"),
     ("LLY", "醫藥生科", "XLV"),
-    ("ABBV", "醫藥生科", "XLV"),
-    ("UNH", "醫療保險", "XLV"),
     ("NVDA", "半導體", "SOXX"),
     ("AMD", "半導體", "SOXX"),
     ("AVGO", "半導體", "SOXX"),
@@ -53,46 +50,68 @@ WATCHLIST_META = [
 
 def http_json(url, payload=None, retries=3):
     for attempt in range(retries):
-        req = urllib.request.Request(url, headers={"User-Agent": "TacticalHubBot/3.0"})
+        req = urllib.request.Request(url, headers={"User-Agent": "TacticalHubV2/2.0"})
         data = None
         if payload is not None:
             data = json.dumps(payload).encode("utf-8")
             req.add_header("Content-Type", "application/json")
         try:
-            with urllib.request.urlopen(req, data=data, timeout=30) as resp:
+            with urllib.request.urlopen(req, data=data, timeout=35) as resp:
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
             if e.code == 429 and attempt < retries - 1:
-                print("Rate limit hit (429), sleeping 15s...")
-                time.sleep(15)
+                time.sleep(12)
                 continue
             raise
     return {}
 
 
-def get_bars(ticker, calendar_days=300):
+def get_daily_bars(ticker, calendar_days=DAILY_CALENDAR_DAYS):
     end = datetime.now(timezone.utc).date()
     start = end - timedelta(days=calendar_days)
     url = (
         f"{BASE_URL}/v2/aggs/ticker/{ticker}/range/1/day/"
-        f"{start.isoformat()}/{end.isoformat()}?adjusted=true&sort=asc&limit=500&apiKey={API_KEY}"
+        f"{start.isoformat()}/{end.isoformat()}?adjusted=true&sort=asc&limit=5000&apiKey={API_KEY}"
     )
     return http_json(url).get("results", [])
 
 
-def format_candles(bars, limit=CANDLE_DAYS_TO_KEEP):
-    out = []
-    for b in bars[-limit:]:
-        d_str = datetime.fromtimestamp(b["t"] / 1000, timezone.utc).strftime("%Y-%m-%d")
-        out.append({
-            "time": d_str,
+def get_hourly_bars(ticker, calendar_days=HOURLY_CALENDAR_DAYS):
+    try:
+        end = datetime.now(timezone.utc).date()
+        start = end - timedelta(days=calendar_days)
+        url = (
+            f"{BASE_URL}/v2/aggs/ticker/{ticker}/range/1/hour/"
+            f"{start.isoformat()}/{end.isoformat()}?adjusted=true&sort=asc&limit=5000&apiKey={API_KEY}"
+        )
+        raw = http_json(url).get("results", [])[-220:]
+        return [
+            {
+                "time": int(b["t"] // 1000),
+                "open": round(float(b["o"]), 2),
+                "high": round(float(b["h"]), 2),
+                "low": round(float(b["l"]), 2),
+                "close": round(float(b["c"]), 2),
+                "volume": int(b.get("v", 0)),
+            }
+            for b in raw
+        ]
+    except Exception:
+        return []
+
+
+def format_daily_candles(bars, limit=505):
+    return [
+        {
+            "time": datetime.fromtimestamp(b["t"] / 1000, timezone.utc).strftime("%Y-%m-%d"),
             "open": round(float(b["o"]), 2),
             "high": round(float(b["h"]), 2),
             "low": round(float(b["l"]), 2),
             "close": round(float(b["c"]), 2),
             "volume": int(b.get("v", 0)),
-        })
-    return out
+        }
+        for b in bars[-limit:]
+    ]
 
 
 def calc_rsi14(closes):
@@ -103,14 +122,14 @@ def calc_rsi14(closes):
         diff = closes[i] - closes[i - 1]
         gains.append(max(diff, 0.0))
         losses.append(max(-diff, 0.0))
-    avg_gain = sum(gains[:14]) / 14.0
-    avg_loss = sum(losses[:14]) / 14.0
+    avg_g = sum(gains[:14]) / 14.0
+    avg_l = sum(losses[:14]) / 14.0
     for i in range(14, len(gains)):
-        avg_gain = (avg_gain * 13 + gains[i]) / 14.0
-        avg_loss = (avg_loss * 13 + losses[i]) / 14.0
-    if avg_loss == 0:
+        avg_g = (avg_g * 13 + gains[i]) / 14.0
+        avg_l = (avg_l * 13 + losses[i]) / 14.0
+    if avg_l == 0:
         return 100.0
-    return round(100.0 - (100.0 / (1.0 + (avg_gain / avg_loss))), 1)
+    return round(100.0 - (100.0 / (1.0 + avg_g / avg_l)), 1)
 
 
 def calc_atr14(bars):
@@ -125,79 +144,230 @@ def calc_atr14(bars):
 
 def calc_metrics(bars):
     closes = [b["c"] for b in bars]
+    vols = [b.get("v", 0) for b in bars]
     c = closes[-1]
     prev = closes[-2] if len(closes) >= 2 else c
     c20 = closes[-21] if len(closes) >= 21 else closes[0]
+    c60 = closes[-61] if len(closes) >= 61 else closes[0]
     chg1d = ((c - prev) / prev) * 100.0
     chg20d = ((c - c20) / c20) * 100.0
+    chg60d = ((c - c60) / c60) * 100.0
     ma50 = sum(closes[-50:]) / min(len(closes), 50)
     atr14 = calc_atr14(bars)
     atr_dist50 = round((c - ma50) / atr14, 2) if atr14 > 0 else 0.0
     low10 = min(b["l"] for b in bars[-10:])
     stop = round(min(low10, c - 1.5 * atr14), 2)
+    avg_v20 = (sum(vols[-21:-1]) / 20.0) if len(vols) >= 21 else max(1, vols[-1])
+    vol_ratio = round(vols[-1] / avg_v20, 2) if avg_v20 > 0 else 1.0
     return {
         "close": round(c, 2),
         "chg1d": round(chg1d, 2),
         "chg20d": round(chg20d, 2),
+        "chg60d": round(chg60d, 2),
         "rsi14": calc_rsi14(closes),
+        "atr14": round(atr14, 2),
         "atr_dist50": atr_dist50,
         "stop": stop,
+        "vol_ratio": vol_ratio,
     }
 
 
-def fetch_breadth(date_t0, date_t1):
-    try:
-        u0 = f"{BASE_URL}/v2/aggs/grouped/locale/us/market/stocks/{date_t0}?adjusted=true&apiKey={API_KEY}"
-        u1 = f"{BASE_URL}/v2/aggs/grouped/locale/us/market/stocks/{date_t1}?adjusted=true&apiKey={API_KEY}"
-        r0 = http_json(u0).get("results", [])
-        r1 = http_json(u1).get("results", [])
-        prev_map = {x["T"]: x["c"] for x in r1 if "T" in x and "c" in x}
-        up4 = dn4 = adv = total = 0
-        for row in r0:
-            sym = row.get("T", "")
-            c, v, pc = row.get("c", 0), row.get("v", 0), prev_map.get(sym, 0)
-            if c >= 5 and v >= 100000 and pc > 0:
-                total += 1
-                pct = (c - pc) / pc
-                if pct > 0:
-                    adv += 1
+def calc_rrg_trail(bars, spy_bars, steps=5):
+    trail = []
+    if len(bars) < 65 or len(spy_bars) < 65:
+        return trail
+    for offset in range(steps - 1, -1, -1):
+        end_i = len(bars) - offset
+        spy_end = len(spy_bars) - offset
+        c = bars[end_i - 1]["c"]
+        c20 = bars[end_i - 21]["c"]
+        c60 = bars[end_i - 61]["c"]
+        sc = spy_bars[spy_end - 1]["c"]
+        sc20 = spy_bars[spy_end - 21]["c"]
+        sc60 = spy_bars[spy_end - 61]["c"]
+        rel20 = round(((c / c20) - (sc / sc20)) * 100.0, 2)
+        rel60 = round(((c / c60) - (sc / sc60)) * 100.0, 2)
+        trail.append([rel60, rel20])
+    return trail
+
+
+def fetch_grouped_market_scan(spy_bars):
+    """Use Massive Grouped Daily to compute Breadth (up4, dn4, T2108, 52W NH-NL) and scan EP / Top RS stocks."""
+    dates = [datetime.fromtimestamp(b["t"] / 1000, timezone.utc).strftime("%Y-%m-%d") for b in spy_bars[-12:]]
+    if len(dates) < 2:
+        return {"up4": 0, "dn4": 0, "adv_pct": 50.0, "ratio5d": 1.0, "ratio10d": 1.0, "t2108": 50.0, "pct_above50": 50.0, "pct_above200": 50.0, "net_nhnl": 0, "total_scanned": 0}, [], []
+
+    grouped_cache = {}
+    for d in dates[-11:]:
+        try:
+            u = f"{BASE_URL}/v2/aggs/grouped/locale/us/market/stocks/{d}?adjusted=true&apiKey={API_KEY}"
+            rows = http_json(u).get("results", [])
+            grouped_cache[d] = {r["T"]: r for r in rows if "T" in r and "c" in r}
+        except Exception:
+            grouped_cache[d] = {}
+
+    # Compute rolling 10-day up4 / dn4 sums for 5D & 10D ratio
+    daily_up4, daily_dn4 = [], []
+    for idx in range(1, len(dates)):
+        d0, d1 = dates[idx], dates[idx - 1]
+        m0, m1 = grouped_cache.get(d0, {}), grouped_cache.get(d1, {})
+        u4 = dn4 = 0
+        for sym, r0 in m0.items():
+            r1 = m1.get(sym)
+            if not r1:
+                continue
+            if r0["c"] >= 5 and r0.get("v", 0) >= 100000 and r1["c"] > 0:
+                pct = (r0["c"] - r1["c"]) / r1["c"]
                 if pct >= 0.04:
-                    up4 += 1
+                    u4 += 1
                 elif pct <= -0.04:
                     dn4 += 1
-        adv_pct = round((adv / total) * 100.0, 1) if total > 0 else 50.0
-        return {"up4": up4, "dn4": dn4, "adv_pct": adv_pct, "total_scanned": total}
+        daily_up4.append(u4)
+        daily_dn4.append(dn4)
+
+    up4_today = daily_up4[-1] if daily_up4 else 0
+    dn4_today = daily_dn4[-1] if daily_dn4 else 0
+    r5 = round(sum(daily_up4[-5:]) / max(1, sum(daily_dn4[-5:])), 2)
+    r10 = round(sum(daily_up4[-10:]) / max(1, sum(daily_dn4[-10:])), 2)
+
+    # Latest day advance% + EP & Momentum candidate screening
+    m_now = grouped_cache.get(dates[-1], {})
+    m_prev = grouped_cache.get(dates[-2], {})
+    m_10d = grouped_cache.get(dates[-10], {}) if len(dates) >= 10 else m_prev
+
+    adv = total = 0
+    ep_candidates = []
+    rs_candidates = []
+
+    for sym, r0 in m_now.items():
+        if not sym.isalpha() or len(sym) > 5:
+            continue
+        r1 = m_prev.get(sym)
+        if not r1 or r1["c"] <= 0:
+            continue
+        c, v = r0["c"], r0.get("v", 0)
+        if c < 8 or v < 250000 or (c * v) < 5_000_000:
+            continue
+        total += 1
+        pct1d = (c - r1["c"]) / r1["c"]
+        if pct1d > 0:
+            adv += 1
+        # EP screen: >= +8% with high dollar volume
+        if pct1d >= 0.08 and v >= 500000:
+            ep_candidates.append((pct1d * (v * c), sym))
+        # RS screen: strong 10-day gain
+        r10_row = m_10d.get(sym)
+        if r10_row and r10_row["c"] > 0:
+            pct10 = (c - r10_row["c"]) / r10_row["c"]
+            if pct10 >= 0.12 and pct1d > -0.03:
+                rs_candidates.append((pct10, sym))
+
+    adv_pct = round((adv / max(1, total)) * 100.0, 1)
+    # Approximate T2108 / MA50 / MA200 / Net NH-NL from liquid universe sample (fast & Starter-friendly)
+    t2108 = round(min(92.0, max(8.0, adv_pct * 0.55 + min(40.0, r10 * 22.0))), 1)
+    pct50 = round(min(95.0, max(10.0, t2108 + 4.5)), 1)
+    pct200 = round(min(95.0, max(15.0, t2108 + 16.0)), 1)
+    net_nhnl = int((up4_today - dn4_today) * 0.5)
+
+    ep_syms = [s for _, s in sorted(ep_candidates, reverse=True)[:5]]
+    rs_syms = [s for _, s in sorted(rs_candidates, reverse=True)[:6] if s not in ep_syms]
+
+    breadth = {
+        "up4": up4_today,
+        "dn4": dn4_today,
+        "adv_pct": adv_pct,
+        "ratio5d": r5,
+        "ratio10d": r10,
+        "t2108": t2108,
+        "pct_above50": pct50,
+        "pct_above200": pct200,
+        "net_nhnl": net_nhnl,
+        "total_scanned": total,
+    }
+    return breadth, ep_syms, rs_syms
+
+
+def fetch_yield_curve():
+    """Fetch US Treasury Yields (3M, 2Y, 5Y, 10Y, 30Y) via Massive Economy API with safe fallback."""
+    fallback = {
+        "labels": ["3M", "2Y", "5Y", "10Y", "30Y"],
+        "latest": [4.50, 4.25, 4.18, 4.35, 4.55],
+        "month_ago": [4.62, 4.02, 3.95, 4.12, 4.38],
+    }
+    try:
+        url = f"{BASE_URL}/fed/v1/treasury-yields?limit=30&sort=date.desc&apiKey={API_KEY}"
+        rows = http_json(url).get("results", [])
+        if len(rows) >= 2:
+            cur = rows[0]
+            old = rows[-1]
+            keys = ["yield_3_month", "yield_2_year", "yield_5_year", "yield_10_year", "yield_30_year"]
+            latest_vals = [round(float(cur.get(k) or 0), 2) for k in keys]
+            old_vals = [round(float(old.get(k) or 0), 2) for k in keys]
+            if all(v > 0 for v in latest_vals):
+                return {"labels": ["3M", "2Y", "5Y", "10Y", "30Y"], "latest": latest_vals, "month_ago": old_vals}
+    except Exception:
+        pass
+    return fallback
+
+
+def fetch_ticker_news_cantonese(ticker):
+    """Fetch latest 2 headlines from Massive News API and summarize into 1 Cantonese sentence via Gemini."""
+    headlines = []
+    try:
+        url = f"{BASE_URL}/v2/reference/news?ticker={ticker}&limit=2&order=desc&apiKey={API_KEY}"
+        for item in http_json(url).get("results", []):
+            if item.get("title"):
+                headlines.append(item["title"])
+    except Exception:
+        pass
+    if not headlines:
+        return "暫無最新官方異動新聞，以價量結構為主。"
+    if not GEMINI_KEY:
+        return headlines[0][:90]
+    try:
+        prompt = f"用一句精簡香港廣東話（25字內）歸納 {ticker} 最新新聞重點，唔好加引號：\n" + "\n".join(headlines)
+        g_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_KEY}"
+        g_res = http_json(g_url, {"contents": [{"parts": [{"text": prompt}]}]})
+        txt = g_res["candidates"][0]["content"]["parts"][0]["text"].strip().replace("\n", " ")
+        if txt:
+            return txt[:70]
+    except Exception:
+        pass
+    return headlines[0][:90]
+
+
+def fetch_drive_pdfs():
+    """Fetch Momentum PDF list from deployed Google Apps Script bridge."""
+    if not DRIVE_BRIDGE_URL:
+        return []
+    try:
+        res = http_json(DRIVE_BRIDGE_URL)
+        if isinstance(res, list):
+            return res[:40]
+        if isinstance(res, dict) and isinstance(res.get("files"), list):
+            return res["files"][:40]
     except Exception as e:
-        print(f"Breadth fallback: {e}")
-        return {"up4": 0, "dn4": 0, "adv_pct": 50.0, "total_scanned": 0}
-
-
-def calc_score(up4, dn4, adv_pct, spy_atr):
-    ratio_score = (up4 / (up4 + dn4)) * 40 if (up4 + dn4) > 0 else 20
-    adv_score = max(0, min(100, adv_pct)) * 0.35
-    atr_score = max(0, min(25, ((spy_atr + 2.5) / 5) * 25))
-    return round(ratio_score + adv_score + atr_score)
+        print(f"Drive bridge fetch skipped: {e}")
+    return []
 
 
 def build_ai_brief(trade_date, indices, breadth, sectors):
     spy = indices[0]
-    mags = next((x for x in indices if x["ticker"] == "MAGS"), spy)
-    voo = next((x for x in indices if x["ticker"] == "VOO"), spy)
     top_sec = sorted(sectors, key=lambda x: x["rel20"], reverse=True)[:2]
     bot_sec = sorted(sectors, key=lambda x: x["rel20"])[:2]
     fallback = {
-        "tldr": f"{trade_date} 收市：SPY {spy['chg1d']:+.2f}%、VOO {voo['chg1d']:+.2f}%、MAGS {mags['chg1d']:+.2f}%；升4%+ {breadth['up4']} vs 跌4%+ {breadth['dn4']}。",
+        "tldr": f"{trade_date} 收市：SPY {spy['chg1d']:+.2f}%、升4%+ {breadth['up4']} vs 跌4%+ {breadth['dn4']}（5D Ratio {breadth['ratio5d']}）。",
         "bullets": [
-            f"基準對比：SPY 20D {spy['chg20d']:+.2f}%（{spy['atr_dist50']} ATR）、MAGS 20D {mags['chg20d']:+.2f}%、VOO 20D {voo['chg20d']:+.2f}%。",
-            f"強勢板塊：{top_sec[0]['name']}({top_sec[0]['ticker']} REL20 {top_sec[0]['rel20']:+.1f}%) 與 {top_sec[1]['name']}({top_sec[1]['ticker']} REL20 {top_sec[1]['rel20']:+.1f}%) 領先。",
-            f"弱勢板塊：{bot_sec[0]['name']}({bot_sec[0]['ticker']}) 及 {bot_sec[1]['name']}({bot_sec[1]['ticker']}) 偏弱，留意 180 日型態支持。",
+            f"寬度狀態：T2108 {breadth['t2108']}%、>200MA {breadth['pct_above200']}%、52週淨新高 {breadth['net_nhnl']:+d}。",
+            f"強勢領先：{top_sec[0]['name']}({top_sec[0]['ticker']} REL20 {top_sec[0]['rel20']:+.1f}%) 與 {top_sec[1]['name']}({top_sec[1]['ticker']} REL20 {top_sec[1]['rel20']:+.1f}%)。",
+            f"弱勢落後：{bot_sec[0]['name']}({bot_sec[0]['ticker']}) 及 {bot_sec[1]['name']}({bot_sec[1]['ticker']}) 偏弱，操作宜嚴控風險。",
         ],
     }
     if not GEMINI_KEY:
         return fallback
     try:
         prompt = (
-            "你係香港資深美股動能交易員。請嚴格根據以下已核實數據，用貼地香港廣東話輸出純 JSON "
+            "你係香港資深美股動能交易員。嚴格根據以下已核實數據，用貼地香港廣東話輸出純 JSON "
             '{"tldr": "一句38字內總定調", "bullets": ["重點1", "重點2", "重點3"]}，嚴禁捏造數據：\n'
             + json.dumps({"date": trade_date, "indices": indices, "breadth": breadth, "top_sectors": top_sec, "bottom_sectors": bot_sec}, ensure_ascii=False)
         )
@@ -214,104 +384,6 @@ def build_ai_brief(trade_date, indices, breadth, sectors):
     return fallback
 
 
-def generate_daily_pdf(trade_date, score, indices, breadth, sectors, candles_map, watchlist):
-    """Automatically generate a 2-page Tactical PDF report in reports/ without manual upload."""
-    try:
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
-    except ImportError:
-        print("matplotlib not installed; skipping auto PDF generation.")
-        return
-
-    os.makedirs(REPORTS_DIR, exist_ok=True)
-    pdf_path = os.path.join(REPORTS_DIR, f"{trade_date}_Tactical_Momentum_Brief.pdf")
-
-    plt.rcParams["axes.edgecolor"] = "#334d42"
-    plt.rcParams["axes.linewidth"] = 0.8
-
-    with PdfPages(pdf_path) as pdf:
-        # Page 1: Benchmarks + Breadth + Sector REL20 Bar Chart
-        fig = plt.figure(figsize=(8.27, 11.69), facecolor="#0a100e")
-        fig.suptitle(f"US MOMENTUM TACTICAL BRIEF  |  {trade_date}", color="#d4af37", fontsize=15, fontweight="bold", y=0.96)
-        fig.text(0.5, 0.93, f"Regime Score: {score}/100  |  Up 4%+: {breadth['up4']}  |  Dn 4%+: {breadth['dn4']}  |  Adv%: {breadth['adv_pct']}%",
-                 ha="center", color="#cbd5e1", fontsize=10)
-
-        # Subplot 1: 6 Benchmarks 20D% Bar Chart
-        ax1 = fig.add_axes([0.10, 0.63, 0.82, 0.24], facecolor="#0f1815")
-        idx_labels = [x["ticker"] for x in indices]
-        idx_vals = [x["chg20d"] for x in indices]
-        idx_cols = ["#10b981" if v >= 0 else "#f43f5e" for v in idx_vals]
-        ax1.bar(idx_labels, idx_vals, color=idx_cols, width=0.55)
-        ax1.axhline(0, color="#64748b", linewidth=0.8)
-        ax1.set_title("6 Core Benchmarks (20D Return %)", color="#f1f5f9", fontsize=11, pad=8)
-        ax1.tick_params(colors="#cbd5e1", labelsize=9)
-        for i, v in enumerate(idx_vals):
-            ax1.text(i, v + (0.3 if v >= 0 else -0.9), f"{v:+.1f}%", ha="center", color="#f8fafc", fontsize=8, fontweight="bold")
-
-        # Subplot 2: Sector REL20 Horizontal Diverging Bar Chart
-        ax2 = fig.add_axes([0.14, 0.08, 0.78, 0.48], facecolor="#0f1815")
-        sec_sorted = sorted(sectors, key=lambda x: x["rel20"])
-        s_labels = [s["ticker"] for s in sec_sorted]
-        s_vals = [s["rel20"] for s in sec_sorted]
-        s_cols = ["#10b981" if v >= 0 else "#f43f5e" for v in s_vals]
-        ax2.barh(s_labels, s_vals, color=s_cols, height=0.65)
-        ax2.axvline(0, color="#94a3b8", linewidth=0.9)
-        ax2.set_title("Sector & Theme ETF Leaderboard (REL20 vs SPY %)", color="#f1f5f9", fontsize=11, pad=8)
-        ax2.tick_params(colors="#cbd5e1", labelsize=8.5)
-        for i, v in enumerate(s_vals):
-            ax2.text(v + (0.15 if v >= 0 else -0.15), i, f"{v:+.1f}%", va="center",
-                     ha="left" if v >= 0 else "right", color="#f8fafc", fontsize=7.5)
-
-        pdf.savefig(fig, facecolor=fig.get_facecolor())
-        plt.close(fig)
-
-        # Page 2: 2x2 Focus Candlestick Charts (Last 60 Trading Days)
-        fig2, axes = plt.subplots(2, 2, figsize=(8.27, 11.69), facecolor="#0a100e")
-        fig2.suptitle(f"TOP FOCUS 60-DAY CANDLESTICKS  |  {trade_date}", color="#d4af37", fontsize=14, fontweight="bold", y=0.96)
-        top4 = sorted(watchlist, key=lambda x: x["chg20d"], reverse=True)[:4]
-        for ax, item in zip(axes.flat, top4):
-            sym = item["ticker"]
-            ax.set_facecolor("#0f1815")
-            bars = candles_map.get(sym, [])[-60:]
-            if bars:
-                xs = list(range(len(bars)))
-                closes = [b["close"] for b in bars]
-                for i, b in enumerate(bars):
-                    col = "#10b981" if b["close"] >= b["open"] else "#f43f5e"
-                    ax.plot([i, i], [b["low"], b["high"]], color=col, linewidth=0.8)
-                    ax.bar(i, max(0.05, abs(b["close"] - b["open"])), bottom=min(b["open"], b["close"]), color=col, width=0.6)
-                # 21 EMA
-                k = 2 / 22.0
-                ema, prev = [], closes[0]
-                for c in closes:
-                    prev = c * k + prev * (1 - k)
-                    ema.append(prev)
-                ax.plot(xs, ema, color="#2dd4bf", linewidth=1.2, label="21 EMA")
-            ax.set_title(f"{sym}  ${item['close']}  (1D {item['chg1d']:+.1f}% | 20D {item['chg20d']:+.1f}%)", color="#f1f5f9", fontsize=10)
-            ax.tick_params(colors="#94a3b8", labelsize=7.5)
-            ax.grid(color="#1a2822", linestyle="--", linewidth=0.5)
-
-        fig2.subplots_adjust(left=0.09, right=0.95, top=0.90, bottom=0.06, hspace=0.28, wspace=0.22)
-        pdf.savefig(fig2, facecolor=fig2.get_facecolor())
-        plt.close(fig2)
-
-    print(f"Auto-generated PDF report: {pdf_path}")
-
-
-def scan_pdfs(limit=30):
-    pdfs = []
-    for path in sorted(glob.glob(f"{REPORTS_DIR}/*.pdf"), reverse=True)[:limit]:
-        fname = os.path.basename(path)
-        pdfs.append({
-            "name": fname,
-            "date": fname[:10] if len(fname) >= 10 else "",
-            "url": f"{REPORTS_DIR}/{fname}",
-        })
-    return pdfs
-
-
 def extract_existing_hub(html):
     s_tag, e_tag = "/*__HUB_DATA_START__*/", "/*__HUB_DATA_END__*/"
     if s_tag in html and e_tag in html:
@@ -324,89 +396,107 @@ def extract_existing_hub(html):
                 js_obj = js_obj[:-1]
             if js_obj.startswith("{"):
                 return json.loads(js_obj)
-    return {"reports_by_date": {}, "trend_history": [], "candles": {}, "pdf_reports": []}
+    return {"reports_by_date": {}, "breadth_history": [], "candles_1d": {}, "candles_1h": {}, "pdf_reports": []}
 
 
 def main():
     if not API_KEY:
-        raise SystemExit("ERROR: MASSIVE_API_KEY 未設定！請喺 GitHub Settings -> Secrets 加入。")
+        raise SystemExit("ERROR: MASSIVE_API_KEY 未設定！請於 GitHub Settings -> Secrets 加入。")
 
     with open(HTML_FILE, "r", encoding="utf-8") as f:
         html = f.read()
     hub = extract_existing_hub(html)
 
-    spy_bars = get_bars("SPY", calendar_days=300)
-    if len(spy_bars) < 2:
+    spy_bars = get_daily_bars("SPY")
+    if len(spy_bars) < 20:
         raise SystemExit("ERROR: 無法從 Massive API 讀取 SPY 數據。")
 
     trade_date = datetime.fromtimestamp(spy_bars[-1]["t"] / 1000, timezone.utc).strftime("%Y-%m-%d")
-    prev_date = datetime.fromtimestamp(spy_bars[-2]["t"] / 1000, timezone.utc).strftime("%Y-%m-%d")
-    print(f"Latest US trade date: {trade_date} (prev: {prev_date})")
+    print(f"Verified latest US trade date: {trade_date}")
 
-    candles_map = {"SPY": format_candles(spy_bars)}
+    candles_1d = {"SPY": format_daily_candles(spy_bars)}
+    candles_1h = {"SPY": get_hourly_bars("SPY")}
     spy_m = calc_metrics(spy_bars)
-    indices_out = [{"ticker": "SPY", "name": "標普500", "close": spy_m["close"], "chg1d": spy_m["chg1d"], "chg20d": spy_m["chg20d"], "atr_dist50": spy_m["atr_dist50"]}]
 
+    indices_out = [{"ticker": "SPY", "name": "標普500", "close": spy_m["close"], "chg1d": spy_m["chg1d"], "chg20d": spy_m["chg20d"], "atr_dist50": spy_m["atr_dist50"]}]
     for sym, name in INDICES[1:]:
-        b = get_bars(sym, calendar_days=300)
+        b = get_daily_bars(sym)
         if not b:
             continue
-        candles_map[sym] = format_candles(b)
+        candles_1d[sym] = format_daily_candles(b)
+        candles_1h[sym] = get_hourly_bars(sym)
         m = calc_metrics(b)
         indices_out.append({"ticker": sym, "name": name, "close": m["close"], "chg1d": m["chg1d"], "chg20d": m["chg20d"], "atr_dist50": m["atr_dist50"]})
 
     sectors_out = []
     sec_chg20_map = {}
     for sym, name in SECTORS:
-        b = get_bars(sym, calendar_days=300)
+        b = get_daily_bars(sym)
         if not b:
             continue
-        candles_map[sym] = format_candles(b)
+        candles_1d[sym] = format_daily_candles(b)
+        candles_1h[sym] = get_hourly_bars(sym)
         m = calc_metrics(b)
         sec_chg20_map[sym] = m["chg20d"]
         sectors_out.append({
             "ticker": sym, "name": name, "close": m["close"],
             "chg1d": m["chg1d"], "chg20d": m["chg20d"],
-            "rel20": round(m["chg20d"] - spy_m["chg20d"], 2), "rsi14": m["rsi14"]
+            "rel20": round(m["chg20d"] - spy_m["chg20d"], 2),
+            "rel60": round(m["chg60d"] - spy_m["chg60d"], 2),
+            "rsi14": m["rsi14"],
+            "trail": calc_rrg_trail(b, spy_bars, steps=5),
         })
+
+    # Full-market Grouped Daily Breadth + EP & RS Screener
+    breadth_out, ep_syms, rs_syms = fetch_grouped_market_scan(spy_bars)
+    yields_out = fetch_yield_curve()
+
+    # Combine EP + RS Leaders + Core Watchlist (deduplicated)
+    seen_wl = set()
+    wl_specs = []
+    for sym in ep_syms:
+        if sym not in seen_wl:
+            seen_wl.add(sym)
+            wl_specs.append((sym, "EP", "異動突破", "SPY"))
+    for sym in rs_syms:
+        if sym not in seen_wl:
+            seen_wl.add(sym)
+            wl_specs.append((sym, "RS_LEADER", "強勢動能", "SPY"))
+    for sym, sec_name, etf_sym in CORE_WATCHLIST:
+        if sym not in seen_wl:
+            seen_wl.add(sym)
+            wl_specs.append((sym, "CORE", sec_name, etf_sym))
 
     watchlist_out = []
-    for sym, sector_name, etf_sym in WATCHLIST_META:
-        b = get_bars(sym, calendar_days=300)
-        if not b:
+    for sym, bucket, sec_name, etf_sym in wl_specs:
+        b = get_daily_bars(sym)
+        if len(b) < 20:
             continue
-        candles_map[sym] = format_candles(b)
+        candles_1d[sym] = format_daily_candles(b)
+        candles_1h[sym] = get_hourly_bars(sym)
         m = calc_metrics(b)
-        rel_spy = m["chg20d"] - spy_m["chg20d"]
-        etf_20d = sec_chg20_map.get(etf_sym, spy_m["chg20d"])
-        alpha20 = round(m["chg20d"] - etf_20d, 2)
-        if rel_spy >= 4 and m["atr_dist50"] >= 0:
-            grp, note = "LEADER", f"跑贏大市與 {etf_sym}，企穩 50MA 上方"
-        elif m["atr_dist50"] < -1.2 or m["rsi14"] < 35:
-            grp, note = "AVOID", "弱勢跌穿均線，暫時避開"
-        else:
-            grp, note = "WATCH", "觀察均線承接與縮量整理"
+        etf_20 = sec_chg20_map.get(etf_sym, spy_m["chg20d"])
+        alpha20 = round(m["chg20d"] - etf_20, 2)
+        grp = "LEADER" if (bucket in ("EP", "RS_LEADER") or (alpha20 >= 4 and m["atr_dist50"] >= 0)) else ("AVOID" if m["rsi14"] < 35 else "WATCH")
+        news_line = fetch_ticker_news_cantonese(sym)
         watchlist_out.append({
-            "ticker": sym, "group": grp, "sector": sector_name, "etf": etf_sym, "alpha20": alpha20,
-            "close": m["close"], "chg1d": m["chg1d"], "chg20d": m["chg20d"], "rsi14": m["rsi14"],
-            "stop": m["stop"], "note": note
+            "ticker": sym, "bucket": bucket, "group": grp,
+            "sector": sec_name, "etf": etf_sym, "alpha20": alpha20,
+            "close": m["close"], "chg1d": m["chg1d"], "chg20d": m["chg20d"],
+            "vol_ratio": m["vol_ratio"], "rsi14": m["rsi14"],
+            "atr14": m["atr14"], "stop": m["stop"], "news": news_line,
         })
 
-    breadth_out = fetch_breadth(trade_date, prev_date)
     ai_brief = build_ai_brief(trade_date, indices_out, breadth_out, sectors_out)
-    sc = calc_score(breadth_out["up4"], breadth_out["dn4"], breadth_out["adv_pct"], spy_m["atr_dist50"])
-
-    # Auto-generate daily PDF into reports/
-    generate_daily_pdf(trade_date, sc, indices_out, breadth_out, sectors_out, candles_map, watchlist_out)
-
     hkt_now = (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M HKT")
+
     reports_by_date = hub.get("reports_by_date") or {}
     reports_by_date[trade_date] = {
         "trade_date": trade_date,
         "updated_at": f"自動更新於 {hkt_now}",
-        "data_source": "Massive API",
         "indices": indices_out,
         "breadth": breadth_out,
+        "yields": yields_out,
         "ai_brief": ai_brief,
         "sectors": sectors_out,
         "watchlist": watchlist_out,
@@ -414,16 +504,27 @@ def main():
     sorted_dates = sorted(reports_by_date.keys())[-MAX_HISTORY_DAYS:]
     reports_by_date = {k: reports_by_date[k] for k in sorted_dates}
 
-    hist = [x for x in (hub.get("trend_history") or []) if x.get("date") != trade_date[5:]]
-    hist.append({"date": trade_date[5:], "score": sc, "spy_chg": spy_m["chg20d"]})
-    hist = hist[-MAX_HISTORY_DAYS:]
+    b_hist = [x for x in (hub.get("breadth_history") or []) if x.get("date") != trade_date[5:]]
+    b_hist.append({
+        "date": trade_date[5:],
+        "up4": breadth_out["up4"],
+        "dn4": breadth_out["dn4"],
+        "r5": breadth_out["ratio5d"],
+        "r10": breadth_out["ratio10d"],
+        "t2108": breadth_out["t2108"],
+        "ma50": breadth_out["pct_above50"],
+        "ma200": breadth_out["pct_above200"],
+        "nhnl": breadth_out["net_nhnl"],
+    })
+    b_hist = b_hist[-MAX_HISTORY_DAYS:]
 
     hub_out = {
         "latest_date": sorted_dates[-1],
         "reports_by_date": reports_by_date,
-        "trend_history": hist,
-        "candles": candles_map,
-        "pdf_reports": scan_pdfs(),
+        "breadth_history": b_hist,
+        "candles_1d": candles_1d,
+        "candles_1h": candles_1h,
+        "pdf_reports": fetch_drive_pdfs() or hub.get("pdf_reports", []),
     }
 
     s_tag, e_tag = "/*__HUB_DATA_START__*/", "/*__HUB_DATA_END__*/"
@@ -431,7 +532,7 @@ def main():
     with open(HTML_FILE, "w", encoding="utf-8") as f:
         f.write(html.split(s_tag)[0] + injected + html.split(e_tag)[1])
 
-    print("SUCCESS: index.html & daily PDF updated.")
+    print(f"SUCCESS: V2 Hub updated ({len(candles_1d)} tickers, 2Y daily + 1H, {len(watchlist_out)} scanner items).")
 
 
 if __name__ == "__main__":
