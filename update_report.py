@@ -15,7 +15,7 @@ MAX_HISTORY_DAYS = 30
 DAILY_CALENDAR_DAYS = 740   # ~2 years of trading days (~500 bars)
 HOURLY_CALENDAR_DAYS = 40   # ~30-40 days of 1H bars
 
-# Part 1: 4 Core Benchmarks (SPY only, VOO & MAGS moved to Part 2 Sector Leaderboard)
+# Part 1: 4 Core Benchmarks
 INDICES = [
     ("SPY", "標普500"),
     ("QQQ", "納指100"),
@@ -23,7 +23,7 @@ INDICES = [
     ("RSP", "等權標普"),
 ]
 
-# Part 2: Sectors + Themes + MAGS + VOO
+# Part 2: Sectors + Themes + MAGS + VOO (no inverse/leveraged ETFs)
 SECTORS = [
     ("XLE", "能源"), ("XLU", "公用事業"), ("XLP", "必需消費"),
     ("XLF", "金融"), ("XLRE", "房地產"), ("XLK", "科技"),
@@ -33,7 +33,7 @@ SECTORS = [
     ("IEF", "7-10年美債"), ("TLT", "20年美債"),
 ]
 
-# Part 3: Core Watchlist (supplemented automatically by Grouped Daily EP & Top RS scanner)
+# Part 3: Core Watchlist (common stocks only)
 CORE_WATCHLIST = [
     ("PANW", "網絡安全", "XLK"),
     ("WMT", "必需消費", "XLP"),
@@ -47,23 +47,83 @@ CORE_WATCHLIST = [
     ("AAPL", "消費科技", "XLK"),
 ]
 
+# Secondary name-based blocklist to ensure ZERO inverse / leveraged / ETF / ETN / fund tickers
+BLOCKED_NAME_KEYWORDS = (
+    "ETF", "ETN", "ULTRA", "INVERSE", "SHORT", "BEAR", "BULL",
+    "2X", "3X", "1.5X", "-1X", "-2X", "-3X", "DAILY ",
+    "DIREXION", "PROSHARES", "GRANITESHARES", "T-REX", "DEFIANCE",
+    "LEVERAGED", "YIELDMAX", "ROUNDHILL", "INVESCO", "ISHARES",
+    "VANGUARD", "SPDR", "TRUST", "FUND", "SHARES", "SWAP", "LONG ",
+)
+
 
 def http_json(url, payload=None, retries=3):
     for attempt in range(retries):
-        req = urllib.request.Request(url, headers={"User-Agent": "TacticalHubV2/2.0"})
+        req = urllib.request.Request(url, headers={"User-Agent": "TacticalHubV2/2.3"})
         data = None
         if payload is not None:
             data = json.dumps(payload).encode("utf-8")
             req.add_header("Content-Type", "application/json")
         try:
             with urllib.request.urlopen(req, data=data, timeout=35) as resp:
-                return json.loads(resp.read().decode("utf-8"))
+                raw_text = resp.read().decode("utf-8", errors="replace").strip()
+                if raw_text.startswith("<"):
+                    raise ValueError("Returned HTML instead of JSON (check URL permissions/login).")
+                return json.loads(raw_text)
         except urllib.error.HTTPError as e:
             if e.code == 429 and attempt < retries - 1:
                 time.sleep(12)
                 continue
             raise
     return {}
+
+
+def get_ticker_profile(ticker):
+    """Query Massive reference endpoint to verify Common Stock (CS/ADRC) and map real sector & ETF."""
+    try:
+        url = f"{BASE_URL}/v3/reference/tickers/{ticker}?apiKey={API_KEY}"
+        res = http_json(url).get("results") or {}
+        t_type = (res.get("type") or "").upper()
+        name = (res.get("name") or "").upper()
+        # Strict filter: ONLY Common Stocks (CS) or ADR Common Stocks (ADRC)
+        if t_type not in ("CS", "ADRC"):
+            return None
+        for kw in BLOCKED_NAME_KEYWORDS:
+            if kw in name:
+                return None
+        sic = (res.get("sic_description") or "").upper()
+        sec_label, etf = map_sic_to_sector_etf(sic)
+        return {"ticker": ticker, "type": t_type, "sector": sec_label, "etf": etf}
+    except Exception:
+        return None
+
+
+def map_sic_to_sector_etf(sic_upper):
+    if any(k in sic_upper for k in ("SEMICONDUCTOR", "CHIP", "INTEGRATED CIRCUIT")):
+        return "半導體", "SOXX"
+    if any(k in sic_upper for k in ("SOFTWARE", "COMPUTER", "DATA PROCESSING", "ELECTRONIC", "PREPACKAGED")):
+        return "科技軟件", "XLK"
+    if any(k in sic_upper for k in ("PHARMACEUTICAL", "BIOLOGICAL", "MEDICAL", "SURGICAL", "HEALTH", "HOSPITAL")):
+        return "醫療生科", "XLV"
+    if any(k in sic_upper for k in ("PETROLEUM", "CRUDE", "OIL", "NATURAL GAS", "ENERGY")):
+        return "能源石油", "XLE"
+    if any(k in sic_upper for k in ("BANK", "INSURANCE", "FINANC", "INVESTMENT", "CREDIT", "SECURITY BROKER")):
+        return "金融保險", "XLF"
+    if any(k in sic_upper for k in ("RETAIL", "GROCERY", "FOOD", "BEVERAGE", "SUPERMARKET", "SOAP", "COSMETIC")):
+        return "消費零售", "XLP"
+    if any(k in sic_upper for k in ("MOTOR VEHICLE", "RESTAURANT", "HOTEL", "APPAREL", "ENTERTAINMENT", "TRAVEL")):
+        return "可選消費", "XLY"
+    if any(k in sic_upper for k in ("TELECOM", "BROADCAST", "COMMUNICATION", "MEDIA", "ADVERTISING")):
+        return "通訊傳媒", "XLC"
+    if any(k in sic_upper for k in ("AEROSPACE", "DEFENSE", "MACHINERY", "AIRLINE", "RAILROAD", "CONSTRUCTION", "INDUSTRIAL")):
+        return "工業基建", "XLI"
+    if any(k in sic_upper for k in ("MINING", "GOLD", "SILVER", "COPPER", "STEEL", "CHEMICAL", "METAL")):
+        return "金屬材料", "XLB"
+    if any(k in sic_upper for k in ("REAL ESTATE", "REIT")):
+        return "房地產", "XLRE"
+    if any(k in sic_upper for k in ("ELECTRIC", "UTILITIES", "WATER SUPPLY")):
+        return "公用事業", "XLU"
+    return "美股普通股", "SPY"
 
 
 def get_daily_bars(ticker, calendar_days=DAILY_CALENDAR_DAYS):
@@ -179,20 +239,27 @@ def calc_rrg_trail(bars, spy_bars, steps=5):
     for offset in range(steps - 1, -1, -1):
         end_i = len(bars) - offset
         spy_end = len(spy_bars) - offset
-        c = bars[end_i - 1]["c"]
-        c20 = bars[end_i - 21]["c"]
-        c60 = bars[end_i - 61]["c"]
-        sc = spy_bars[spy_end - 1]["c"]
-        sc20 = spy_bars[spy_end - 21]["c"]
-        sc60 = spy_bars[spy_end - 61]["c"]
+        c, c20, c60 = bars[end_i - 1]["c"], bars[end_i - 21]["c"], bars[end_i - 61]["c"]
+        sc, sc20, sc60 = spy_bars[spy_end - 1]["c"], spy_bars[spy_end - 21]["c"], spy_bars[spy_end - 61]["c"]
         rel20 = round(((c / c20) - (sc / sc20)) * 100.0, 2)
         rel60 = round(((c / c60) - (sc / sc60)) * 100.0, 2)
         trail.append([rel60, rel20])
     return trail
 
 
+def filter_common_stocks(candidates, limit):
+    """Verify candidates via Massive reference API to strictly exclude ALL ETFs, inverse ETFs, and leveraged ETFs."""
+    verified = []
+    for _, sym in candidates:
+        if len(verified) >= limit:
+            break
+        prof = get_ticker_profile(sym)
+        if prof:
+            verified.append(prof)
+    return verified
+
+
 def fetch_grouped_market_scan(spy_bars):
-    """Use Massive Grouped Daily to compute Breadth (up4, dn4, T2108, 52W NH-NL) and scan EP / Top RS stocks."""
     dates = [datetime.fromtimestamp(b["t"] / 1000, timezone.utc).strftime("%Y-%m-%d") for b in spy_bars[-12:]]
     if len(dates) < 2:
         return {"up4": 0, "dn4": 0, "adv_pct": 50.0, "ratio5d": 1.0, "ratio10d": 1.0, "t2108": 50.0, "pct_above50": 50.0, "pct_above200": 50.0, "net_nhnl": 0, "total_scanned": 0}, [], []
@@ -206,7 +273,6 @@ def fetch_grouped_market_scan(spy_bars):
         except Exception:
             grouped_cache[d] = {}
 
-    # Compute rolling 10-day up4 / dn4 sums for 5D & 10D ratio
     daily_up4, daily_dn4 = [], []
     for idx in range(1, len(dates)):
         d0, d1 = dates[idx], dates[idx - 1]
@@ -230,14 +296,13 @@ def fetch_grouped_market_scan(spy_bars):
     r5 = round(sum(daily_up4[-5:]) / max(1, sum(daily_dn4[-5:])), 2)
     r10 = round(sum(daily_up4[-10:]) / max(1, sum(daily_dn4[-10:])), 2)
 
-    # Latest day advance% + EP & Momentum candidate screening
     m_now = grouped_cache.get(dates[-1], {})
     m_prev = grouped_cache.get(dates[-2], {})
     m_10d = grouped_cache.get(dates[-10], {}) if len(dates) >= 10 else m_prev
 
     adv = total = 0
-    ep_candidates = []
-    rs_candidates = []
+    ep_raw = []
+    rs_raw = []
 
     for sym, r0 in m_now.items():
         if not sym.isalpha() or len(sym) > 5:
@@ -252,43 +317,38 @@ def fetch_grouped_market_scan(spy_bars):
         pct1d = (c - r1["c"]) / r1["c"]
         if pct1d > 0:
             adv += 1
-        # EP screen: >= +8% with high dollar volume
         if pct1d >= 0.08 and v >= 500000:
-            ep_candidates.append((pct1d * (v * c), sym))
-        # RS screen: strong 10-day gain
+            ep_raw.append((pct1d * (v * c), sym))
         r10_row = m_10d.get(sym)
         if r10_row and r10_row["c"] > 0:
             pct10 = (c - r10_row["c"]) / r10_row["c"]
             if pct10 >= 0.12 and pct1d > -0.03:
-                rs_candidates.append((pct10, sym))
+                rs_raw.append((pct10, sym))
+
+    # Strictly filter out ALL inverse ETFs, leveraged ETFs, ETFs, ETNs, and funds via Massive reference API
+    ep_profiles = filter_common_stocks(sorted(ep_raw, reverse=True)[:35], limit=5)
+    ep_syms = {p["ticker"] for p in ep_profiles}
+    rs_filtered_raw = [(sc, s) for sc, s in sorted(rs_raw, reverse=True)[:45] if s not in ep_syms]
+    rs_profiles = filter_common_stocks(rs_filtered_raw, limit=6)
+
+    print(f"Screener verified (Common Stocks ONLY): EP={[p['ticker'] for p in ep_profiles]}, RS={[p['ticker'] for p in rs_profiles]}")
 
     adv_pct = round((adv / max(1, total)) * 100.0, 1)
-    # Approximate T2108 / MA50 / MA200 / Net NH-NL from liquid universe sample (fast & Starter-friendly)
     t2108 = round(min(92.0, max(8.0, adv_pct * 0.55 + min(40.0, r10 * 22.0))), 1)
     pct50 = round(min(95.0, max(10.0, t2108 + 4.5)), 1)
     pct200 = round(min(95.0, max(15.0, t2108 + 16.0)), 1)
     net_nhnl = int((up4_today - dn4_today) * 0.5)
 
-    ep_syms = [s for _, s in sorted(ep_candidates, reverse=True)[:5]]
-    rs_syms = [s for _, s in sorted(rs_candidates, reverse=True)[:6] if s not in ep_syms]
-
     breadth = {
-        "up4": up4_today,
-        "dn4": dn4_today,
-        "adv_pct": adv_pct,
-        "ratio5d": r5,
-        "ratio10d": r10,
-        "t2108": t2108,
-        "pct_above50": pct50,
-        "pct_above200": pct200,
-        "net_nhnl": net_nhnl,
-        "total_scanned": total,
+        "up4": up4_today, "dn4": dn4_today, "adv_pct": adv_pct,
+        "ratio5d": r5, "ratio10d": r10, "t2108": t2108,
+        "pct_above50": pct50, "pct_above200": pct200,
+        "net_nhnl": net_nhnl, "total_scanned": total,
     }
-    return breadth, ep_syms, rs_syms
+    return breadth, ep_profiles, rs_profiles
 
 
 def fetch_yield_curve():
-    """Fetch US Treasury Yields (3M, 2Y, 5Y, 10Y, 30Y) via Massive Economy API with safe fallback."""
     fallback = {
         "labels": ["3M", "2Y", "5Y", "10Y", "30Y"],
         "latest": [4.50, 4.25, 4.18, 4.35, 4.55],
@@ -298,8 +358,7 @@ def fetch_yield_curve():
         url = f"{BASE_URL}/fed/v1/treasury-yields?limit=30&sort=date.desc&apiKey={API_KEY}"
         rows = http_json(url).get("results", [])
         if len(rows) >= 2:
-            cur = rows[0]
-            old = rows[-1]
+            cur, old = rows[0], rows[-1]
             keys = ["yield_3_month", "yield_2_year", "yield_5_year", "yield_10_year", "yield_30_year"]
             latest_vals = [round(float(cur.get(k) or 0), 2) for k in keys]
             old_vals = [round(float(old.get(k) or 0), 2) for k in keys]
@@ -311,7 +370,6 @@ def fetch_yield_curve():
 
 
 def fetch_ticker_news_cantonese(ticker):
-    """Fetch latest 2 headlines from Massive News API and summarize into 1 Cantonese sentence via Gemini."""
     headlines = []
     try:
         url = f"{BASE_URL}/v2/reference/news?ticker={ticker}&limit=2&order=desc&apiKey={API_KEY}"
@@ -337,18 +395,25 @@ def fetch_ticker_news_cantonese(ticker):
 
 
 def fetch_drive_pdfs():
-    """Fetch Momentum PDF list from deployed Google Apps Script bridge."""
+    """Fetch Momentum PDF list from deployed Google Apps Script bridge with clear diagnostics."""
     if not DRIVE_BRIDGE_URL:
+        print("WARN [Part 5]: DRIVE_BRIDGE_URL is empty! Make sure it is set in GitHub Secrets AND passed in .github/workflows/daily_update.yml.")
         return []
     try:
-        res = http_json(DRIVE_BRIDGE_URL)
-        if isinstance(res, list):
-            return res[:40]
-        if isinstance(res, dict) and isinstance(res.get("files"), list):
-            return res["files"][:40]
+        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
+        req = urllib.request.Request(DRIVE_BRIDGE_URL, headers={"User-Agent": "Mozilla/5.0 TacticalHubV2"})
+        with opener.open(req, timeout=35) as resp:
+            raw = resp.read().decode("utf-8", errors="replace").strip()
+            if raw.startswith("<"):
+                print("ERROR [Part 5]: DRIVE_BRIDGE_URL returned an HTML login/error page instead of JSON. Please redeploy Apps Script with 'Who has access = Anyone (所有人)'.")
+                return []
+            res = json.loads(raw)
+        files = res if isinstance(res, list) else (res.get("files") if isinstance(res, dict) else [])
+        print(f"SUCCESS [Part 5]: Loaded {len(files)} Momentum PDFs from Google Drive bridge.")
+        return files[:40]
     except Exception as e:
-        print(f"Drive bridge fetch skipped: {e}")
-    return []
+        print(f"ERROR [Part 5]: Drive bridge request failed -> {e}")
+        return []
 
 
 def build_ai_brief(trade_date, indices, breadth, sectors):
@@ -447,21 +512,20 @@ def main():
             "trail": calc_rrg_trail(b, spy_bars, steps=5),
         })
 
-    # Full-market Grouped Daily Breadth + EP & RS Screener
-    breadth_out, ep_syms, rs_syms = fetch_grouped_market_scan(spy_bars)
+    # Full-market Grouped Daily Breadth + Common-Stock-ONLY EP & RS Screener
+    breadth_out, ep_profiles, rs_profiles = fetch_grouped_market_scan(spy_bars)
     yields_out = fetch_yield_curve()
 
-    # Combine EP + RS Leaders + Core Watchlist (deduplicated)
     seen_wl = set()
     wl_specs = []
-    for sym in ep_syms:
-        if sym not in seen_wl:
-            seen_wl.add(sym)
-            wl_specs.append((sym, "EP", "異動突破", "SPY"))
-    for sym in rs_syms:
-        if sym not in seen_wl:
-            seen_wl.add(sym)
-            wl_specs.append((sym, "RS_LEADER", "強勢動能", "SPY"))
+    for p in ep_profiles:
+        if p["ticker"] not in seen_wl:
+            seen_wl.add(p["ticker"])
+            wl_specs.append((p["ticker"], "EP", p["sector"], p["etf"]))
+    for p in rs_profiles:
+        if p["ticker"] not in seen_wl:
+            seen_wl.add(p["ticker"])
+            wl_specs.append((p["ticker"], "RS_LEADER", p["sector"], p["etf"]))
     for sym, sec_name, etf_sym in CORE_WATCHLIST:
         if sym not in seen_wl:
             seen_wl.add(sym)
@@ -518,13 +582,14 @@ def main():
     })
     b_hist = b_hist[-MAX_HISTORY_DAYS:]
 
+    pdf_list = fetch_drive_pdfs()
     hub_out = {
         "latest_date": sorted_dates[-1],
         "reports_by_date": reports_by_date,
         "breadth_history": b_hist,
         "candles_1d": candles_1d,
         "candles_1h": candles_1h,
-        "pdf_reports": fetch_drive_pdfs() or hub.get("pdf_reports", []),
+        "pdf_reports": pdf_list if pdf_list else hub.get("pdf_reports", []),
     }
 
     s_tag, e_tag = "/*__HUB_DATA_START__*/", "/*__HUB_DATA_END__*/"
@@ -532,7 +597,7 @@ def main():
     with open(HTML_FILE, "w", encoding="utf-8") as f:
         f.write(html.split(s_tag)[0] + injected + html.split(e_tag)[1])
 
-    print(f"SUCCESS: V2 Hub updated ({len(candles_1d)} tickers, 2Y daily + 1H, {len(watchlist_out)} scanner items).")
+    print(f"SUCCESS: V2.3 Hub updated ({len(candles_1d)} tickers, {len(watchlist_out)} common stocks, {len(hub_out['pdf_reports'])} PDFs).")
 
 
 if __name__ == "__main__":
