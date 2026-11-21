@@ -14,13 +14,12 @@
 <body class="bg-slate-100 text-slate-800 antialiased">
   <div id="top-anchor"></div>
 
-  <!-- 頂部黏性導航列 -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
     <div class="max-w-6xl mx-auto px-2 sm:px-4 py-2">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
         <div>
           <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">個人交易總部 · 美股動能與趨勢 Hub</h1>
-          <p id="header-meta" class="text-xs text-slate-500">載入中...</p>
+          <p id="header-meta" class="text-xs text-slate-500">正在初始化...</p>
         </div>
         <div class="flex items-center gap-2">
           <label for="date-selector" class="text-xs font-semibold text-slate-600">歷史交易日：</label>
@@ -39,8 +38,6 @@
   </header>
 
   <main class="max-w-6xl mx-auto px-1.5 sm:px-4 py-4 space-y-4">
-
-    <!-- 模組 01：大市寬度 + 多日趨勢圖 -->
     <section id="mod-1" class="bg-white rounded-2xl shadow-sm p-3 sm:p-6 scroll-mt-24">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
@@ -70,8 +67,6 @@
       <div id="panel-m1-live" class="space-y-4">
         <div id="index-cards" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
         <div id="breadth-cards" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
-
-        <!-- 多日歷史趨勢圖（SVG） -->
         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
             <div>
@@ -110,7 +105,6 @@
       </div>
     </section>
 
-    <!-- 模組 02：AI 摘要 + 11 大板塊 + 陰陽燭 -->
     <section id="mod-2" class="bg-white rounded-2xl shadow-sm p-3 sm:p-6 scroll-mt-24">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
@@ -133,7 +127,6 @@
         <ul id="ai-bullets" class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-slate-700"></ul>
       </div>
 
-      <!-- 陰陽燭圖表區（含 21 EMA / 50 EMA / 成交量） -->
       <div class="rounded-2xl border border-slate-200 bg-slate-950 text-white p-3 sm:p-4 mb-4">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
           <div>
@@ -152,7 +145,6 @@
       <div id="sector-list" class="space-y-2"></div>
     </section>
 
-    <!-- 模組 03：戰術焦點名單（含一鍵 TradingView + 陰陽燭切換） -->
     <section id="mod-3" class="bg-white rounded-2xl shadow-sm p-3 sm:p-6 scroll-mt-24">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
@@ -169,11 +161,9 @@
           </select>
         </div>
       </div>
-
       <div id="watchlist-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
     </section>
 
-    <!-- 模組 04：倉位風控計算機 -->
     <section id="mod-4" class="bg-white rounded-2xl shadow-sm p-3 sm:p-6 scroll-mt-24">
       <div class="flex items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
@@ -226,7 +216,6 @@
       </div>
     </section>
 
-    <!-- 模組 05：PDF 報告下載中心 -->
     <section id="mod-5" class="bg-white rounded-2xl shadow-sm p-3 sm:p-6 scroll-mt-24">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
@@ -246,82 +235,104 @@
   <a href="#top-anchor" class="fixed bottom-4 right-4 z-50 w-10 h-10 rounded-full bg-slate-900 text-white shadow-lg flex items-center justify-center text-sm font-bold hover:bg-slate-700" aria-label="回到頂部">↑</a>
 
   <script>
-/*__HUB_DATA_START__*/
-const HUB_DATA = {
-  "latest_date": "2026-11-19",
-  "reports_by_date": {
-    "2026-11-19": {
-      "trade_date": "2026-11-19",
-      "updated_at": "等待首次 Massive API 自動更新",
-      "data_source": "預載實況範本 (待 Massive API 首次同步)",
-      "indices": [
-        { "ticker": "SPY", "name": "標普500", "close": 715.89, "chg1d": -1.96, "chg20d": -7.40, "atr_dist50": -1.8 },
-        { "ticker": "QQQ", "name": "納指100", "close": 645.17, "chg1d": -2.18, "chg20d": -11.10, "atr_dist50": -2.6 },
-        { "ticker": "IWM", "name": "羅素2000", "close": 264.21, "chg1d": -2.19, "chg20d": -5.80, "atr_dist50": -1.5 },
-        { "ticker": "RSP", "name": "等權標普", "close": 188.40, "chg1d": -1.74, "chg20d": -2.20, "atr_dist50": -0.9 }
+const FALLBACK_HUB_DATA = {
+  latest_date: "2026-11-20",
+  reports_by_date: {
+    "2026-11-20": {
+      trade_date: "2026-11-20",
+      updated_at: "2026-11-20 收市基準（待 Massive API 同步最新）",
+      indices: [
+        { ticker: "SPY", name: "標普500", close: 715.89, chg1d: -1.96, chg20d: -7.40, atr_dist50: -1.8 },
+        { ticker: "QQQ", name: "納指100", close: 645.17, chg1d: -2.18, chg20d: -11.10, atr_dist50: -2.6 },
+        { ticker: "IWM", name: "羅素2000", close: 264.21, chg1d: -2.19, chg20d: -5.80, atr_dist50: -1.5 },
+        { ticker: "RSP", name: "等權標普", close: 188.40, chg1d: -1.74, chg20d: -2.20, atr_dist50: -0.9 }
       ],
-      "breadth": { "up4": 68, "dn4": 492, "adv_pct": 12.5, "total_scanned": 3850 },
-      "ai_brief": {
-        "tldr": "標普 500 連跌第 6 日失守關鍵支持，11 大板塊全線收跌，資金全面轉向防守。",
-        "bullets": [
-          "SPY 單日跌 1.96% 收報 $715.89，逾 9 成標普成分股下跌，短期仍處防守避險格局。",
-          "能源 (XLE -0.67%)、公用事業 (XLU -1.20%) 及必需消費 (XLP -1.40%) 相對抗跌。",
-          "未見明顯止跌訊號前嚴格控制單筆風險，切忌逆勢撈底破位科技股。"
+      breadth: { up4: 68, dn4: 492, adv_pct: 12.5, total_scanned: 3850 },
+      ai_brief: {
+        tldr: "大市連跌受壓，資金集中防守與抗跌板塊，操作以看多日趨勢同嚴控止損為主。",
+        bullets: [
+          "多日趨勢：寬度分數由 56 逐步回落至 25，勿單憑單日反彈追入。",
+          "每個代號隔離都有 TV ↗ 掣同「睇陰陽燭」掣，方便快速對位高低點。",
+          "PDF 報告放去 GitHub reports/ 資料夾後，05 區會自動出現下載掣。"
         ]
       },
-      "sectors": [
-        { "ticker": "XLE", "name": "能源", "close": 94.20, "chg1d": -0.67, "chg20d": 1.40, "rel20": 4.8, "rsi14": 54.2 },
-        { "ticker": "XLU", "name": "公用事業", "close": 82.10, "chg1d": -1.20, "chg20d": 0.50, "rel20": 3.9, "rsi14": 51.0 },
-        { "ticker": "XLP", "name": "必需消費", "close": 84.50, "chg1d": -1.40, "chg20d": 0.10, "rel20": 3.5, "rsi14": 50.4 },
-        { "ticker": "XLF", "name": "金融", "close": 51.30, "chg1d": -1.50, "chg20d": -1.30, "rel20": 2.1, "rsi14": 47.8 },
-        { "ticker": "XLRE", "name": "房地產", "close": 42.80, "chg1d": -1.70, "chg20d": -2.00, "rel20": 1.4, "rsi14": 45.6 },
-        { "ticker": "XLK", "name": "科技", "close": 238.90, "chg1d": -1.85, "chg20d": -5.80, "rel20": -2.4, "rsi14": 36.5 },
-        { "ticker": "XLV", "name": "醫療保健", "close": 151.60, "chg1d": -2.05, "chg20d": -2.50, "rel20": 0.9, "rsi14": 43.2 },
-        { "ticker": "XLI", "name": "工業", "close": 139.10, "chg1d": -2.00, "chg20d": -3.00, "rel20": 0.4, "rsi14": 42.1 },
-        { "ticker": "XLB", "name": "原材料", "close": 90.40, "chg1d": -2.00, "chg20d": -4.20, "rel20": -0.8, "rsi14": 40.8 },
-        { "ticker": "XLC", "name": "通訊服務", "close": 96.70, "chg1d": -2.70, "chg20d": -6.50, "rel20": -3.1, "rsi14": 37.9 },
-        { "ticker": "XLY", "name": "非必需消費", "close": 212.30, "chg1d": -2.80, "chg20d": -7.20, "rel20": -3.8, "rsi14": 35.4 }
+      sectors: [
+        { ticker: "XLE", name: "能源", close: 94.20, chg1d: -0.67, chg20d: 1.40, rel20: 4.8, rsi14: 54.2 },
+        { ticker: "XLU", name: "公用事業", close: 82.10, chg1d: -1.20, chg20d: 0.50, rel20: 3.9, rsi14: 51.0 },
+        { ticker: "XLP", name: "必需消費", close: 84.50, chg1d: -1.40, chg20d: 0.10, rel20: 3.5, rsi14: 50.4 },
+        { ticker: "XLF", name: "金融", close: 51.30, chg1d: -1.50, chg20d: -1.30, rel20: 2.1, rsi14: 47.8 },
+        { ticker: "XLRE", name: "房地產", close: 42.80, chg1d: -1.70, chg20d: -2.00, rel20: 1.4, rsi14: 45.6 },
+        { ticker: "XLK", name: "科技", close: 238.90, chg1d: -1.85, chg20d: -5.80, rel20: -2.4, rsi14: 36.5 },
+        { ticker: "XLV", name: "醫療保健", close: 151.60, chg1d: -2.05, chg20d: -2.50, rel20: 0.9, rsi14: 43.2 },
+        { ticker: "XLI", name: "工業", close: 139.10, chg1d: -2.00, chg20d: -3.00, rel20: 0.4, rsi14: 42.1 },
+        { ticker: "XLB", name: "原材料", close: 90.40, chg1d: -2.00, chg20d: -4.20, rel20: -0.8, rsi14: 40.8 },
+        { ticker: "XLC", name: "通訊服務", close: 96.70, chg1d: -2.70, chg20d: -6.50, rel20: -3.1, rsi14: 37.9 },
+        { ticker: "XLY", name: "非必需消費", close: 212.30, chg1d: -2.80, chg20d: -7.20, rel20: -3.8, rsi14: 35.4 }
       ],
-      "watchlist": [
-        { "ticker": "PANW", "group": "LEADER", "close": 361.75, "chg1d": 6.40, "chg20d": 8.20, "rsi14": 63.5, "stop": 340.00, "note": "逆市放量上漲，企穩均線上方" },
-        { "ticker": "WMT", "group": "LEADER", "close": 95.40, "chg1d": -0.45, "chg20d": 5.10, "rsi14": 58.0, "stop": 91.20, "note": "防禦消費核心，相對強度靠前" },
-        { "ticker": "XOM", "group": "WATCH", "close": 121.80, "chg1d": -0.35, "chg20d": 3.40, "rsi14": 53.2, "stop": 117.00, "note": "隨能源板塊抗跌，留意前高突破" },
-        { "ticker": "LLY", "group": "WATCH", "close": 825.00, "chg1d": -1.10, "chg20d": 1.20, "rsi14": 48.5, "stop": 790.00, "note": "醫療權重股，等待縮量企穩" },
-        { "ticker": "AMD", "group": "AVOID", "close": 489.51, "chg1d": -7.73, "chg20d": -11.40, "rsi14": 31.2, "stop": 470.00, "note": "放量下破短線支持，嚴格避開" },
-        { "ticker": "NVDA", "group": "AVOID", "close": 145.98, "chg1d": -4.00, "chg20d": -28.66, "rsi14": 27.8, "stop": 140.00, "note": "創階段新低，切忌逆勢承接" }
+      watchlist: [
+        { ticker: "PANW", group: "LEADER", close: 361.75, chg1d: 6.40, chg20d: 8.20, rsi14: 63.5, stop: 340.00, note: "逆市放量上漲，企穩均線上方" },
+        { ticker: "WMT", group: "LEADER", close: 95.40, chg1d: -0.45, chg20d: 5.10, rsi14: 58.0, stop: 91.20, note: "防禦消費核心，相對強度靠前" },
+        { ticker: "XOM", group: "WATCH", close: 121.80, chg1d: -0.35, chg20d: 3.40, rsi14: 53.2, stop: 117.00, note: "隨能源板塊抗跌，留意前高突破" },
+        { ticker: "LLY", group: "WATCH", close: 825.00, chg1d: -1.10, chg20d: 1.20, rsi14: 48.5, stop: 790.00, note: "醫療權重股，等待縮量企穩" },
+        { ticker: "AMD", group: "AVOID", close: 489.51, chg1d: -7.73, chg20d: -11.40, rsi14: 31.2, stop: 470.00, note: "放量下破短線支持，嚴格避開" },
+        { ticker: "NVDA", group: "AVOID", close: 145.98, chg1d: -4.00, chg20d: -28.66, rsi14: 27.8, stop: 140.00, note: "創階段新低，切忌逆勢承接" }
+      ]
+    },
+    "2026-11-18": {
+      trade_date: "2026-11-18",
+      updated_at: "2026-11-18 歷史紀錄",
+      indices: [
+        { ticker: "SPY", name: "標普500", close: 730.20, chg1d: -0.85, chg20d: -5.50, atr_dist50: -1.1 },
+        { ticker: "QQQ", name: "納指100", close: 659.51, chg1d: -1.10, chg20d: -9.10, atr_dist50: -1.9 },
+        { ticker: "IWM", name: "羅素2000", close: 270.12, chg1d: -0.60, chg20d: -3.80, atr_dist50: -0.9 },
+        { ticker: "RSP", name: "等權標普", close: 191.74, chg1d: -0.45, chg20d: -0.60, atr_dist50: -0.4 }
+      ],
+      breadth: { up4: 82, dn4: 420, adv_pct: 18.2, total_scanned: 3850 },
+      ai_brief: {
+        tldr: "11-18 歷史快照：寬度逐步走弱，防守板塊開始跑贏。",
+        bullets: ["SPY 收 $730.20 (-0.85%)，升跌 4%+ 比率仍偏弱。"]
+      },
+      sectors: [
+        { ticker: "XLE", name: "能源", close: 94.84, chg1d: -0.30, chg20d: 2.10, rel20: 7.6, rsi14: 56.0 },
+        { ticker: "XLP", name: "必需消費", close: 85.70, chg1d: 0.20, chg20d: 1.50, rel20: 7.0, rsi14: 53.1 },
+        { ticker: "XLK", name: "科技", close: 243.40, chg1d: -1.05, chg20d: -4.00, rel20: 1.5, rsi14: 40.2 }
+      ],
+      watchlist: [
+        { ticker: "WMT", group: "LEADER", close: 95.83, chg1d: 0.60, chg20d: 5.50, rsi14: 59.5, stop: 91.20, note: "守穩均線" },
+        { ticker: "AMD", group: "WATCH", close: 530.14, chg1d: -1.80, chg20d: -4.10, rsi14: 41.0, stop: 495.00, note: "回踩觀察" }
       ]
     }
   },
-  "trend_history": [
-    { "date": "11-12", "score": 56, "spy_chg": 0.4, "up4": 210, "dn4": 180 },
-    { "date": "11-13", "score": 51, "spy_chg": -0.8, "up4": 165, "dn4": 240 },
-    { "date": "11-16", "score": 44, "spy_chg": -1.9, "up4": 120, "dn4": 310 },
-    { "date": "11-17", "score": 39, "spy_chg": -3.1, "up4": 95, "dn4": 360 },
-    { "date": "11-18", "score": 33, "spy_chg": -5.5, "up4": 82, "dn4": 420 },
-    { "date": "11-19", "score": 25, "spy_chg": -7.4, "up4": 68, "dn4": 492 }
+  trend_history: [
+    { date: "11-12", score: 56, spy_chg: 0.4, up4: 210, dn4: 180 },
+    { date: "11-13", score: 51, spy_chg: -0.8, up4: 165, dn4: 240 },
+    { date: "11-16", score: 44, spy_chg: -1.9, up4: 120, dn4: 310 },
+    { date: "11-17", score: 39, spy_chg: -3.1, up4: 95, dn4: 360 },
+    { date: "11-18", score: 33, spy_chg: -5.5, up4: 82, dn4: 420 },
+    { date: "11-20", score: 25, spy_chg: -7.4, up4: 68, dn4: 492 }
   ],
-  "candles": {},
-  "pdf_reports": []
+  candles: {},
+  pdf_reports: []
 };
+
+/*__HUB_DATA_START__*/
+const HUB_DATA = FALLBACK_HUB_DATA;
 /*__HUB_DATA_END__*/
 
+var ACTIVE_HUB = FALLBACK_HUB_DATA;
 var CURRENT_REPORT = null;
 var ACTIVE_CANDLE_SYMBOL = "SPY";
 
 function tvUrl(symbol) {
-  var s = encodeURIComponent((symbol || "SPY").trim().toUpperCase());
-  return "https://www.tradingview.com/chart/?symbol=" + s;
+  return "https://www.tradingview.com/chart/?symbol=" + encodeURIComponent((symbol || "SPY").trim().toUpperCase());
 }
-
 function fmtPct(v) {
   var n = Number(v) || 0;
   return (n >= 0 ? "+" : "") + n.toFixed(2) + "%";
 }
-
 function pctClass(v) {
   return (Number(v) || 0) >= 0 ? "text-emerald-600" : "text-rose-600";
 }
-
 function calcRegime(up4, dn4, advPct, spyAtr) {
   var ratioScore = (up4 + dn4) > 0 ? (up4 / (up4 + dn4)) * 40 : 20;
   var advScore = Math.max(0, Math.min(100, advPct)) * 0.35;
@@ -331,11 +342,9 @@ function calcRegime(up4, dn4, advPct, spyAtr) {
   if (score >= 42) return { score: score, label: "震盪挑選 Neutral", cls: "from-amber-500 to-orange-600", pill: "bg-amber-100 text-amber-800", action: "板塊分化，只做最強相對強度個股並收緊倉位。" };
   return { score: score, label: "防守 Risk-Off", cls: "from-rose-600 to-red-700", pill: "bg-rose-100 text-rose-800", action: "大市寬度轉弱，以現金防守為主，避免盲目撈底。" };
 }
-
 function renderRegime(up4, dn4, advPct, spyAtr) {
   var r = calcRegime(up4, dn4, advPct, spyAtr);
-  var banner = document.getElementById("regime-banner");
-  banner.className = "rounded-2xl p-4 sm:p-5 text-white bg-gradient-to-r mb-4 " + r.cls;
+  document.getElementById("regime-banner").className = "rounded-2xl p-4 sm:p-5 text-white bg-gradient-to-r mb-4 " + r.cls;
   document.getElementById("score-val").textContent = r.score;
   document.getElementById("regime-label").textContent = r.label;
   document.getElementById("regime-action").textContent = r.action;
@@ -343,46 +352,30 @@ function renderRegime(up4, dn4, advPct, spyAtr) {
   pill.textContent = r.label + " · " + r.score;
   pill.className = "px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap " + r.pill;
 }
-
 function renderTrendChart() {
-  var hist = HUB_DATA.trend_history || [];
+  var hist = ACTIVE_HUB.trend_history || [];
   if (!hist.length) {
     document.getElementById("trend-chart-box").innerHTML = '<p class="text-xs text-slate-400 py-6 text-center">等待累積多日歷史數據...</p>';
     return;
   }
   var w = 760, h = 190, padL = 38, padR = 42, padT = 18, padB = 28;
-  var plotW = w - padL - padR;
-  var plotH = h - padT - padB;
-  var n = hist.length;
-
+  var plotW = w - padL - padR, plotH = h - padT - padB, n = hist.length;
   var spyVals = hist.map(function(d) { return Number(d.spy_chg) || 0; });
   var minSpy = Math.min.apply(null, spyVals.concat([-2]));
   var maxSpy = Math.max.apply(null, spyVals.concat([2]));
   var spanSpy = (maxSpy - minSpy) || 1;
-
-  function xAt(i) {
-    return n === 1 ? padL + plotW / 2 : padL + (i / (n - 1)) * plotW;
-  }
-  function yScore(sc) {
-    return padT + plotH - (Math.max(0, Math.min(100, sc)) / 100) * plotH;
-  }
-  function ySpy(sp) {
-    return padT + plotH - ((sp - minSpy) / spanSpy) * plotH;
-  }
-
+  function xAt(i) { return n === 1 ? padL + plotW / 2 : padL + (i / (n - 1)) * plotW; }
+  function yScore(sc) { return padT + plotH - (Math.max(0, Math.min(100, sc)) / 100) * plotH; }
+  function ySpy(sp) { return padT + plotH - ((sp - minSpy) / spanSpy) * plotH; }
   var scorePts = [], spyPts = [], labels = "", dots = "";
   for (var i = 0; i < n; i++) {
-    var x = xAt(i).toFixed(1);
-    var ys = yScore(Number(hist[i].score) || 0).toFixed(1);
-    var yp = ySpy(Number(hist[i].spy_chg) || 0).toFixed(1);
-    scorePts.push(x + "," + ys);
-    spyPts.push(x + "," + yp);
+    var x = xAt(i).toFixed(1), ys = yScore(Number(hist[i].score) || 0).toFixed(1), yp = ySpy(Number(hist[i].spy_chg) || 0).toFixed(1);
+    scorePts.push(x + "," + ys); spyPts.push(x + "," + yp);
     labels += '<text x="' + x + '" y="' + (h - 8) + '" text-anchor="middle" fill="#64748b" font-size="10">' + hist[i].date + '</text>';
-    dots += '<circle cx="' + x + '" cy="' + ys + '" r="3.5" fill="#4f46e5" />'
-      + '<circle cx="' + x + '" cy="' + yp + '" r="3.5" fill="#059669" />';
+    dots += '<circle cx="' + x + '" cy="' + ys + '" r="3.5" fill="#4f46e5" /><circle cx="' + x + '" cy="' + yp + '" r="3.5" fill="#059669" />';
   }
-
-  var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" class="w-full h-auto min-w-[460px]">'
+  document.getElementById("trend-chart-box").innerHTML =
+    '<svg viewBox="0 0 ' + w + ' ' + h + '" class="w-full h-auto min-w-[460px]">'
     + '<line x1="' + padL + '" y1="' + padT + '" x2="' + (w - padR) + '" y2="' + padT + '" stroke="#e2e8f0" stroke-dasharray="3,3" />'
     + '<line x1="' + padL + '" y1="' + (padT + plotH / 2) + '" x2="' + (w - padR) + '" y2="' + (padT + plotH / 2) + '" stroke="#e2e8f0" stroke-dasharray="3,3" />'
     + '<line x1="' + padL + '" y1="' + (padT + plotH) + '" x2="' + (w - padR) + '" y2="' + (padT + plotH) + '" stroke="#cbd5e1" />'
@@ -393,15 +386,11 @@ function renderTrendChart() {
     + '<polyline fill="none" stroke="#4f46e5" stroke-width="2.2" points="' + scorePts.join(" ") + '" />'
     + '<polyline fill="none" stroke="#059669" stroke-width="2.2" points="' + spyPts.join(" ") + '" />'
     + dots + labels + '</svg>';
-
-  document.getElementById("trend-chart-box").innerHTML = svg;
 }
-
-function ensureDemoCandles(symbol) {
-  if (HUB_DATA.candles && HUB_DATA.candles[symbol] && HUB_DATA.candles[symbol].length >= 10) {
-    return HUB_DATA.candles[symbol];
+function ensureCandles(symbol) {
+  if (ACTIVE_HUB.candles && ACTIVE_HUB.candles[symbol] && ACTIVE_HUB.candles[symbol].length >= 10) {
+    return ACTIVE_HUB.candles[symbol];
   }
-  // 退路：若某股票未有獨立歷史燭線，根據現價與 20D% 生成示意走勢（標註非實時歷史序列）
   var base = 100;
   var list = (CURRENT_REPORT.indices || []).concat(CURRENT_REPORT.sectors || []).concat(CURRENT_REPORT.watchlist || []);
   for (var i = 0; i < list.length; i++) {
@@ -409,127 +398,73 @@ function ensureDemoCandles(symbol) {
   }
   var arr = [], cur = base * 0.97;
   for (var d = 0; d < 35; d++) {
-    var drift = Math.sin(d * 0.45) * (base * 0.012) + ((d % 3 === 0 ? 1 : -1) * base * 0.004);
-    var o = cur;
-    var c = d === 34 ? base : Math.max(1, o + drift);
-    var h = Math.max(o, c) * 1.008;
-    var l = Math.min(o, c) * 0.992;
-    arr.push({ t: "D" + (d + 1), o: +o.toFixed(2), h: +h.toFixed(2), l: +l.toFixed(2), c: +c.toFixed(2), v: 1000000 + (d % 5) * 250000 });
+    var o = cur, c = d === 34 ? base : Math.max(1, o + Math.sin(d * 0.45) * (base * 0.012) + ((d % 3 === 0 ? 1 : -1) * base * 0.004));
+    arr.push({ t: "D" + (d + 1), o: +o.toFixed(2), h: +(Math.max(o, c) * 1.008).toFixed(2), l: +(Math.min(o, c) * 0.992).toFixed(2), c: +c.toFixed(2), v: 1000000 + (d % 5) * 250000 });
     cur = c;
   }
   return arr;
 }
-
 function calcEMA(vals, period) {
-  var k = 2 / (period + 1);
-  var out = [];
-  var prev = vals[0] || 0;
-  for (var i = 0; i < vals.length; i++) {
-    prev = i === 0 ? vals[0] : vals[i] * k + prev * (1 - k);
-    out.push(prev);
-  }
+  var k = 2 / (period + 1), out = [], prev = vals[0] || 0;
+  for (var i = 0; i < vals.length; i++) { prev = i === 0 ? vals[0] : vals[i] * k + prev * (1 - k); out.push(prev); }
   return out;
 }
-
 function renderCandlestick(symbol) {
   ACTIVE_CANDLE_SYMBOL = (symbol || "SPY").toUpperCase();
   var sel = document.getElementById("candle-target-select");
   if (sel) sel.value = ACTIVE_CANDLE_SYMBOL;
-
-  var bars = ensureDemoCandles(ACTIVE_CANDLE_SYMBOL);
-  var slice = bars.slice(-40);
+  var slice = ensureCandles(ACTIVE_CANDLE_SYMBOL).slice(-40);
   var closes = slice.map(function(b) { return b.c; });
-  var ema21 = calcEMA(closes, 21);
-  var ema50 = calcEMA(closes, 50);
-
-  var highs = slice.map(function(b) { return b.h; });
-  var lows = slice.map(function(b) { return b.l; });
-  var maxP = Math.max.apply(null, highs);
-  var minP = Math.min.apply(null, lows);
+  var ema21 = calcEMA(closes, 21), ema50 = calcEMA(closes, 50);
+  var maxP = Math.max.apply(null, slice.map(function(b) { return b.h; }));
+  var minP = Math.min.apply(null, slice.map(function(b) { return b.l; }));
   var spanP = (maxP - minP) || 1;
   var maxV = Math.max.apply(null, slice.map(function(b) { return b.v || 1; })) || 1;
-
-  var w = 820, h = 250, padL = 12, padR = 54, padT = 14, padB = 22;
-  var priceH = h - padT - padB - 38;
-  var volTop = padT + priceH + 8;
-  var volH = 30;
-  var plotW = w - padL - padR;
-  var stepW = plotW / slice.length;
-  var candleW = Math.max(3, Math.min(11, stepW * 0.62));
-
-  function yP(p) {
-    return padT + ((maxP - p) / spanP) * priceH;
-  }
-
+  var w = 820, h = 250, padL = 12, padR = 54, padT = 14, padB = 22, priceH = h - padT - padB - 38, volTop = padT + priceH + 8, volH = 30;
+  var stepW = (w - padL - padR) / slice.length, candleW = Math.max(3, Math.min(11, stepW * 0.62));
+  function yP(p) { return padT + ((maxP - p) / spanP) * priceH; }
   var shapes = "", pts21 = [], pts50 = "";
   for (var i = 0; i < slice.length; i++) {
-    var b = slice[i];
-    var cx = padL + i * stepW + stepW / 2;
-    var isUp = b.c >= b.o;
-    var col = isUp ? "#10b981" : "#f43f5e";
-    var yHigh = yP(b.h).toFixed(1);
-    var yLow = yP(b.l).toFixed(1);
-    var topBox = yP(Math.max(b.o, b.c));
-    var botBox = yP(Math.min(b.o, b.c));
-    var boxH = Math.max(1.5, botBox - topBox);
-    var vh = Math.max(2, ((b.v || 0) / maxV) * volH);
-
-    shapes += '<line x1="' + cx.toFixed(1) + '" y1="' + yHigh + '" x2="' + cx.toFixed(1) + '" y2="' + yLow + '" stroke="' + col + '" stroke-width="1.2" />'
-      + '<rect x="' + (cx - candleW / 2).toFixed(1) + '" y="' + topBox.toFixed(1) + '" width="' + candleW.toFixed(1) + '" height="' + boxH.toFixed(1) + '" fill="' + col + '" rx="1" />'
+    var b = slice[i], cx = padL + i * stepW + stepW / 2, col = b.c >= b.o ? "#10b981" : "#f43f5e";
+    var topBox = yP(Math.max(b.o, b.c)), botBox = yP(Math.min(b.o, b.c)), vh = Math.max(2, ((b.v || 0) / maxV) * volH);
+    shapes += '<line x1="' + cx.toFixed(1) + '" y1="' + yP(b.h).toFixed(1) + '" x2="' + cx.toFixed(1) + '" y2="' + yP(b.l).toFixed(1) + '" stroke="' + col + '" stroke-width="1.2" />'
+      + '<rect x="' + (cx - candleW / 2).toFixed(1) + '" y="' + topBox.toFixed(1) + '" width="' + candleW.toFixed(1) + '" height="' + Math.max(1.5, botBox - topBox).toFixed(1) + '" fill="' + col + '" rx="1" />'
       + '<rect x="' + (cx - candleW / 2).toFixed(1) + '" y="' + (volTop + volH - vh).toFixed(1) + '" width="' + candleW.toFixed(1) + '" height="' + vh.toFixed(1) + '" fill="' + col + '" opacity="0.35" />';
-
     pts21.push(cx.toFixed(1) + "," + yP(ema21[i]).toFixed(1));
     pts50.push(cx.toFixed(1) + "," + yP(ema50[i]).toFixed(1));
   }
-
   var lastB = slice[slice.length - 1];
   document.getElementById("candle-title").textContent = ACTIVE_CANDLE_SYMBOL + " 陰陽燭走勢（最近 " + slice.length + " 根）";
   document.getElementById("candle-stats").textContent = "最新收市 $" + lastB.c.toFixed(2) + " · 區間 $" + minP.toFixed(2) + " - $" + maxP.toFixed(2);
   document.getElementById("candle-tv-btn").href = tvUrl(ACTIVE_CANDLE_SYMBOL);
-
-  var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" class="w-full h-auto min-w-[520px]">'
+  document.getElementById("candlestick-box").innerHTML =
+    '<svg viewBox="0 0 ' + w + ' ' + h + '" class="w-full h-auto min-w-[520px]">'
     + '<line x1="' + padL + '" y1="' + padT + '" x2="' + (w - padR) + '" y2="' + padT + '" stroke="#1e293b" />'
     + '<line x1="' + padL + '" y1="' + (padT + priceH / 2) + '" x2="' + (w - padR) + '" y2="' + (padT + priceH / 2) + '" stroke="#1e293b" stroke-dasharray="3,3" />'
     + '<line x1="' + padL + '" y1="' + (padT + priceH) + '" x2="' + (w - padR) + '" y2="' + (padT + priceH) + '" stroke="#334155" />'
-    + shapes
-    + '<polyline fill="none" stroke="#2dd4bf" stroke-width="1.6" points="' + pts21.join(" ") + '" />'
+    + shapes + '<polyline fill="none" stroke="#2dd4bf" stroke-width="1.6" points="' + pts21.join(" ") + '" />'
     + '<polyline fill="none" stroke="#fbbf24" stroke-width="1.6" points="' + pts50.join(" ") + '" />'
     + '<text x="' + (w - padR + 6) + '" y="' + (padT + 4) + '" fill="#94a3b8" font-size="10">$' + maxP.toFixed(1) + '</text>'
-    + '<text x="' + (w - padR + 6) + '" y="' + (padT + priceH) + '" fill="#94a3b8" font-size="10">$' + minP.toFixed(1) + '</text>'
-    + '</svg>';
-
-  document.getElementById("candlestick-box").innerHTML = svg;
+    + '<text x="' + (w - padR + 6) + '" y="' + (padT + priceH) + '" fill="#94a3b8" font-size="10">$' + minP.toFixed(1) + '</text></svg>';
 }
-
 function populateCandleSelect() {
-  var sel = document.getElementById("candle-target-select");
-  var seen = {}, opts = [];
+  var sel = document.getElementById("candle-target-select"), seen = {}, opts = [];
   var pools = (CURRENT_REPORT.indices || []).concat(CURRENT_REPORT.sectors || []).concat(CURRENT_REPORT.watchlist || []);
-  for (var i = 0; i < pools.length; i++) {
-    var t = pools[i].ticker;
-    if (!seen[t]) { seen[t] = 1; opts.push(t); }
-  }
+  for (var i = 0; i < pools.length; i++) { var t = pools[i].ticker; if (!seen[t]) { seen[t] = 1; opts.push(t); } }
   var html = "";
-  for (var j = 0; j < opts.length; j++) {
-    html += '<option value="' + opts[j] + '">燭圖：' + opts[j] + '</option>';
-  }
+  for (var j = 0; j < opts.length; j++) html += '<option value="' + opts[j] + '">燭圖：' + opts[j] + '</option>';
   sel.innerHTML = html;
   sel.value = seen[ACTIVE_CANDLE_SYMBOL] ? ACTIVE_CANDLE_SYMBOL : (opts[0] || "SPY");
 }
-
 function renderSectors() {
   var key = document.getElementById("sector-sort").value || "rel20";
-  var list = (CURRENT_REPORT.sectors || []).slice().sort(function(a, b) {
-    return (Number(b[key]) || 0) - (Number(a[key]) || 0);
-  });
+  var list = (CURRENT_REPORT.sectors || []).slice().sort(function(a, b) { return (Number(b[key]) || 0) - (Number(a[key]) || 0); });
   var html = "";
   for (var i = 0; i < list.length; i++) {
-    var s = list[i];
-    var barWidth = Math.min(100, Math.max(8, Math.abs(Number(s.rel20) || 0) * 10));
-    var barColor = (Number(s.rel20) || 0) >= 0 ? "bg-emerald-500" : "bg-rose-500";
+    var s = list[i], bw = Math.min(100, Math.max(8, Math.abs(Number(s.rel20) || 0) * 10)), bc = (Number(s.rel20) || 0) >= 0 ? "bg-emerald-500" : "bg-rose-500";
     html += '<div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100">'
       + '<div class="min-w-[115px]"><span class="font-bold text-sm text-slate-900">' + s.ticker + '</span> <span class="text-xs text-slate-500">' + s.name + '</span></div>'
-      + '<div class="flex-1 hidden md:block"><div class="h-2 bg-slate-200 rounded-full overflow-hidden"><div class="h-full ' + barColor + '" style="width:' + barWidth + '%"></div></div></div>'
+      + '<div class="flex-1 hidden md:block"><div class="h-2 bg-slate-200 rounded-full overflow-hidden"><div class="h-full ' + bc + '" style="width:' + bw + '%"></div></div></div>'
       + '<div class="flex flex-wrap items-center gap-2.5 text-xs font-semibold">'
       + '<span class="' + pctClass(s.chg1d) + '">1D ' + fmtPct(s.chg1d) + '</span>'
       + '<span class="' + pctClass(s.chg20d) + '">20D ' + fmtPct(s.chg20d) + '</span>'
@@ -542,46 +477,25 @@ function renderSectors() {
   document.getElementById("sector-list").innerHTML = html;
   bindCandleButtons();
 }
-
 function renderWatchlist() {
-  var q = (document.getElementById("wl-search").value || "").trim().toUpperCase();
-  var f = document.getElementById("wl-filter").value || "ALL";
+  var q = (document.getElementById("wl-search").value || "").trim().toUpperCase(), f = document.getElementById("wl-filter").value || "ALL";
   var items = (CURRENT_REPORT.watchlist || []).filter(function(x) {
-    var okQ = !q || x.ticker.indexOf(q) !== -1 || (x.note || "").toUpperCase().indexOf(q) !== -1;
-    var okF = f === "ALL" || x.group === f;
-    return okQ && okF;
+    return (!q || x.ticker.indexOf(q) !== -1 || (x.note || "").toUpperCase().indexOf(q) !== -1) && (f === "ALL" || x.group === f);
   });
-  var badgeMap = {
-    LEADER: "bg-emerald-100 text-emerald-800",
-    WATCH: "bg-amber-100 text-amber-800",
-    AVOID: "bg-rose-100 text-rose-800"
-  };
+  var badgeMap = { LEADER: "bg-emerald-100 text-emerald-800", WATCH: "bg-amber-100 text-amber-800", AVOID: "bg-rose-100 text-rose-800" };
   var html = "";
   for (var i = 0; i < items.length; i++) {
-    var w = items[i];
-    var bCls = badgeMap[w.group] || "bg-slate-200 text-slate-700";
+    var w = items[i], bCls = badgeMap[w.group] || "bg-slate-200 text-slate-700";
     html += '<div class="p-3 rounded-xl border border-slate-200 bg-slate-50/70 flex flex-col justify-between gap-2">'
-      + '<div class="flex items-start justify-between gap-2">'
-      + '<div><span class="text-base font-extrabold text-slate-900">' + w.ticker + '</span> <span class="text-sm font-semibold text-slate-700 ml-1">$' + Number(w.close).toFixed(2) + '</span></div>'
-      + '<div class="flex items-center gap-1.5">'
-      + '<a href="' + tvUrl(w.ticker) + '" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 rounded bg-sky-100 hover:bg-sky-200 text-sky-900 text-xs font-extrabold">TV ↗</a>'
-      + '<span class="px-2 py-0.5 rounded-md text-xs font-bold ' + bCls + '">' + w.group + '</span>'
-      + '</div></div>'
-      + '<div class="flex flex-wrap gap-3 text-xs font-semibold">'
-      + '<span class="' + pctClass(w.chg1d) + '">1D ' + fmtPct(w.chg1d) + '</span>'
-      + '<span class="' + pctClass(w.chg20d) + '">20D ' + fmtPct(w.chg20d) + '</span>'
-      + '<span class="text-slate-600">RSI ' + Number(w.rsi14).toFixed(0) + '</span>'
-      + '<span class="text-slate-600">參考止損 $' + Number(w.stop).toFixed(2) + '</span>'
-      + '</div>'
+      + '<div class="flex items-start justify-between gap-2"><div><span class="text-base font-extrabold text-slate-900">' + w.ticker + '</span> <span class="text-sm font-semibold text-slate-700 ml-1">$' + Number(w.close).toFixed(2) + '</span></div>'
+      + '<div class="flex items-center gap-1.5"><a href="' + tvUrl(w.ticker) + '" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 rounded bg-sky-100 hover:bg-sky-200 text-sky-900 text-xs font-extrabold">TV ↗</a><span class="px-2 py-0.5 rounded-md text-xs font-bold ' + bCls + '">' + w.group + '</span></div></div>'
+      + '<div class="flex flex-wrap gap-3 text-xs font-semibold"><span class="' + pctClass(w.chg1d) + '">1D ' + fmtPct(w.chg1d) + '</span><span class="' + pctClass(w.chg20d) + '">20D ' + fmtPct(w.chg20d) + '</span><span class="text-slate-600">RSI ' + Number(w.rsi14).toFixed(0) + '</span><span class="text-slate-600">參考止損 $' + Number(w.stop).toFixed(2) + '</span></div>'
       + '<p class="text-xs text-slate-600">' + (w.note || "") + '</p>'
-      + '<div class="grid grid-cols-2 gap-1.5 mt-1">'
-      + '<button type="button" data-sym="' + w.ticker + '" class="view-candle-btn py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-900 text-xs font-bold">睇陰陽燭</button>'
-      + '<button type="button" data-ticker="' + w.ticker + '" data-entry="' + w.close + '" data-stop="' + w.stop + '" class="send-calc-btn py-1.5 rounded-lg bg-slate-900 hover:bg-slate-700 text-white text-xs font-semibold">帶入倉位計算機</button>'
-      + '</div></div>';
+      + '<div class="grid grid-cols-2 gap-1.5 mt-1"><button type="button" data-sym="' + w.ticker + '" class="view-candle-btn py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-900 text-xs font-bold">睇陰陽燭</button>'
+      + '<button type="button" data-ticker="' + w.ticker + '" data-entry="' + w.close + '" data-stop="' + w.stop + '" class="send-calc-btn py-1.5 rounded-lg bg-slate-900 hover:bg-slate-700 text-white text-xs font-semibold">帶入倉位計算機</button></div></div>';
   }
   document.getElementById("watchlist-grid").innerHTML = html || '<p class="text-xs text-slate-500">未搵到符合條件嘅股票。</p>';
   bindCandleButtons();
-
   var btns = document.querySelectorAll(".send-calc-btn");
   for (var j = 0; j < btns.length; j++) {
     btns[j].addEventListener("click", function(ev) {
@@ -594,25 +508,19 @@ function renderWatchlist() {
     });
   }
 }
-
 function bindCandleButtons() {
   var cBtns = document.querySelectorAll(".view-candle-btn");
   for (var i = 0; i < cBtns.length; i++) {
     cBtns[i].addEventListener("click", function(ev) {
-      var sym = ev.currentTarget.getAttribute("data-sym");
-      renderCandlestick(sym);
+      renderCandlestick(ev.currentTarget.getAttribute("data-sym"));
       document.getElementById("mod-2").scrollIntoView({ behavior: "smooth" });
     });
   }
 }
-
 function renderPdfHub() {
-  var files = HUB_DATA.pdf_reports || [];
+  var files = ACTIVE_HUB.pdf_reports || [];
   if (!files.length) {
-    document.getElementById("pdf-list").innerHTML =
-      '<div class="col-span-1 sm:col-span-2 p-4 rounded-xl bg-slate-50 border border-dashed border-slate-300 text-xs text-slate-600">'
-      + '暫時未有已歸檔 PDF。你可以將每日生成嘅 PDF 檔案放去 GitHub 倉庫嘅 <code>reports/</code> 資料夾（例如 <code>reports/US_Stock_Momentum_20261119.pdf</code>），下次跑更新時會自動列出下載按鈕。'
-      + '</div>';
+    document.getElementById("pdf-list").innerHTML = '<div class="col-span-1 sm:col-span-2 p-4 rounded-xl bg-slate-50 border border-dashed border-slate-300 text-xs text-slate-600">暫時未有已歸檔 PDF。將 PDF 放去 GitHub <code>reports/</code> 資料夾並跑更新後，就會喺度自動顯示下載掣。</div>';
     return;
   }
   var html = "";
@@ -620,14 +528,11 @@ function renderPdfHub() {
     var f = files[i];
     html += '<div class="p-3 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-2">'
       + '<div class="min-w-0"><p class="text-sm font-bold text-slate-900 truncate">' + f.name + '</p><p class="text-xs text-slate-500">日期：' + (f.date || "-") + '</p></div>'
-      + '<div class="flex items-center gap-1.5 shrink-0">'
-      + '<a href="' + f.url + '" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-900 text-xs font-bold">預覽</a>'
-      + '<a href="' + f.url + '" download="' + f.name + '" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold">下載 PDF</a>'
-      + '</div></div>';
+      + '<div class="flex items-center gap-1.5 shrink-0"><a href="' + f.url + '" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-900 text-xs font-bold">預覽</a>'
+      + '<a href="' + f.url + '" download="' + f.name + '" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold">下載 PDF</a></div></div>';
   }
   document.getElementById("pdf-list").innerHTML = html;
 }
-
 function updateCalc() {
   var tk = (document.getElementById("calc-ticker").value || "WMT").trim().toUpperCase();
   document.getElementById("calc-tv-btn").href = tvUrl(tk);
@@ -636,7 +541,6 @@ function updateCalc() {
   var entry = Math.max(0, Number(document.getElementById("calc-entry").value) || 0);
   var stop = Math.max(0, Number(document.getElementById("calc-stop").value) || 0);
   var riskPerShare = entry - stop;
-  var riskAmt = eq * (riskPct / 100);
   if (entry <= 0 || riskPerShare <= 0) {
     document.getElementById("res-shares").textContent = "0 股";
     document.getElementById("res-pos").textContent = "入場價需高於止損價";
@@ -644,94 +548,82 @@ function updateCalc() {
     document.getElementById("res-targets").textContent = "--";
     return;
   }
-  var shares = Math.floor(riskAmt / riskPerShare);
+  var shares = Math.floor((eq * (riskPct / 100)) / riskPerShare);
   var posVal = shares * entry;
-  var posPct = eq > 0 ? (posVal / eq) * 100 : 0;
-  var stopPct = (riskPerShare / entry) * 100;
-  var t2 = entry + riskPerShare * 2;
-  var t3 = entry + riskPerShare * 3;
   document.getElementById("res-shares").textContent = shares.toLocaleString() + " 股";
-  document.getElementById("res-pos").textContent = "$" + Math.round(posVal).toLocaleString() + " (" + posPct.toFixed(1) + "%)";
-  document.getElementById("res-loss").textContent = "-" + stopPct.toFixed(2) + "% ($" + Math.round(shares * riskPerShare).toLocaleString() + ")";
-  document.getElementById("res-targets").textContent = "$" + t2.toFixed(2) + " / $" + t3.toFixed(2);
+  document.getElementById("res-pos").textContent = "$" + Math.round(posVal).toLocaleString() + " (" + (eq > 0 ? ((posVal / eq) * 100).toFixed(1) : "0.0") + "%)";
+  document.getElementById("res-loss").textContent = "-" + ((riskPerShare / entry) * 100).toFixed(2) + "% ($" + Math.round(shares * riskPerShare).toLocaleString() + ")";
+  document.getElementById("res-targets").textContent = "$" + (entry + riskPerShare * 2).toFixed(2) + " / $" + (entry + riskPerShare * 3).toFixed(2);
 }
-
 function applyDateReport(dateKey) {
-  var map = HUB_DATA.reports_by_date || {};
+  var map = ACTIVE_HUB.reports_by_date || {};
   var keys = Object.keys(map).sort().reverse();
   CURRENT_REPORT = map[dateKey] || map[keys[0]];
   if (!CURRENT_REPORT) return;
-
   document.getElementById("header-meta").textContent = "交易日：" + CURRENT_REPORT.trade_date + " · " + CURRENT_REPORT.updated_at;
   var spy = (CURRENT_REPORT.indices && CURRENT_REPORT.indices[0]) ? CURRENT_REPORT.indices[0] : { atr_dist50: 0 };
-  var br = CURRENT_REPORT.breadth || { up4: 0, dn4: 0, adv_pct: 50, total_scanned: 0 };
-
+  var br = CURRENT_REPORT.breadth || { up4: 0, dn4: 0, adv_pct: 50 };
   var idxHtml = "";
   for (var i = 0; i < CURRENT_REPORT.indices.length; i++) {
     var x = CURRENT_REPORT.indices[i];
     idxHtml += '<div class="p-3 rounded-xl bg-slate-50 border border-slate-200">'
       + '<div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-500">' + x.name + '</span>'
-      + '<div class="flex items-center gap-1.5"><span class="text-xs font-extrabold text-slate-900">' + x.ticker + '</span>'
-      + '<a href="' + tvUrl(x.ticker) + '" target="_blank" rel="noopener noreferrer" class="px-1.5 py-0.5 rounded bg-sky-100 hover:bg-sky-200 text-sky-900 text-[10px] font-extrabold">TV ↗</a></div></div>'
+      + '<div class="flex items-center gap-1.5"><span class="text-xs font-extrabold text-slate-900">' + x.ticker + '</span><a href="' + tvUrl(x.ticker) + '" target="_blank" rel="noopener noreferrer" class="px-1.5 py-0.5 rounded bg-sky-100 hover:bg-sky-200 text-sky-900 text-[10px] font-extrabold">TV ↗</a></div></div>'
       + '<p class="text-lg font-extrabold text-slate-900 mt-1">$' + Number(x.close).toFixed(2) + '</p>'
       + '<p class="text-xs font-bold ' + pctClass(x.chg1d) + '">1D ' + fmtPct(x.chg1d) + ' · 20D ' + fmtPct(x.chg20d) + '</p>'
-      + '<p class="text-[11px] text-slate-500 mt-0.5">50MA ' + x.atr_dist50 + ' ATR</p>'
-      + '</div>';
+      + '<p class="text-[11px] text-slate-500 mt-0.5">50MA ' + x.atr_dist50 + ' ATR</p></div>';
   }
   document.getElementById("index-cards").innerHTML = idxHtml;
-
   var ratio = br.dn4 > 0 ? (br.up4 / br.dn4).toFixed(2) : br.up4;
   document.getElementById("breadth-cards").innerHTML =
     '<div class="p-3 rounded-xl bg-emerald-50 border border-emerald-100"><p class="text-xs text-emerald-700 font-semibold">全場單日升 4%+</p><p class="text-xl font-extrabold text-emerald-900 mt-0.5">' + br.up4 + '</p></div>'
     + '<div class="p-3 rounded-xl bg-rose-50 border border-rose-100"><p class="text-xs text-rose-700 font-semibold">全場單日跌 4%+</p><p class="text-xl font-extrabold text-rose-900 mt-0.5">' + br.dn4 + '</p></div>'
     + '<div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><p class="text-xs text-slate-600 font-semibold">升跌 4%+ 比率</p><p class="text-xl font-extrabold text-slate-900 mt-0.5">' + ratio + 'x</p></div>'
     + '<div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><p class="text-xs text-slate-600 font-semibold">上漲家數佔比</p><p class="text-xl font-extrabold text-slate-900 mt-0.5">' + Number(br.adv_pct).toFixed(1) + '%</p></div>';
-
   document.getElementById("sim-up4").value = br.up4;
   document.getElementById("sim-dn4").value = br.dn4;
   document.getElementById("sim-adv").value = br.adv_pct;
   document.getElementById("sim-atr").value = spy.atr_dist50;
   renderRegime(br.up4, br.dn4, br.adv_pct, spy.atr_dist50);
-
   document.getElementById("ai-tldr").textContent = CURRENT_REPORT.ai_brief.tldr;
   var bHtml = "";
-  for (var k = 0; k < CURRENT_REPORT.ai_brief.bullets.length; k++) {
-    bHtml += "<li>" + CURRENT_REPORT.ai_brief.bullets[k] + "</li>";
-  }
+  for (var k = 0; k < CURRENT_REPORT.ai_brief.bullets.length; k++) bHtml += "<li>" + CURRENT_REPORT.ai_brief.bullets[k] + "</li>";
   document.getElementById("ai-bullets").innerHTML = bHtml;
-
   populateCandleSelect();
   renderCandlestick(document.getElementById("candle-target-select").value || "SPY");
   renderSectors();
   renderWatchlist();
 }
-
 function initHub() {
+  var errMsg = "";
   try {
-    var map = HUB_DATA.reports_by_date || {};
-    var keys = Object.keys(map).sort().reverse();
-    var sel = document.getElementById("date-selector");
-    var optsHtml = "";
-    for (var i = 0; i < keys.length; i++) {
-      optsHtml += '<option value="' + keys[i] + '">' + keys[i] + '</option>';
+    if (typeof HUB_DATA === "object" && HUB_DATA && HUB_DATA.reports_by_date && Object.keys(HUB_DATA.reports_by_date).length > 0) {
+      ACTIVE_HUB = HUB_DATA;
     }
+  } catch (e1) {
+    errMsg = "數據解析退回內置快照：" + e1.message;
+  }
+  try {
+    var map = ACTIVE_HUB.reports_by_date;
+    var keys = Object.keys(map).sort().reverse();
+    var sel = document.getElementById("date-selector"), optsHtml = "";
+    for (var i = 0; i < keys.length; i++) optsHtml += '<option value="' + keys[i] + '">' + keys[i] + '</option>';
     sel.innerHTML = optsHtml;
-    var startDate = (HUB_DATA.latest_date && map[HUB_DATA.latest_date]) ? HUB_DATA.latest_date : keys[0];
+    var startDate = (ACTIVE_HUB.latest_date && map[ACTIVE_HUB.latest_date]) ? ACTIVE_HUB.latest_date : keys[0];
     sel.value = startDate;
     sel.addEventListener("change", function() { applyDateReport(sel.value); });
-
     applyDateReport(startDate);
     renderTrendChart();
     renderPdfHub();
     updateCalc();
+    if (errMsg) document.getElementById("header-meta").textContent += " · " + errMsg;
 
     document.getElementById("tab-m1-live").addEventListener("click", function() {
       document.getElementById("panel-m1-live").classList.remove("hidden");
       document.getElementById("panel-m1-sim").classList.add("hidden");
       this.className = "px-3 py-1 rounded-lg bg-white shadow-sm text-slate-900";
       document.getElementById("tab-m1-sim").className = "px-3 py-1 rounded-lg text-slate-500";
-      var spy = CURRENT_REPORT.indices[0] || { atr_dist50: 0 };
-      var br = CURRENT_REPORT.breadth || { up4: 0, dn4: 0, adv_pct: 50 };
+      var spy = CURRENT_REPORT.indices[0] || { atr_dist50: 0 }, br = CURRENT_REPORT.breadth || { up4: 0, dn4: 0, adv_pct: 50 };
       renderRegime(br.up4, br.dn4, br.adv_pct, spy.atr_dist50);
     });
     document.getElementById("tab-m1-sim").addEventListener("click", function() {
@@ -742,28 +634,20 @@ function initHub() {
     });
     ["sim-up4", "sim-dn4", "sim-adv", "sim-atr"].forEach(function(id) {
       document.getElementById(id).addEventListener("input", function() {
-        renderRegime(
-          Number(document.getElementById("sim-up4").value) || 0,
-          Number(document.getElementById("sim-dn4").value) || 0,
-          Number(document.getElementById("sim-adv").value) || 0,
-          Number(document.getElementById("sim-atr").value) || 0
-        );
+        renderRegime(Number(document.getElementById("sim-up4").value) || 0, Number(document.getElementById("sim-dn4").value) || 0, Number(document.getElementById("sim-adv").value) || 0, Number(document.getElementById("sim-atr").value) || 0);
       });
     });
-    document.getElementById("candle-target-select").addEventListener("change", function() {
-      renderCandlestick(this.value);
-    });
+    document.getElementById("candle-target-select").addEventListener("change", function() { renderCandlestick(this.value); });
     document.getElementById("sector-sort").addEventListener("change", renderSectors);
     document.getElementById("wl-search").addEventListener("input", renderWatchlist);
     document.getElementById("wl-filter").addEventListener("change", renderWatchlist);
     ["calc-ticker", "calc-equity", "calc-risk", "calc-entry", "calc-stop"].forEach(function(id) {
       document.getElementById(id).addEventListener("input", updateCalc);
     });
-  } catch (e) {
-    document.getElementById("header-meta").textContent = "載入異常：" + e.message;
+  } catch (e2) {
+    document.getElementById("header-meta").textContent = "渲染錯誤：" + e2.message;
   }
 }
-
 initHub();
   </script>
 </body>
