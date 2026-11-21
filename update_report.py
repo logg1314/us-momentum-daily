@@ -23,15 +23,19 @@ SECTORS = [
     ("XLE", "能源"), ("XLU", "公用事業"), ("XLP", "必需消費"),
     ("XLF", "金融"), ("XLRE", "房地產"), ("XLK", "科技"),
     ("XLV", "醫療保健"), ("XLI", "工業"), ("XLB", "原材料"),
-    ("XLC", "通訊服務"), ("XLY", "非必需消費"),
+    ("XLC", "通訊服務"), ("XLY", "非必需消費"), ("SOXX", "半導體"),
+    ("SMH", "晶片ETF"), ("IEF", "7-10年美債"), ("TLT", "20年美債"),
 ]
 
-WATCHLIST = ["PANW", "WMT", "COST", "DLTR", "XOM", "LLY", "ABBV", "UNH", "NVDA", "AMD"]
+WATCHLIST = [
+    "PANW", "WMT", "COST", "DLTR", "PG", "XOM", "CVX",
+    "LLY", "ABBV", "UNH", "NVDA", "AMD", "AVGO", "META", "AAPL"
+]
 
 
 def http_json(url, payload=None, retries=3):
     for attempt in range(retries):
-        req = urllib.request.Request(url, headers={"User-Agent": "USMomentumHub/2.0"})
+        req = urllib.request.Request(url, headers={"User-Agent": "USMomentumHub/2.1"})
         data = None
         if payload is not None:
             data = json.dumps(payload).encode("utf-8")
@@ -47,7 +51,7 @@ def http_json(url, payload=None, retries=3):
     return {}
 
 
-def get_bars(ticker, days=120):
+def get_bars(ticker, days=130):
     end = datetime.now(timezone.utc).date()
     start = end - timedelta(days=days)
     url = (
@@ -210,7 +214,8 @@ def extract_existing_hub(html):
             js_obj = raw[idx + len(prefix):].strip()
             if js_obj.endswith(";"):
                 js_obj = js_obj[:-1]
-            return json.loads(js_obj)
+            if js_obj.startswith("{"):
+                return json.loads(js_obj)
     return {"reports_by_date": {}, "trend_history": [], "candles": {}, "pdf_reports": []}
 
 
