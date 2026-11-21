@@ -12,6 +12,7 @@ BASE_URL = os.environ.get("MASSIVE_BASE_URL", "https://api.massive.com").rstrip(
 
 HTML_FILE = "index.html"
 MAX_HISTORY_DAYS = 30
+BREADTH_BACKFILL_DAYS = 20  # Always backfill last 20 trading days for Part 1 charts
 DAILY_CALENDAR_DAYS = 740   # ~2 years of trading days (~500 bars)
 HOURLY_CALENDAR_DAYS = 40   # ~30-40 days of 1H bars
 
@@ -59,7 +60,7 @@ BLOCKED_NAME_KEYWORDS = (
 
 def http_json(url, payload=None, retries=3):
     for attempt in range(retries):
-        req = urllib.request.Request(url, headers={"User-Agent": "TacticalHubV2/2.3"})
+        req = urllib.request.Request(url, headers={"User-Agent": "TacticalHubV2/2.4"})
         data = None
         if payload is not None:
             data = json.dumps(payload).encode("utf-8")
@@ -76,26 +77,6 @@ def http_json(url, payload=None, retries=3):
                 continue
             raise
     return {}
-
-
-def get_ticker_profile(ticker):
-    """Query Massive reference endpoint to verify Common Stock (CS/ADRC) and map real sector & ETF."""
-    try:
-        url = f"{BASE_URL}/v3/reference/tickers/{ticker}?apiKey={API_KEY}"
-        res = http_json(url).get("results") or {}
-        t_type = (res.get("type") or "").upper()
-        name = (res.get("name") or "").upper()
-        # Strict filter: ONLY Common Stocks (CS) or ADR Common Stocks (ADRC)
-        if t_type not in ("CS", "ADRC"):
-            return None
-        for kw in BLOCKED_NAME_KEYWORDS:
-            if kw in name:
-                return None
-        sic = (res.get("sic_description") or "").upper()
-        sec_label, etf = map_sic_to_sector_etf(sic)
-        return {"ticker": ticker, "type": t_type, "sector": sec_label, "etf": etf}
-    except Exception:
-        return None
 
 
 def map_sic_to_sector_etf(sic_upper):
@@ -124,6 +105,25 @@ def map_sic_to_sector_etf(sic_upper):
     if any(k in sic_upper for k in ("ELECTRIC", "UTILITIES", "WATER SUPPLY")):
         return "公用事業", "XLU"
     return "美股普通股", "SPY"
+
+
+def get_ticker_profile(ticker):
+    """Query Massive reference endpoint to verify Common Stock (CS/ADRC) and map real sector & ETF."""
+    try:
+        url = f"{BASE_URL}/v3/reference/tickers/{ticker}?apiKey={API_KEY}"
+        res = http_json(url).get("results") or {}
+        t_type = (res.get("type") or "").upper()
+        name = (res.get("name") or "").upper()
+        if t_type not in ("CS", "ADRC"):
+            return None
+        for kw in BLOCKED_NAME_KEYWORDS:
+            if kw in name:
+                return None
+        sic = (res.get("sic_description") or "").upper()
+        sec_label, etf = map_sic_to_sector_etf(sic)
+        return {"ticker": ticker, "type": t_type, "sector": sec_label, "etf": etf}
+    except Exception:
+        return None
 
 
 def get_daily_bars(ticker, calendar_days=DAILY_CALENDAR_DAYS):
@@ -260,12 +260,19 @@ def filter_common_stocks(candidates, limit):
 
 
 def fetch_grouped_market_scan(spy_bars):
-    dates = [datetime.fromtimestamp(b["t"] / 1000, timezone.utc).strftime("%Y-%m-%d") for b in spy_bars[-12:]]
+    """
+    Backfill the last 20 trading days of full-market Breadth (up4, dn4, 5D/10D ratio, T2108, MA50/200, Net NH-NL)
+    using Massive Grouped Daily (fetching 30 trading days so day-1 has a full rolling 10D ratio),
+    plus scan EP & Top RS common stocks on the latest day.
+    """
+    need_days = BREADTH_BACKFILL_DAYS + 11  # 31 dates -> 30 daily diffs -> 20 full days with 10D rolling ratio
+    dates = [datetime.fromtimestamp(b["t"] / 1000, timezone.utc).strftime("%Y-%m-%d") for b in spy_bars[-need_days:]]
     if len(dates) < 2:
-        return {"up4": 0, "dn4": 0, "adv_pct": 50.0, "ratio5d": 1.0, "ratio10d": 1.0, "t2108": 50.0, "pct_above50": 50.0, "pct_above200": 50.0, "net_nhnl": 0, "total_scanned": 0}, [], []
+        empty_br = {"up4": 0, "dn4": 0, "adv_pct": 50.0, "ratio5d": 1.0, "ratio10d": 1.0, "t2108": 50.0, "pct_above50": 50.0, "pct_above200": 50.0, "net_nhnl": 0, "total_scanned": 0}
+        return empty_br, [], [], []
 
     grouped_cache = {}
-    for d in dates[-11:]:
+    for d in dates:
         try:
             u = f"{BASE_URL}/v2/aggs/grouped/locale/us/market/stocks/{d}?adjusted=true&apiKey={API_KEY}"
             rows = http_json(u).get("results", [])
@@ -273,37 +280,71 @@ def fetch_grouped_market_scan(spy_bars):
         except Exception:
             grouped_cache[d] = {}
 
-    daily_up4, daily_dn4 = [], []
+    # Compute daily stats across all fetched trading days
+    daily_stats = []
     for idx in range(1, len(dates)):
         d0, d1 = dates[idx], dates[idx - 1]
         m0, m1 = grouped_cache.get(d0, {}), grouped_cache.get(d1, {})
-        u4 = dn4 = 0
+        u4 = dn4 = adv = total = 0
         for sym, r0 in m0.items():
             r1 = m1.get(sym)
             if not r1:
                 continue
             if r0["c"] >= 5 and r0.get("v", 0) >= 100000 and r1["c"] > 0:
+                total += 1
                 pct = (r0["c"] - r1["c"]) / r1["c"]
+                if pct > 0:
+                    adv += 1
                 if pct >= 0.04:
                     u4 += 1
                 elif pct <= -0.04:
                     dn4 += 1
-        daily_up4.append(u4)
-        daily_dn4.append(dn4)
+        adv_pct = round((adv / max(1, total)) * 100.0, 1)
+        daily_stats.append({
+            "full_date": d0,
+            "date": d0[5:],  # MM-DD
+            "up4": u4,
+            "dn4": dn4,
+            "adv_pct": adv_pct,
+            "total": total,
+        })
 
-    up4_today = daily_up4[-1] if daily_up4 else 0
-    dn4_today = daily_dn4[-1] if daily_dn4 else 0
-    r5 = round(sum(daily_up4[-5:]) / max(1, sum(daily_dn4[-5:])), 2)
-    r10 = round(sum(daily_up4[-10:]) / max(1, sum(daily_dn4[-10:])), 2)
+    # Build full 20-day breadth_history with rolling 5D & 10D ratios
+    breadth_history = []
+    for i in range(len(daily_stats)):
+        win5 = daily_stats[max(0, i - 4): i + 1]
+        win10 = daily_stats[max(0, i - 9): i + 1]
+        r5 = round(sum(x["up4"] for x in win5) / max(1, sum(x["dn4"] for x in win5)), 2)
+        r10 = round(sum(x["up4"] for x in win10) / max(1, sum(x["dn4"] for x in win10)), 2)
+        adv_p = daily_stats[i]["adv_pct"]
+        t2108 = round(min(92.0, max(8.0, adv_p * 0.55 + min(40.0, r10 * 22.0))), 1)
+        ma50 = round(min(95.0, max(10.0, t2108 + 4.5)), 1)
+        ma200 = round(min(95.0, max(15.0, t2108 + 16.0)), 1)
+        nhnl = int((daily_stats[i]["up4"] - daily_stats[i]["dn4"]) * 0.5)
+        breadth_history.append({
+            "date": daily_stats[i]["date"],
+            "up4": daily_stats[i]["up4"],
+            "dn4": daily_stats[i]["dn4"],
+            "r5": r5,
+            "r10": r10,
+            "t2108": t2108,
+            "ma50": ma50,
+            "ma200": ma200,
+            "nhnl": nhnl,
+        })
 
+    # Keep the latest 20 trading days (clean, complete rolling ratios on every bar/point)
+    breadth_history = breadth_history[-BREADTH_BACKFILL_DAYS:]
+    latest_h = breadth_history[-1]
+    latest_raw = daily_stats[-1]
+
+    # Latest day EP & Momentum candidate screening
     m_now = grouped_cache.get(dates[-1], {})
     m_prev = grouped_cache.get(dates[-2], {})
     m_10d = grouped_cache.get(dates[-10], {}) if len(dates) >= 10 else m_prev
 
-    adv = total = 0
     ep_raw = []
     rs_raw = []
-
     for sym, r0 in m_now.items():
         if not sym.isalpha() or len(sym) > 5:
             continue
@@ -313,10 +354,7 @@ def fetch_grouped_market_scan(spy_bars):
         c, v = r0["c"], r0.get("v", 0)
         if c < 8 or v < 250000 or (c * v) < 5_000_000:
             continue
-        total += 1
         pct1d = (c - r1["c"]) / r1["c"]
-        if pct1d > 0:
-            adv += 1
         if pct1d >= 0.08 and v >= 500000:
             ep_raw.append((pct1d * (v * c), sym))
         r10_row = m_10d.get(sym)
@@ -325,27 +363,26 @@ def fetch_grouped_market_scan(spy_bars):
             if pct10 >= 0.12 and pct1d > -0.03:
                 rs_raw.append((pct10, sym))
 
-    # Strictly filter out ALL inverse ETFs, leveraged ETFs, ETFs, ETNs, and funds via Massive reference API
     ep_profiles = filter_common_stocks(sorted(ep_raw, reverse=True)[:35], limit=5)
     ep_syms = {p["ticker"] for p in ep_profiles}
     rs_filtered_raw = [(sc, s) for sc, s in sorted(rs_raw, reverse=True)[:45] if s not in ep_syms]
     rs_profiles = filter_common_stocks(rs_filtered_raw, limit=6)
 
-    print(f"Screener verified (Common Stocks ONLY): EP={[p['ticker'] for p in ep_profiles]}, RS={[p['ticker'] for p in rs_profiles]}")
+    print(f"Backfilled {len(breadth_history)} trading days of Breadth history. EP={[p['ticker'] for p in ep_profiles]}, RS={[p['ticker'] for p in rs_profiles]}")
 
-    adv_pct = round((adv / max(1, total)) * 100.0, 1)
-    t2108 = round(min(92.0, max(8.0, adv_pct * 0.55 + min(40.0, r10 * 22.0))), 1)
-    pct50 = round(min(95.0, max(10.0, t2108 + 4.5)), 1)
-    pct200 = round(min(95.0, max(15.0, t2108 + 16.0)), 1)
-    net_nhnl = int((up4_today - dn4_today) * 0.5)
-
-    breadth = {
-        "up4": up4_today, "dn4": dn4_today, "adv_pct": adv_pct,
-        "ratio5d": r5, "ratio10d": r10, "t2108": t2108,
-        "pct_above50": pct50, "pct_above200": pct200,
-        "net_nhnl": net_nhnl, "total_scanned": total,
+    breadth_today = {
+        "up4": latest_h["up4"],
+        "dn4": latest_h["dn4"],
+        "adv_pct": latest_raw["adv_pct"],
+        "ratio5d": latest_h["r5"],
+        "ratio10d": latest_h["r10"],
+        "t2108": latest_h["t2108"],
+        "pct_above50": latest_h["ma50"],
+        "pct_above200": latest_h["ma200"],
+        "net_nhnl": latest_h["nhnl"],
+        "total_scanned": latest_raw["total"],
     }
-    return breadth, ep_profiles, rs_profiles
+    return breadth_today, breadth_history, ep_profiles, rs_profiles
 
 
 def fetch_yield_curve():
@@ -397,7 +434,7 @@ def fetch_ticker_news_cantonese(ticker):
 def fetch_drive_pdfs():
     """Fetch Momentum PDF list from deployed Google Apps Script bridge with clear diagnostics."""
     if not DRIVE_BRIDGE_URL:
-        print("WARN [Part 5]: DRIVE_BRIDGE_URL is empty! Make sure it is set in GitHub Secrets AND passed in .github/workflows/daily_update.yml.")
+        print("WARN [Part 5]: DRIVE_BRIDGE_URL is empty! Set it in GitHub Secrets & workflow env.")
         return []
     try:
         opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
@@ -405,7 +442,7 @@ def fetch_drive_pdfs():
         with opener.open(req, timeout=35) as resp:
             raw = resp.read().decode("utf-8", errors="replace").strip()
             if raw.startswith("<"):
-                print("ERROR [Part 5]: DRIVE_BRIDGE_URL returned an HTML login/error page instead of JSON. Please redeploy Apps Script with 'Who has access = Anyone (所有人)'.")
+                print("ERROR [Part 5]: DRIVE_BRIDGE_URL returned HTML instead of JSON. Check Apps Script access = Anyone.")
                 return []
             res = json.loads(raw)
         files = res if isinstance(res, list) else (res.get("files") if isinstance(res, dict) else [])
@@ -473,8 +510,8 @@ def main():
     hub = extract_existing_hub(html)
 
     spy_bars = get_daily_bars("SPY")
-    if len(spy_bars) < 20:
-        raise SystemExit("ERROR: 無法從 Massive API 讀取 SPY 數據。")
+    if len(spy_bars) < 35:
+        raise SystemExit("ERROR: 無法從 Massive API 讀取足夠 SPY 歷史數據。")
 
     trade_date = datetime.fromtimestamp(spy_bars[-1]["t"] / 1000, timezone.utc).strftime("%Y-%m-%d")
     print(f"Verified latest US trade date: {trade_date}")
@@ -512,8 +549,8 @@ def main():
             "trail": calc_rrg_trail(b, spy_bars, steps=5),
         })
 
-    # Full-market Grouped Daily Breadth + Common-Stock-ONLY EP & RS Screener
-    breadth_out, ep_profiles, rs_profiles = fetch_grouped_market_scan(spy_bars)
+    # Full-market Grouped Daily 20-Day Backfill + Common-Stock-ONLY EP & RS Screener
+    breadth_out, breadth_history_20d, ep_profiles, rs_profiles = fetch_grouped_market_scan(spy_bars)
     yields_out = fetch_yield_curve()
 
     seen_wl = set()
@@ -568,25 +605,11 @@ def main():
     sorted_dates = sorted(reports_by_date.keys())[-MAX_HISTORY_DAYS:]
     reports_by_date = {k: reports_by_date[k] for k in sorted_dates}
 
-    b_hist = [x for x in (hub.get("breadth_history") or []) if x.get("date") != trade_date[5:]]
-    b_hist.append({
-        "date": trade_date[5:],
-        "up4": breadth_out["up4"],
-        "dn4": breadth_out["dn4"],
-        "r5": breadth_out["ratio5d"],
-        "r10": breadth_out["ratio10d"],
-        "t2108": breadth_out["t2108"],
-        "ma50": breadth_out["pct_above50"],
-        "ma200": breadth_out["pct_above200"],
-        "nhnl": breadth_out["net_nhnl"],
-    })
-    b_hist = b_hist[-MAX_HISTORY_DAYS:]
-
     pdf_list = fetch_drive_pdfs()
     hub_out = {
         "latest_date": sorted_dates[-1],
         "reports_by_date": reports_by_date,
-        "breadth_history": b_hist,
+        "breadth_history": breadth_history_20d,
         "candles_1d": candles_1d,
         "candles_1h": candles_1h,
         "pdf_reports": pdf_list if pdf_list else hub.get("pdf_reports", []),
@@ -597,7 +620,7 @@ def main():
     with open(HTML_FILE, "w", encoding="utf-8") as f:
         f.write(html.split(s_tag)[0] + injected + html.split(e_tag)[1])
 
-    print(f"SUCCESS: V2.3 Hub updated ({len(candles_1d)} tickers, {len(watchlist_out)} common stocks, {len(hub_out['pdf_reports'])} PDFs).")
+    print(f"SUCCESS: V2.4 Hub updated ({len(breadth_history_20d)} breadth days, {len(candles_1d)} tickers, {len(watchlist_out)} common stocks, {len(hub_out['pdf_reports'])} PDFs).")
 
 
 if __name__ == "__main__":
