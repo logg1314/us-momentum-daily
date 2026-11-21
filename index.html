@@ -197,49 +197,248 @@
   <script>
 /*__DATA_START__*/
 const REPORT_DATA = {
-  "trade_date": "2026-11-19",
-  "updated_at": "等待首次 GitHub Actions + Massive API 同步",
-  "data_source": "預載實況範本 (待 Massive API 首次同步)",
+  "trade_date": "2026-11-20",
+  "updated_at": "自動更新於 2026-11-21 09:34 HKT",
+  "data_source": "Massive API",
   "indices": [
-    { "ticker": "SPY", "name": "標普500", "close": 715.89, "chg1d": -1.96, "chg20d": -7.40, "atr_dist50": -1.8 },
-    { "ticker": "QQQ", "name": "納指100", "close": 645.17, "chg1d": -2.18, "chg20d": -11.10, "atr_dist50": -2.6 },
-    { "ticker": "IWM", "name": "羅素2000", "close": 264.21, "chg1d": -2.19, "chg20d": -5.80, "atr_dist50": -1.5 },
-    { "ticker": "RSP", "name": "等權標普", "close": 188.40, "chg1d": -1.74, "chg20d": -2.20, "atr_dist50": -0.9 }
+    {
+      "ticker": "SPY",
+      "name": "標普500",
+      "close": 689.81,
+      "chg1d": -3.64,
+      "chg20d": -9.23,
+      "atr_dist50": -4.38
+    },
+    {
+      "ticker": "QQQ",
+      "name": "納指100",
+      "close": 608.45,
+      "chg1d": -5.67,
+      "chg20d": -13.62,
+      "atr_dist50": -4.85
+    },
+    {
+      "ticker": "IWM",
+      "name": "羅素2000",
+      "close": 256.61,
+      "chg1d": -2.88,
+      "chg20d": -6.94,
+      "atr_dist50": -3.45
+    },
+    {
+      "ticker": "RSP",
+      "name": "等權標普",
+      "close": 207.44,
+      "chg1d": -1.98,
+      "chg20d": -4.2,
+      "atr_dist50": -1.98
+    }
   ],
   "breadth": {
-    "up4": 68,
-    "dn4": 492,
-    "adv_pct": 12.5,
-    "total_scanned": 3850
+    "up4": 116,
+    "dn4": 1396,
+    "adv_pct": 19.3,
+    "total_scanned": 5119
   },
   "ai_brief": {
-    "tldr": "標普 500 連跌第 6 日失守關鍵支持，11 大板塊全線收跌，資金全面轉向防守。",
+    "tldr": "2026-11-20 美股收市：SPY -3.64%（$689.81），全場升4%+ 116 家 vs 跌4%+ 1396 家。",
     "bullets": [
-      "SPY 單日跌 1.96% 收報 $715.89，逾 9 成標普成分股下跌，短期仍處防守避險格局。",
-      "能源 (XLE -0.67%)、公用事業 (XLU -1.20%) 及必需消費 (XLP -1.40%) 相對抗跌。",
-      "未見明顯止跌訊號前嚴格控制單筆風險，切忌逆勢撈底破位科技股。"
+      "大盤走勢：SPY -3.64%、QQQ -5.67%、IWM -2.88%，SPY 距 50MA -4.38 ATR。",
+      "強勢板塊：必需消費(XLP REL20 +11.7%) 與 公用事業(XLU REL20 +9.5%) 領先。",
+      "弱勢板塊：科技(XLK) 及 能源(XLE) 相對落後，操作宜嚴控止損。"
     ]
   },
   "sectors": [
-    { "ticker": "XLE", "name": "能源", "close": 94.20, "chg1d": -0.67, "rel20": 4.8, "rsi14": 54.2 },
-    { "ticker": "XLU", "name": "公用事業", "close": 82.10, "chg1d": -1.20, "rel20": 3.9, "rsi14": 51.0 },
-    { "ticker": "XLP", "name": "必需消費", "close": 84.50, "chg1d": -1.40, "rel20": 3.5, "rsi14": 50.4 },
-    { "ticker": "XLF", "name": "金融", "close": 51.30, "chg1d": -1.50, "rel20": 2.1, "rsi14": 47.8 },
-    { "ticker": "XLRE", "name": "房地產", "close": 42.80, "chg1d": -1.70, "rel20": 1.4, "rsi14": 45.6 },
-    { "ticker": "XLK", "name": "科技", "close": 238.90, "chg1d": -1.85, "rel20": -2.4, "rsi14": 36.5 },
-    { "ticker": "XLV", "name": "醫療保健", "close": 151.60, "chg1d": -2.05, "rel20": 0.9, "rsi14": 43.2 },
-    { "ticker": "XLI", "name": "工業", "close": 139.10, "chg1d": -2.00, "rel20": 0.4, "rsi14": 42.1 },
-    { "ticker": "XLB", "name": "原材料", "close": 90.40, "chg1d": -2.00, "rel20": -0.8, "rsi14": 40.8 },
-    { "ticker": "XLC", "name": "通訊服務", "close": 96.70, "chg1d": -2.70, "rel20": -3.1, "rsi14": 37.9 },
-    { "ticker": "XLY", "name": "非必需消費", "close": 212.30, "chg1d": -2.80, "rel20": -3.8, "rsi14": 35.4 }
+    {
+      "ticker": "XLE",
+      "name": "能源",
+      "close": 60.51,
+      "chg1d": -0.62,
+      "rel20": -3.49,
+      "rsi14": 34.6
+    },
+    {
+      "ticker": "XLU",
+      "name": "公用事業",
+      "close": 42.69,
+      "chg1d": -0.74,
+      "rel20": 9.54,
+      "rsi14": 45.9
+    },
+    {
+      "ticker": "XLP",
+      "name": "必需消費",
+      "close": 90.46,
+      "chg1d": 0.67,
+      "rel20": 11.72,
+      "rsi14": 54.7
+    },
+    {
+      "ticker": "XLF",
+      "name": "金融",
+      "close": 54.57,
+      "chg1d": -1.82,
+      "rel20": 6.85,
+      "rsi14": 37.3
+    },
+    {
+      "ticker": "XLRE",
+      "name": "房地產",
+      "close": 42.46,
+      "chg1d": -0.98,
+      "rel20": 8.97,
+      "rsi14": 40.6
+    },
+    {
+      "ticker": "XLK",
+      "name": "科技",
+      "close": 149.01,
+      "chg1d": -7.27,
+      "rel20": -9.45,
+      "rsi14": 25.5
+    },
+    {
+      "ticker": "XLV",
+      "name": "醫療保健",
+      "close": 177.24,
+      "chg1d": -0.12,
+      "rel20": 8.09,
+      "rsi14": 40.7
+    },
+    {
+      "ticker": "XLI",
+      "name": "工業",
+      "close": 156.37,
+      "chg1d": -3.09,
+      "rel20": 4.22,
+      "rsi14": 30.8
+    },
+    {
+      "ticker": "XLB",
+      "name": "原材料",
+      "close": 48.34,
+      "chg1d": -2.19,
+      "rel20": 3.44,
+      "rsi14": 30.7
+    },
+    {
+      "ticker": "XLC",
+      "name": "通訊服務",
+      "close": 100.03,
+      "chg1d": -2.66,
+      "rel20": 4.04,
+      "rsi14": 33.5
+    },
+    {
+      "ticker": "XLY",
+      "name": "非必需消費",
+      "close": 112.46,
+      "chg1d": -2.95,
+      "rel20": 8.66,
+      "rsi14": 39.9
+    }
   ],
   "watchlist": [
-    { "ticker": "PANW", "group": "LEADER", "close": 361.75, "chg1d": 6.40, "chg20d": 8.20, "rsi14": 63.5, "stop": 340.00, "note": "逆市放量上漲，企穩均線上方" },
-    { "ticker": "WMT", "group": "LEADER", "close": 95.40, "chg1d": -0.45, "chg20d": 5.10, "rsi14": 58.0, "stop": 91.20, "note": "防禦消費核心，相對強度靠前" },
-    { "ticker": "XOM", "group": "WATCH", "close": 121.80, "chg1d": -0.35, "chg20d": 3.40, "rsi14": 53.2, "stop": 117.00, "note": "隨能源板塊抗跌，留意前高突破" },
-    { "ticker": "LLY", "group": "WATCH", "close": 825.00, "chg1d": -1.10, "chg20d": 1.20, "rsi14": 48.5, "stop": 790.00, "note": "醫療權重股，等待縮量企穩" },
-    { "ticker": "AMD", "group": "AVOID", "close": 489.51, "chg1d": -7.73, "chg20d": -11.40, "rsi14": 31.2, "stop": 470.00, "note": "放量下破短線支持，嚴格避開" },
-    { "ticker": "NVDA", "group": "AVOID", "close": 145.98, "chg1d": -4.00, "chg20d": -28.66, "rsi14": 27.8, "stop": 140.00, "note": "創階段新低，切忌逆勢承接" }
+    {
+      "ticker": "PANW",
+      "group": "WATCH",
+      "close": 343.32,
+      "chg1d": -5.09,
+      "chg20d": -9.78,
+      "rsi14": 48.8,
+      "stop": 301.28,
+      "note": "觀察均線承接與縮量整理"
+    },
+    {
+      "ticker": "WMT",
+      "group": "LEADER",
+      "close": 127.95,
+      "chg1d": 1.52,
+      "chg20d": 6.72,
+      "rsi14": 64.0,
+      "stop": 123.23,
+      "note": "跑贏大市且企穩 50MA 上方"
+    },
+    {
+      "ticker": "COST",
+      "group": "LEADER",
+      "close": 1102.15,
+      "chg1d": 0.76,
+      "chg20d": 9.85,
+      "rsi14": 69.6,
+      "stop": 1045.73,
+      "note": "跑贏大市且企穩 50MA 上方"
+    },
+    {
+      "ticker": "DLTR",
+      "group": "LEADER",
+      "close": 137.96,
+      "chg1d": -1.63,
+      "chg20d": 10.09,
+      "rsi14": 54.7,
+      "stop": 128.61,
+      "note": "跑贏大市且企穩 50MA 上方"
+    },
+    {
+      "ticker": "XOM",
+      "group": "AVOID",
+      "close": 159.99,
+      "chg1d": 0.67,
+      "chg20d": -12.67,
+      "rsi14": 36.2,
+      "stop": 153.32,
+      "note": "弱勢跌穿均線，暫時避開"
+    },
+    {
+      "ticker": "LLY",
+      "group": "LEADER",
+      "close": 1347.11,
+      "chg1d": -0.3,
+      "chg20d": 5.78,
+      "rsi14": 49.5,
+      "stop": 1282.14,
+      "note": "跑贏大市且企穩 50MA 上方"
+    },
+    {
+      "ticker": "ABBV",
+      "group": "LEADER",
+      "close": 286.2,
+      "chg1d": 0.94,
+      "chg20d": 0.2,
+      "rsi14": 49.1,
+      "stop": 275.45,
+      "note": "跑贏大市且企穩 50MA 上方"
+    },
+    {
+      "ticker": "UNH",
+      "group": "AVOID",
+      "close": 339.85,
+      "chg1d": 2.84,
+      "chg20d": -18.71,
+      "rsi14": 29.7,
+      "stop": 315.7,
+      "note": "弱勢跌穿均線，暫時避開"
+    },
+    {
+      "ticker": "NVDA",
+      "group": "AVOID",
+      "close": 125.53,
+      "chg1d": -14.01,
+      "chg20d": -40.5,
+      "rsi14": 15.1,
+      "stop": 106.27,
+      "note": "弱勢跌穿均線，暫時避開"
+    },
+    {
+      "ticker": "AMD",
+      "group": "AVOID",
+      "close": 424.39,
+      "chg1d": -13.25,
+      "chg20d": -17.88,
+      "rsi14": 38.4,
+      "stop": 345.51,
+      "note": "弱勢跌穿均線，暫時避開"
+    }
   ]
 };
 /*__DATA_END__*/
