@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>美股動能日報 · US Momentum Daily</title>
+  <title>個人交易總部 · US Momentum Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html { scroll-behavior: smooth; }
@@ -14,33 +14,38 @@
 <body class="bg-slate-100 text-slate-800 antialiased">
   <div id="top-anchor"></div>
 
-  <!-- 頂部黏性導航列（手機 2x2 防走樣） -->
+  <!-- 頂部黏性導航列 -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
-    <div class="max-w-5xl mx-auto px-2 sm:px-4 py-2">
-      <div class="flex items-center justify-between gap-2 mb-2">
+    <div class="max-w-6xl mx-auto px-2 sm:px-4 py-2">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
         <div>
-          <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">美股動能戰術日報</h1>
+          <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">個人交易總部 · 美股動能與趨勢 Hub</h1>
           <p id="header-meta" class="text-xs text-slate-500">載入中...</p>
         </div>
-        <span id="regime-pill" class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-700 whitespace-nowrap">--</span>
+        <div class="flex items-center gap-2">
+          <label for="date-selector" class="text-xs font-semibold text-slate-600">歷史交易日：</label>
+          <select id="date-selector" class="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-900 min-w-0 max-w-full"></select>
+          <span id="regime-pill" class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-700 whitespace-nowrap">--</span>
+        </div>
       </div>
-      <nav class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-        <a href="#mod-1" class="text-center py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">01 大市寬度</a>
-        <a href="#mod-2" class="text-center py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">02 摘要與板塊</a>
-        <a href="#mod-3" class="text-center py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">03 焦點名單</a>
+      <nav class="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+        <a href="#mod-1" class="text-center py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">01 寬度與趨勢</a>
+        <a href="#mod-2" class="text-center py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">02 板塊與燭圖</a>
+        <a href="#mod-3" class="text-center py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">03 焦點股與燭圖</a>
         <a href="#mod-4" class="text-center py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">04 倉位風控</a>
+        <a href="#mod-5" class="col-span-2 sm:col-span-1 text-center py-1.5 px-2 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-800">05 PDF 下載中心</a>
       </nav>
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto px-1.5 sm:px-4 py-4 space-y-4">
+  <main class="max-w-6xl mx-auto px-1.5 sm:px-4 py-4 space-y-4">
 
-    <!-- 模組 01：大市狀態與寬度總覽 -->
+    <!-- 模組 01：大市寬度 + 多日趨勢圖 -->
     <section id="mod-1" class="bg-white rounded-2xl shadow-sm p-3 sm:p-6 scroll-mt-24">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
           <span class="px-2 py-0.5 rounded-md bg-slate-900 text-white text-xs font-bold">01</span>
-          <h2 class="text-base sm:text-lg font-bold text-slate-900">大市狀態與寬度總覽</h2>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900">大市寬度與多日趨勢（Trend）</h2>
         </div>
         <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold">
           <button type="button" id="tab-m1-live" class="px-3 py-1 rounded-lg bg-white shadow-sm text-slate-900">實時數據</button>
@@ -48,7 +53,6 @@
         </div>
       </div>
 
-      <!-- 高對比重點結果區 -->
       <div id="regime-banner" class="rounded-2xl p-4 sm:p-5 text-white bg-gradient-to-r from-rose-600 to-red-700 mb-4">
         <div class="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -63,13 +67,26 @@
         </div>
       </div>
 
-      <!-- 實時視圖 -->
       <div id="panel-m1-live" class="space-y-4">
         <div id="index-cards" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
         <div id="breadth-cards" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+
+        <!-- 多日歷史趨勢圖（SVG） -->
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">多日寬度與 SPY 走勢趨勢圖</h3>
+              <p class="text-xs text-slate-500">追蹤升跌 4%+ 比率及 SPY 收市趨勢，避免單日雜音</p>
+            </div>
+            <div class="flex items-center gap-3 text-xs font-semibold">
+              <span class="text-indigo-700">● 寬度分數 (Score)</span>
+              <span class="text-emerald-700">● SPY 累計趨勢 (%)</span>
+            </div>
+          </div>
+          <div id="trend-chart-box" class="w-full overflow-x-auto"></div>
+        </div>
       </div>
 
-      <!-- 盤中模擬試算視圖 -->
       <div id="panel-m1-sim" class="hidden space-y-3">
         <p class="text-xs text-slate-500">微調下方數值會毫秒級重算上方大市狀態分數（重新整理即還原）：</p>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -93,34 +110,54 @@
       </div>
     </section>
 
-    <!-- 模組 02：AI 摘要與 11 大板塊動能 -->
+    <!-- 模組 02：AI 摘要 + 11 大板塊 + 陰陽燭 -->
     <section id="mod-2" class="bg-white rounded-2xl shadow-sm p-3 sm:p-6 scroll-mt-24">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
           <span class="px-2 py-0.5 rounded-md bg-slate-900 text-white text-xs font-bold">02</span>
-          <h2 class="text-base sm:text-lg font-bold text-slate-900">AI 收市摘要與板塊輪動</h2>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900">AI 摘要、板塊輪動與陰陽燭</h2>
         </div>
-        <select id="sector-sort" class="rounded-xl border border-slate-300 px-2.5 py-1.5 text-base bg-white min-w-0 max-w-full">
-          <option value="rel20">按 20日相對強度 (REL20) 排序</option>
-          <option value="chg1d">按單日漲跌 (1D%) 排序</option>
-          <option value="rsi14">按 RSI(14) 排序</option>
-        </select>
+        <div class="flex flex-wrap gap-2">
+          <select id="candle-target-select" class="rounded-xl border border-indigo-300 bg-indigo-50 px-2.5 py-1.5 text-base font-semibold text-indigo-900 min-w-0 max-w-full"></select>
+          <select id="sector-sort" class="rounded-xl border border-slate-300 px-2.5 py-1.5 text-base bg-white min-w-0 max-w-full">
+            <option value="rel20">按 20日相對強度 (REL20) 排序</option>
+            <option value="chg20d">按 20日漲跌 (20D%) 排序</option>
+            <option value="chg1d">按單日漲跌 (1D%) 排序</option>
+            <option value="rsi14">按 RSI(14) 排序</option>
+          </select>
+        </div>
       </div>
 
       <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 sm:p-4 mb-4">
-        <p id="ai-tldr" class="text-sm font-bold text-slate-900 mb-2">--</p>
+        <p id="ai-tldr" class="text-sm font-bold text-slate-900 mb-1.5">--</p>
         <ul id="ai-bullets" class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-slate-700"></ul>
+      </div>
+
+      <!-- 陰陽燭圖表區（含 21 EMA / 50 EMA / 成交量） -->
+      <div class="rounded-2xl border border-slate-200 bg-slate-950 text-white p-3 sm:p-4 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <div>
+            <span id="candle-title" class="text-sm sm:text-base font-extrabold">--</span>
+            <span id="candle-stats" class="text-xs text-slate-400 ml-2">--</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-teal-300">— 21 EMA</span>
+            <span class="text-[11px] text-amber-300">— 50 EMA</span>
+            <a id="candle-tv-btn" href="#" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-extrabold">TradingView ↗</a>
+          </div>
+        </div>
+        <div id="candlestick-box" class="w-full overflow-x-auto"></div>
       </div>
 
       <div id="sector-list" class="space-y-2"></div>
     </section>
 
-    <!-- 模組 03：戰術焦點名單 -->
+    <!-- 模組 03：戰術焦點名單（含一鍵 TradingView + 陰陽燭切換） -->
     <section id="mod-3" class="bg-white rounded-2xl shadow-sm p-3 sm:p-6 scroll-mt-24">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
           <span class="px-2 py-0.5 rounded-md bg-slate-900 text-white text-xs font-bold">03</span>
-          <h2 class="text-base sm:text-lg font-bold text-slate-900">戰術焦點名單</h2>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900">戰術焦點名單（一鍵看燭圖 / TradingView）</h2>
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
           <input id="wl-search" type="text" placeholder="搜尋代號 (如 WMT, LLY)" class="flex-1 sm:w-44 min-w-0 max-w-full rounded-xl border border-slate-300 px-3 py-1.5 text-base" />
@@ -138,9 +175,12 @@
 
     <!-- 模組 04：倉位風控計算機 -->
     <section id="mod-4" class="bg-white rounded-2xl shadow-sm p-3 sm:p-6 scroll-mt-24">
-      <div class="flex items-center gap-2 mb-3">
-        <span class="px-2 py-0.5 rounded-md bg-slate-900 text-white text-xs font-bold">04</span>
-        <h2 class="text-base sm:text-lg font-bold text-slate-900">倉位與止損風控計算機</h2>
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-slate-900 text-white text-xs font-bold">04</span>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900">倉位與止損風控計算機</h2>
+        </div>
+        <a id="calc-tv-btn" href="https://www.tradingview.com/chart/?symbol=WMT" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold">開 TradingView ↗</a>
       </div>
 
       <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-4">
@@ -186,470 +226,13 @@
       </div>
     </section>
 
-    <footer class="text-center text-xs text-slate-400 py-4">
-      數據來源：Massive API 自動排程更新 · 僅供個人交易覆盤參考，不構成投資建議
-    </footer>
-  </main>
-
-  <!-- 浮動回到頂部按鈕 -->
-  <a href="#top-anchor" class="fixed bottom-4 right-4 z-50 w-10 h-10 rounded-full bg-slate-900 text-white shadow-lg flex items-center justify-center text-sm font-bold hover:bg-slate-700" aria-label="回到頂部">↑</a>
-
-  <script>
-/*__DATA_START__*/
-const REPORT_DATA = {
-  "trade_date": "2026-11-20",
-  "updated_at": "自動更新於 2026-11-21 09:34 HKT",
-  "data_source": "Massive API",
-  "indices": [
-    {
-      "ticker": "SPY",
-      "name": "標普500",
-      "close": 689.81,
-      "chg1d": -3.64,
-      "chg20d": -9.23,
-      "atr_dist50": -4.38
-    },
-    {
-      "ticker": "QQQ",
-      "name": "納指100",
-      "close": 608.45,
-      "chg1d": -5.67,
-      "chg20d": -13.62,
-      "atr_dist50": -4.85
-    },
-    {
-      "ticker": "IWM",
-      "name": "羅素2000",
-      "close": 256.61,
-      "chg1d": -2.88,
-      "chg20d": -6.94,
-      "atr_dist50": -3.45
-    },
-    {
-      "ticker": "RSP",
-      "name": "等權標普",
-      "close": 207.44,
-      "chg1d": -1.98,
-      "chg20d": -4.2,
-      "atr_dist50": -1.98
-    }
-  ],
-  "breadth": {
-    "up4": 116,
-    "dn4": 1396,
-    "adv_pct": 19.3,
-    "total_scanned": 5119
-  },
-  "ai_brief": {
-    "tldr": "2026-11-20 美股收市：SPY -3.64%（$689.81），全場升4%+ 116 家 vs 跌4%+ 1396 家。",
-    "bullets": [
-      "大盤走勢：SPY -3.64%、QQQ -5.67%、IWM -2.88%，SPY 距 50MA -4.38 ATR。",
-      "強勢板塊：必需消費(XLP REL20 +11.7%) 與 公用事業(XLU REL20 +9.5%) 領先。",
-      "弱勢板塊：科技(XLK) 及 能源(XLE) 相對落後，操作宜嚴控止損。"
-    ]
-  },
-  "sectors": [
-    {
-      "ticker": "XLE",
-      "name": "能源",
-      "close": 60.51,
-      "chg1d": -0.62,
-      "rel20": -3.49,
-      "rsi14": 34.6
-    },
-    {
-      "ticker": "XLU",
-      "name": "公用事業",
-      "close": 42.69,
-      "chg1d": -0.74,
-      "rel20": 9.54,
-      "rsi14": 45.9
-    },
-    {
-      "ticker": "XLP",
-      "name": "必需消費",
-      "close": 90.46,
-      "chg1d": 0.67,
-      "rel20": 11.72,
-      "rsi14": 54.7
-    },
-    {
-      "ticker": "XLF",
-      "name": "金融",
-      "close": 54.57,
-      "chg1d": -1.82,
-      "rel20": 6.85,
-      "rsi14": 37.3
-    },
-    {
-      "ticker": "XLRE",
-      "name": "房地產",
-      "close": 42.46,
-      "chg1d": -0.98,
-      "rel20": 8.97,
-      "rsi14": 40.6
-    },
-    {
-      "ticker": "XLK",
-      "name": "科技",
-      "close": 149.01,
-      "chg1d": -7.27,
-      "rel20": -9.45,
-      "rsi14": 25.5
-    },
-    {
-      "ticker": "XLV",
-      "name": "醫療保健",
-      "close": 177.24,
-      "chg1d": -0.12,
-      "rel20": 8.09,
-      "rsi14": 40.7
-    },
-    {
-      "ticker": "XLI",
-      "name": "工業",
-      "close": 156.37,
-      "chg1d": -3.09,
-      "rel20": 4.22,
-      "rsi14": 30.8
-    },
-    {
-      "ticker": "XLB",
-      "name": "原材料",
-      "close": 48.34,
-      "chg1d": -2.19,
-      "rel20": 3.44,
-      "rsi14": 30.7
-    },
-    {
-      "ticker": "XLC",
-      "name": "通訊服務",
-      "close": 100.03,
-      "chg1d": -2.66,
-      "rel20": 4.04,
-      "rsi14": 33.5
-    },
-    {
-      "ticker": "XLY",
-      "name": "非必需消費",
-      "close": 112.46,
-      "chg1d": -2.95,
-      "rel20": 8.66,
-      "rsi14": 39.9
-    }
-  ],
-  "watchlist": [
-    {
-      "ticker": "PANW",
-      "group": "WATCH",
-      "close": 343.32,
-      "chg1d": -5.09,
-      "chg20d": -9.78,
-      "rsi14": 48.8,
-      "stop": 301.28,
-      "note": "觀察均線承接與縮量整理"
-    },
-    {
-      "ticker": "WMT",
-      "group": "LEADER",
-      "close": 127.95,
-      "chg1d": 1.52,
-      "chg20d": 6.72,
-      "rsi14": 64.0,
-      "stop": 123.23,
-      "note": "跑贏大市且企穩 50MA 上方"
-    },
-    {
-      "ticker": "COST",
-      "group": "LEADER",
-      "close": 1102.15,
-      "chg1d": 0.76,
-      "chg20d": 9.85,
-      "rsi14": 69.6,
-      "stop": 1045.73,
-      "note": "跑贏大市且企穩 50MA 上方"
-    },
-    {
-      "ticker": "DLTR",
-      "group": "LEADER",
-      "close": 137.96,
-      "chg1d": -1.63,
-      "chg20d": 10.09,
-      "rsi14": 54.7,
-      "stop": 128.61,
-      "note": "跑贏大市且企穩 50MA 上方"
-    },
-    {
-      "ticker": "XOM",
-      "group": "AVOID",
-      "close": 159.99,
-      "chg1d": 0.67,
-      "chg20d": -12.67,
-      "rsi14": 36.2,
-      "stop": 153.32,
-      "note": "弱勢跌穿均線，暫時避開"
-    },
-    {
-      "ticker": "LLY",
-      "group": "LEADER",
-      "close": 1347.11,
-      "chg1d": -0.3,
-      "chg20d": 5.78,
-      "rsi14": 49.5,
-      "stop": 1282.14,
-      "note": "跑贏大市且企穩 50MA 上方"
-    },
-    {
-      "ticker": "ABBV",
-      "group": "LEADER",
-      "close": 286.2,
-      "chg1d": 0.94,
-      "chg20d": 0.2,
-      "rsi14": 49.1,
-      "stop": 275.45,
-      "note": "跑贏大市且企穩 50MA 上方"
-    },
-    {
-      "ticker": "UNH",
-      "group": "AVOID",
-      "close": 339.85,
-      "chg1d": 2.84,
-      "chg20d": -18.71,
-      "rsi14": 29.7,
-      "stop": 315.7,
-      "note": "弱勢跌穿均線，暫時避開"
-    },
-    {
-      "ticker": "NVDA",
-      "group": "AVOID",
-      "close": 125.53,
-      "chg1d": -14.01,
-      "chg20d": -40.5,
-      "rsi14": 15.1,
-      "stop": 106.27,
-      "note": "弱勢跌穿均線，暫時避開"
-    },
-    {
-      "ticker": "AMD",
-      "group": "AVOID",
-      "close": 424.39,
-      "chg1d": -13.25,
-      "chg20d": -17.88,
-      "rsi14": 38.4,
-      "stop": 345.51,
-      "note": "弱勢跌穿均線，暫時避開"
-    }
-  ]
-};
-/*__DATA_END__*/
-
-function fmtPct(v) {
-  var n = Number(v) || 0;
-  return (n >= 0 ? "+" : "") + n.toFixed(2) + "%";
-}
-
-function pctClass(v) {
-  return (Number(v) || 0) >= 0 ? "text-emerald-600" : "text-rose-600";
-}
-
-function calcRegime(up4, dn4, advPct, spyAtr) {
-  var ratioScore = (up4 + dn4) > 0 ? (up4 / (up4 + dn4)) * 40 : 20;
-  var advScore = Math.max(0, Math.min(100, advPct)) * 0.35;
-  var atrScore = Math.max(0, Math.min(25, ((spyAtr + 2.5) / 5) * 25));
-  var score = Math.round(ratioScore + advScore + atrScore);
-  if (score >= 65) return { score: score, label: "進攻 Risk-On", cls: "from-emerald-600 to-teal-700", pill: "bg-emerald-100 text-emerald-800", action: "寬度與趨勢共振，可按計劃參與領漲突破股。" };
-  if (score >= 42) return { score: score, label: "震盪挑選 Neutral", cls: "from-amber-500 to-orange-600", pill: "bg-amber-100 text-amber-800", action: "板塊分化，只做最強相對強度個股並收緊倉位。" };
-  return { score: score, label: "防守 Risk-Off", cls: "from-rose-600 to-red-700", pill: "bg-rose-100 text-rose-800", action: "大市寬度轉弱，以現金防守為主，避免盲目撈底。" };
-}
-
-function renderRegime(up4, dn4, advPct, spyAtr) {
-  var r = calcRegime(up4, dn4, advPct, spyAtr);
-  var banner = document.getElementById("regime-banner");
-  banner.className = "rounded-2xl p-4 sm:p-5 text-white bg-gradient-to-r mb-4 " + r.cls;
-  document.getElementById("score-val").textContent = r.score;
-  document.getElementById("regime-label").textContent = r.label;
-  document.getElementById("regime-action").textContent = r.action;
-  var pill = document.getElementById("regime-pill");
-  pill.textContent = r.label + " · " + r.score;
-  pill.className = "px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap " + r.pill;
-}
-
-function renderSectors() {
-  var key = document.getElementById("sector-sort").value || "rel20";
-  var list = (REPORT_DATA.sectors || []).slice().sort(function(a, b) {
-    return (Number(b[key]) || 0) - (Number(a[key]) || 0);
-  });
-  var html = "";
-  for (var i = 0; i < list.length; i++) {
-    var s = list[i];
-    var barWidth = Math.min(100, Math.max(8, Math.abs(s.rel20) * 10));
-    var barColor = s.rel20 >= 0 ? "bg-emerald-500" : "bg-rose-500";
-    html += '<div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100">'
-      + '<div class="min-w-[92px]"><span class="font-bold text-sm text-slate-900">' + s.ticker + '</span> <span class="text-xs text-slate-500">' + s.name + '</span></div>'
-      + '<div class="flex-1 hidden sm:block"><div class="h-2 bg-slate-200 rounded-full overflow-hidden"><div class="h-full ' + barColor + '" style="width:' + barWidth + '%"></div></div></div>'
-      + '<div class="flex items-center gap-3 text-xs font-semibold whitespace-nowrap">'
-      + '<span class="' + pctClass(s.chg1d) + '">1D ' + fmtPct(s.chg1d) + '</span>'
-      + '<span class="' + pctClass(s.rel20) + '">REL20 ' + fmtPct(s.rel20) + '</span>'
-      + '<span class="text-slate-600">RSI ' + Number(s.rsi14).toFixed(0) + '</span>'
-      + '</div></div>';
-  }
-  document.getElementById("sector-list").innerHTML = html;
-}
-
-function renderWatchlist() {
-  var q = (document.getElementById("wl-search").value || "").trim().toUpperCase();
-  var f = document.getElementById("wl-filter").value || "ALL";
-  var items = (REPORT_DATA.watchlist || []).filter(function(x) {
-    var okQ = !q || x.ticker.indexOf(q) !== -1 || (x.note || "").toUpperCase().indexOf(q) !== -1;
-    var okF = f === "ALL" || x.group === f;
-    return okQ && okF;
-  });
-  var badgeMap = {
-    LEADER: "bg-emerald-100 text-emerald-800",
-    WATCH: "bg-amber-100 text-amber-800",
-    AVOID: "bg-rose-100 text-rose-800"
-  };
-  var html = "";
-  for (var i = 0; i < items.length; i++) {
-    var w = items[i];
-    var bCls = badgeMap[w.group] || "bg-slate-200 text-slate-700";
-    html += '<div class="p-3 rounded-xl border border-slate-200 bg-slate-50/70 flex flex-col justify-between gap-2">'
-      + '<div class="flex items-start justify-between gap-2">'
-      + '<div><span class="text-base font-extrabold text-slate-900">' + w.ticker + '</span> <span class="text-sm font-semibold text-slate-700 ml-1">$' + Number(w.close).toFixed(2) + '</span></div>'
-      + '<span class="px-2 py-0.5 rounded-md text-xs font-bold ' + bCls + '">' + w.group + '</span>'
-      + '</div>'
-      + '<div class="flex flex-wrap gap-3 text-xs font-semibold">'
-      + '<span class="' + pctClass(w.chg1d) + '">1D ' + fmtPct(w.chg1d) + '</span>'
-      + '<span class="' + pctClass(w.chg20d) + '">20D ' + fmtPct(w.chg20d) + '</span>'
-      + '<span class="text-slate-600">RSI ' + Number(w.rsi14).toFixed(0) + '</span>'
-      + '<span class="text-slate-600">參考止損 $' + Number(w.stop).toFixed(2) + '</span>'
-      + '</div>'
-      + '<p class="text-xs text-slate-600">' + (w.note || "") + '</p>'
-      + '<button type="button" data-ticker="' + w.ticker + '" data-entry="' + w.close + '" data-stop="' + w.stop + '" class="send-calc-btn mt-1 w-full py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-700">帶入倉位計算機</button>'
-      + '</div>';
-  }
-  document.getElementById("watchlist-grid").innerHTML = html || '<p class="text-xs text-slate-500">未搵到符合條件嘅股票。</p>';
-  var btns = document.querySelectorAll(".send-calc-btn");
-  for (var j = 0; j < btns.length; j++) {
-    btns[j].addEventListener("click", function(ev) {
-      var el = ev.currentTarget;
-      document.getElementById("calc-ticker").value = el.getAttribute("data-ticker");
-      document.getElementById("calc-entry").value = Number(el.getAttribute("data-entry")).toFixed(2);
-      document.getElementById("calc-stop").value = Number(el.getAttribute("data-stop")).toFixed(2);
-      updateCalc();
-      document.getElementById("mod-4").scrollIntoView({ behavior: "smooth" });
-    });
-  }
-}
-
-function updateCalc() {
-  var eq = Math.max(0, Number(document.getElementById("calc-equity").value) || 0);
-  var riskPct = Math.max(0, Number(document.getElementById("calc-risk").value) || 0);
-  var entry = Math.max(0, Number(document.getElementById("calc-entry").value) || 0);
-  var stop = Math.max(0, Number(document.getElementById("calc-stop").value) || 0);
-  var riskPerShare = entry - stop;
-  var riskAmt = eq * (riskPct / 100);
-  if (entry <= 0 || riskPerShare <= 0) {
-    document.getElementById("res-shares").textContent = "0 股";
-    document.getElementById("res-pos").textContent = "入場價需高於止損價";
-    document.getElementById("res-loss").textContent = "$0";
-    document.getElementById("res-targets").textContent = "--";
-    return;
-  }
-  var shares = Math.floor(riskAmt / riskPerShare);
-  var posVal = shares * entry;
-  var posPct = eq > 0 ? (posVal / eq) * 100 : 0;
-  var stopPct = (riskPerShare / entry) * 100;
-  var t2 = entry + riskPerShare * 2;
-  var t3 = entry + riskPerShare * 3;
-  document.getElementById("res-shares").textContent = shares.toLocaleString() + " 股";
-  document.getElementById("res-pos").textContent = "$" + Math.round(posVal).toLocaleString() + " (" + posPct.toFixed(1) + "%)";
-  document.getElementById("res-loss").textContent = "-" + stopPct.toFixed(2) + "% ($" + Math.round(shares * riskPerShare).toLocaleString() + ")";
-  document.getElementById("res-targets").textContent = "$" + t2.toFixed(2) + " / $" + t3.toFixed(2);
-}
-
-function initApp() {
-  try {
-    document.getElementById("header-meta").textContent = "交易日：" + REPORT_DATA.trade_date + " · " + REPORT_DATA.updated_at;
-    var spy = (REPORT_DATA.indices && REPORT_DATA.indices[0]) ? REPORT_DATA.indices[0] : { atr_dist50: 0 };
-    var br = REPORT_DATA.breadth || { up4: 0, dn4: 0, adv_pct: 50, total_scanned: 0 };
-
-    // 渲染指數卡
-    var idxHtml = "";
-    for (var i = 0; i < REPORT_DATA.indices.length; i++) {
-      var x = REPORT_DATA.indices[i];
-      idxHtml += '<div class="p-3 rounded-xl bg-slate-50 border border-slate-200">'
-        + '<div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-500">' + x.name + '</span><span class="text-xs font-extrabold text-slate-900">' + x.ticker + '</span></div>'
-        + '<p class="text-lg font-extrabold text-slate-900 mt-1">$' + Number(x.close).toFixed(2) + '</p>'
-        + '<p class="text-xs font-bold ' + pctClass(x.chg1d) + '">1D ' + fmtPct(x.chg1d) + '</p>'
-        + '<p class="text-[11px] text-slate-500 mt-0.5">20D ' + fmtPct(x.chg20d) + ' · 50MA ' + x.atr_dist50 + ' ATR</p>'
-        + '</div>';
-    }
-    document.getElementById("index-cards").innerHTML = idxHtml;
-
-    // 渲染寬度卡
-    var ratio = br.dn4 > 0 ? (br.up4 / br.dn4).toFixed(2) : br.up4;
-    document.getElementById("breadth-cards").innerHTML =
-      '<div class="p-3 rounded-xl bg-emerald-50 border border-emerald-100"><p class="text-xs text-emerald-700 font-semibold">全場單日升 4%+</p><p class="text-xl font-extrabold text-emerald-900 mt-0.5">' + br.up4 + '</p></div>'
-      + '<div class="p-3 rounded-xl bg-rose-50 border border-rose-100"><p class="text-xs text-rose-700 font-semibold">全場單日跌 4%+</p><p class="text-xl font-extrabold text-rose-900 mt-0.5">' + br.dn4 + '</p></div>'
-      + '<div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><p class="text-xs text-slate-600 font-semibold">升跌 4%+ 比率</p><p class="text-xl font-extrabold text-slate-900 mt-0.5">' + ratio + 'x</p></div>'
-      + '<div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><p class="text-xs text-slate-600 font-semibold">上漲家數佔比</p><p class="text-xl font-extrabold text-slate-900 mt-0.5">' + Number(br.adv_pct).toFixed(1) + '%</p></div>';
-
-    // 初始化模擬輸入與總分
-    document.getElementById("sim-up4").value = br.up4;
-    document.getElementById("sim-dn4").value = br.dn4;
-    document.getElementById("sim-adv").value = br.adv_pct;
-    document.getElementById("sim-atr").value = spy.atr_dist50;
-    renderRegime(br.up4, br.dn4, br.adv_pct, spy.atr_dist50);
-
-    // AI 摘要
-    document.getElementById("ai-tldr").textContent = REPORT_DATA.ai_brief.tldr;
-    var bHtml = "";
-    for (var k = 0; k < REPORT_DATA.ai_brief.bullets.length; k++) {
-      bHtml += "<li>" + REPORT_DATA.ai_brief.bullets[k] + "</li>";
-    }
-    document.getElementById("ai-bullets").innerHTML = bHtml;
-
-    renderSectors();
-    renderWatchlist();
-    updateCalc();
-
-    // 事件綁定
-    document.getElementById("tab-m1-live").addEventListener("click", function() {
-      document.getElementById("panel-m1-live").classList.remove("hidden");
-      document.getElementById("panel-m1-sim").classList.add("hidden");
-      this.className = "px-3 py-1 rounded-lg bg-white shadow-sm text-slate-900";
-      document.getElementById("tab-m1-sim").className = "px-3 py-1 rounded-lg text-slate-500";
-      renderRegime(br.up4, br.dn4, br.adv_pct, spy.atr_dist50);
-    });
-    document.getElementById("tab-m1-sim").addEventListener("click", function() {
-      document.getElementById("panel-m1-sim").classList.remove("hidden");
-      document.getElementById("panel-m1-live").classList.add("hidden");
-      this.className = "px-3 py-1 rounded-lg bg-white shadow-sm text-slate-900";
-      document.getElementById("tab-m1-live").className = "px-3 py-1 rounded-lg text-slate-500";
-    });
-    ["sim-up4", "sim-dn4", "sim-adv", "sim-atr"].forEach(function(id) {
-      document.getElementById(id).addEventListener("input", function() {
-        renderRegime(
-          Number(document.getElementById("sim-up4").value) || 0,
-          Number(document.getElementById("sim-dn4").value) || 0,
-          Number(document.getElementById("sim-adv").value) || 0,
-          Number(document.getElementById("sim-atr").value) || 0
-        );
-      });
-    });
-    document.getElementById("sector-sort").addEventListener("change", renderSectors);
-    document.getElementById("wl-search").addEventListener("input", renderWatchlist);
-    document.getElementById("wl-filter").addEventListener("change", renderWatchlist);
-    ["calc-equity", "calc-risk", "calc-entry", "calc-stop"].forEach(function(id) {
-      document.getElementById(id).addEventListener("input", updateCalc);
-    });
-  } catch (e) {
-    document.getElementById("header-meta").textContent = "載入異常：" + e.message;
-  }
-}
-
-initApp();
-  </script>
-</body>
-</html>
+    <!-- 模組 05：PDF 報告下載中心 -->
+    <section id="mod-5" class="bg-white rounded-2xl shadow-sm p-3 sm:p-6 scroll-mt-24">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-indigo-600 text-white text-xs font-bold">05</span>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900">PDF 報告下載中心（Reports Hub）</h2>
+        </div>
+        <span class="text-xs text-slate-500">放 PDF 入 GitHub <code>reports/</code> 資料夾即自動顯示下載掣</span>
+      </div>
+      <div
