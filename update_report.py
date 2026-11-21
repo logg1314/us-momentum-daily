@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import time
@@ -9,6 +10,7 @@ API_KEY = os.environ.get("MASSIVE_API_KEY", "").strip()
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 BASE_URL = os.environ.get("MASSIVE_BASE_URL", "https://api.massive.com").rstrip("/")
 HTML_FILE = "index.html"
+MAX_HISTORY_DAYS = 30
 
 INDICES = [
     ("SPY", "標普500"),
@@ -29,7 +31,7 @@ WATCHLIST = ["PANW", "WMT", "COST", "DLTR", "XOM", "LLY", "ABBV", "UNH", "NVDA",
 
 def http_json(url, payload=None, retries=3):
     for attempt in range(retries):
-        req = urllib.request.Request(url, headers={"User-Agent": "USMomentumBot/1.0"})
+        req = urllib.request.Request(url, headers={"User-Agent": "USMomentumHub/2.0"})
         data = None
         if payload is not None:
             data = json.dumps(payload).encode("utf-8")
@@ -39,10 +41,8 @@ def http_json(url, payload=None, retries=3):
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
             if e.code == 429 and attempt < retries - 1:
-                print("Hit rate limit (429), sleeping 15s...")
                 time.sleep(15)
                 continue
-            print(f"HTTP Error {e.code} for {url.split('?')[0]}")
             raise
     return {}
 
@@ -54,8 +54,22 @@ def get_bars(ticker, days=120):
         f"{BASE_URL}/v2/aggs/ticker/{ticker}/range/1/day/"
         f"{start.isoformat()}/{end.isoformat()}?adjusted=true&sort=asc&limit=500&apiKey={API_KEY}"
     )
-    res = http_json(url)
-    return res.get("results", [])
+    return http_json(url).get("results", [])
+
+
+def format_candles(bars, limit=60):
+    out = []
+    for b in bars[-limit:]:
+        d_str = datetime.fromtimestamp(b["t"] / 1000, timezone.utc).strftime("%m-%d")
+        out.append({
+            "t": d_str,
+            "o": round(float(b["o"]), 2),
+            "h": round(float(b["h"]), 2),
+            "l": round(float(b["l"]), 2),
+            "c": round(float(b["c"]), 2),
+            "v": int(b.get("v", 0)),
+        })
+    return out
 
 
 def calc_rsi14(closes):
@@ -73,8 +87,7 @@ def calc_rsi14(closes):
         avg_loss = (avg_loss * 13 + losses[i]) / 14.0
     if avg_loss == 0:
         return 100.0
-    rs = avg_gain / avg_loss
-    return round(100.0 - (100.0 / (1.0 + rs)), 1)
+    return round(100.0 - (100.0 / (1.0 + (avg_gain / avg_loss))), 1)
 
 
 def calc_atr14(bars):
@@ -119,9 +132,7 @@ def fetch_breadth(date_t0, date_t1):
         up4 = dn4 = adv = total = 0
         for row in r0:
             sym = row.get("T", "")
-            c = row.get("c", 0)
-            v = row.get("v", 0)
-            pc = prev_map.get(sym, 0)
+            c, v, pc = row.get("c", 0), row.get("v", 0), prev_map.get(sym, 0)
             if c >= 5 and v >= 100000 and pc > 0:
                 total += 1
                 pct = (c - pc) / pc
@@ -133,9 +144,15 @@ def fetch_breadth(date_t0, date_t1):
                     dn4 += 1
         adv_pct = round((adv / total) * 100.0, 1) if total > 0 else 50.0
         return {"up4": up4, "dn4": dn4, "adv_pct": adv_pct, "total_scanned": total}
-    except Exception as e:
-        print(f"Breadth fallback triggered: {e}")
+    except Exception:
         return {"up4": 0, "dn4": 0, "adv_pct": 50.0, "total_scanned": 0}
+
+
+def calc_score(up4, dn4, adv_pct, spy_atr):
+    ratio_score = (up4 / (up4 + dn4)) * 40 if (up4 + dn4) > 0 else 20
+    adv_score = max(0, min(100, adv_pct)) * 0.35
+    atr_score = max(0, min(25, ((spy_atr + 2.5) / 5) * 25))
+    return round(ratio_score + adv_score + atr_score)
 
 
 def build_ai_brief(trade_date, indices, breadth, sectors):
@@ -143,16 +160,15 @@ def build_ai_brief(trade_date, indices, breadth, sectors):
     top_sec = sorted(sectors, key=lambda x: x["rel20"], reverse=True)[:2]
     bot_sec = sorted(sectors, key=lambda x: x["rel20"])[:2]
     fallback = {
-        "tldr": f"{trade_date} 美股收市：SPY {spy['chg1d']:+.2f}%（${spy['close']}），全場升4%+ {breadth['up4']} 家 vs 跌4%+ {breadth['dn4']} 家。",
+        "tldr": f"{trade_date} 收市：SPY {spy['chg1d']:+.2f}%（20D {spy['chg20d']:+.2f}%），升4%+ {breadth['up4']} 家 vs 跌4%+ {breadth['dn4']} 家。",
         "bullets": [
-            f"大盤走勢：SPY {spy['chg1d']:+.2f}%、QQQ {indices[1]['chg1d']:+.2f}%、IWM {indices[2]['chg1d']:+.2f}%，SPY 距 50MA {spy['atr_dist50']} ATR。",
-            f"強勢板塊：{top_sec[0]['name']}({top_sec[0]['ticker']} REL20 {top_sec[0]['rel20']:+.1f}%) 與 {top_sec[1]['name']}({top_sec[1]['ticker']} REL20 {top_sec[1]['rel20']:+.1f}%) 領先。",
-            f"弱勢板塊：{bot_sec[0]['name']}({bot_sec[0]['ticker']}) 及 {bot_sec[1]['name']}({bot_sec[1]['ticker']}) 相對落後，操作宜嚴控止損。",
+            f"趨勢與均線：SPY 收 ${spy['close']}，距 50MA {spy['atr_dist50']} ATR；QQQ 20D {indices[1]['chg20d']:+.2f}%、IWM 20D {indices[2]['chg20d']:+.2f}%。",
+            f"強勢板塊：{top_sec[0]['name']}({top_sec[0]['ticker']} REL20 {top_sec[0]['rel20']:+.1f}%) 與 {top_sec[1]['name']}({top_sec[1]['ticker']} REL20 {top_sec[1]['rel20']:+.1f}%) 跑贏。",
+            f"弱勢板塊：{bot_sec[0]['name']}({bot_sec[0]['ticker']}) 及 {bot_sec[1]['name']}({bot_sec[1]['ticker']}) 偏弱，優先看多日趨勢再出手。",
         ],
     }
     if not GEMINI_KEY:
         return fallback
-
     try:
         prompt = (
             "你係香港資深美股動能交易員。請嚴格根據以下已核實數據，用貼地香港廣東話輸出純 JSON "
@@ -164,46 +180,81 @@ def build_ai_brief(trade_date, indices, breadth, sectors):
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"responseMimeType": "application/json"},
         })
-        txt = g_res["candidates"][0]["content"]["parts"][0]["text"]
-        parsed = json.loads(txt)
+        parsed = json.loads(g_res["candidates"][0]["content"]["parts"][0]["text"])
         if "tldr" in parsed and isinstance(parsed.get("bullets"), list):
             return parsed
-    except Exception as e:
-        print(f"Gemini skipped, using rule-based brief: {e}")
+    except Exception:
+        pass
     return fallback
+
+
+def scan_pdfs():
+    pdfs = []
+    for path in sorted(glob.glob("reports/*.pdf"), reverse=True):
+        fname = os.path.basename(path)
+        pdfs.append({
+            "name": fname,
+            "date": fname[:10] if len(fname) >= 10 else "",
+            "url": f"reports/{fname}",
+        })
+    return pdfs
+
+
+def extract_existing_hub(html):
+    s_tag, e_tag = "/*__HUB_DATA_START__*/", "/*__HUB_DATA_END__*/"
+    if s_tag in html and e_tag in html:
+        raw = html.split(s_tag)[1].split(e_tag)[0].strip()
+        prefix = "const HUB_DATA ="
+        idx = raw.find(prefix)
+        if idx != -1:
+            js_obj = raw[idx + len(prefix):].strip()
+            if js_obj.endswith(";"):
+                js_obj = js_obj[:-1]
+            return json.loads(js_obj)
+    return {"reports_by_date": {}, "trend_history": [], "candles": {}, "pdf_reports": []}
 
 
 def main():
     if not API_KEY:
-        raise SystemExit("ERROR: MASSIVE_API_KEY 未設定！請先喺 GitHub Settings -> Secrets 加入。")
+        raise SystemExit("ERROR: MASSIVE_API_KEY 未設定！")
 
-    # 先拉 SPY 鎖定最新交易日與前一個交易日
-    spy_bars = get_bars("SPY")
+    with open(HTML_FILE, "r", encoding="utf-8") as f:
+        html = f.read()
+    hub = extract_existing_hub(html)
+
+    spy_bars = get_bars("SPY", days=130)
     if len(spy_bars) < 2:
-        raise SystemExit("ERROR: 無法從 Massive API 讀取 SPY 數據，請檢查 API Key 或 Plan 權限。")
+        raise SystemExit("ERROR: 無法讀取 SPY 數據。")
 
     trade_date = datetime.fromtimestamp(spy_bars[-1]["t"] / 1000, timezone.utc).strftime("%Y-%m-%d")
     prev_date = datetime.fromtimestamp(spy_bars[-2]["t"] / 1000, timezone.utc).strftime("%Y-%m-%d")
-    print(f"Verified latest US trade date: {trade_date} (prev: {prev_date})")
 
+    candles_map = {"SPY": format_candles(spy_bars)}
     spy_m = calc_metrics(spy_bars)
     indices_out = [{"ticker": "SPY", "name": "標普500", "close": spy_m["close"], "chg1d": spy_m["chg1d"], "chg20d": spy_m["chg20d"], "atr_dist50": spy_m["atr_dist50"]}]
 
     for sym, name in INDICES[1:]:
-        m = calc_metrics(get_bars(sym))
+        b = get_bars(sym, days=130)
+        candles_map[sym] = format_candles(b)
+        m = calc_metrics(b)
         indices_out.append({"ticker": sym, "name": name, "close": m["close"], "chg1d": m["chg1d"], "chg20d": m["chg20d"], "atr_dist50": m["atr_dist50"]})
 
     sectors_out = []
     for sym, name in SECTORS:
-        m = calc_metrics(get_bars(sym))
+        b = get_bars(sym, days=130)
+        candles_map[sym] = format_candles(b)
+        m = calc_metrics(b)
         sectors_out.append({
             "ticker": sym, "name": name, "close": m["close"],
-            "chg1d": m["chg1d"], "rel20": round(m["chg20d"] - spy_m["chg20d"], 2), "rsi14": m["rsi14"]
+            "chg1d": m["chg1d"], "chg20d": m["chg20d"],
+            "rel20": round(m["chg20d"] - spy_m["chg20d"], 2), "rsi14": m["rsi14"]
         })
 
     watchlist_out = []
     for sym in WATCHLIST:
-        m = calc_metrics(get_bars(sym))
+        b = get_bars(sym, days=130)
+        candles_map[sym] = format_candles(b)
+        m = calc_metrics(b)
         rel = m["chg20d"] - spy_m["chg20d"]
         if rel >= 4 and m["atr_dist50"] >= 0:
             grp, note = "LEADER", "跑贏大市且企穩 50MA 上方"
@@ -219,9 +270,10 @@ def main():
 
     breadth_out = fetch_breadth(trade_date, prev_date)
     ai_brief = build_ai_brief(trade_date, indices_out, breadth_out, sectors_out)
-
     hkt_now = (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M HKT")
-    report = {
+
+    reports_by_date = hub.get("reports_by_date") or {}
+    reports_by_date[trade_date] = {
         "trade_date": trade_date,
         "updated_at": f"自動更新於 {hkt_now}",
         "data_source": "Massive API",
@@ -231,21 +283,34 @@ def main():
         "sectors": sectors_out,
         "watchlist": watchlist_out,
     }
+    sorted_dates = sorted(reports_by_date.keys())[-MAX_HISTORY_DAYS:]
+    reports_by_date = {k: reports_by_date[k] for k in sorted_dates}
 
-    with open(HTML_FILE, "r", encoding="utf-8") as f:
-        html = f.read()
+    sc = calc_score(breadth_out["up4"], breadth_out["dn4"], breadth_out["adv_pct"], spy_m["atr_dist50"])
+    hist = [x for x in (hub.get("trend_history") or []) if x.get("date") != trade_date[5:]]
+    hist.append({
+        "date": trade_date[5:],
+        "score": sc,
+        "spy_chg": spy_m["chg20d"],
+        "up4": breadth_out["up4"],
+        "dn4": breadth_out["dn4"],
+    })
+    hist = hist[-MAX_HISTORY_DAYS:]
 
-    start_tag, end_tag = "/*__DATA_START__*/", "/*__DATA_END__*/"
-    if start_tag not in html or end_tag not in html:
-        raise SystemExit("ERROR: index.html 缺少注入標記 /*__DATA_START__*/。")
+    hub_out = {
+        "latest_date": sorted_dates[-1],
+        "reports_by_date": reports_by_date,
+        "trend_history": hist,
+        "candles": candles_map,
+        "pdf_reports": scan_pdfs(),
+    }
 
-    prefix = html.split(start_tag)[0]
-    suffix = html.split(end_tag)[1]
-    injected = f"{start_tag}\nconst REPORT_DATA = {json.dumps(report, ensure_ascii=False, indent=2)};\n{end_tag}"
+    s_tag, e_tag = "/*__HUB_DATA_START__*/", "/*__HUB_DATA_END__*/"
+    injected = f"{s_tag}\nconst HUB_DATA = {json.dumps(hub_out, ensure_ascii=False, indent=2)};\n{e_tag}"
     with open(HTML_FILE, "w", encoding="utf-8") as f:
-        f.write(prefix + injected + suffix)
+        f.write(html.split(s_tag)[0] + injected + html.split(e_tag)[1])
 
-    print("SUCCESS: index.html updated with latest Massive API data!")
+    print("SUCCESS: Hub updated with history, candlesticks, and PDFs.")
 
 
 if __name__ == "__main__":
