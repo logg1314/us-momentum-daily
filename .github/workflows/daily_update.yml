@@ -1,9 +1,9 @@
-name: Daily Massive Momentum Update V2.5
+name: Daily Momentum & Futures War Room V3.0
 
 on:
   schedule:
-    # 美股收市後每日自動更新（香港時間星期二至六 06:15 HKT）
-    - cron: "15 22 * * 1-5"
+    # 美股收市後每日自動更新（香港時間星期二至六 06:25 HKT，確保 qm-screener-auto 已先跑完）
+    - cron: "25 22 * * 1-5"
   workflow_dispatch:
 
 permissions:
@@ -21,17 +21,22 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Fetch Massive Starter 2Y Split Data & Drive PDFs
+      - name: Install yfinance for Futures & Seasonality
+        run: pip install --quiet yfinance
+
+      - name: Build V3.0 Equities, Futures/COT & QM Screener Data
         env:
           MASSIVE_API_KEY: ${{ secrets.MASSIVE_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DRIVE_BRIDGE_URL: ${{ secrets.DRIVE_BRIDGE_URL }}
+          SCREENER_REPO_TOKEN: ${{ secrets.SCREENER_REPO_TOKEN }}
+          SCREENER_REPO: "logg1314/qm-screener-auto"
         run: python update_report.py
 
-      - name: Commit updated V2.5 data files
+      - name: Commit updated V3.0 data files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/
-          git diff --staged --quiet || git commit -m "chore: auto update V2.5 split momentum data"
+          git diff --staged --quiet || git commit -m "chore: auto update V3.0 equities, futures COT & QM screener"
           git push
