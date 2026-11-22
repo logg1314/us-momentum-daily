@@ -4,7 +4,6 @@ import json
 import os
 import time
 import urllib.error
-import urllib.parse
 import urllib.request
 import zipfile
 import csv
@@ -40,6 +39,7 @@ INDICES = [
     ("RSP", "等權標普"),
 ]
 
+# Tab 1 Part 2: Sectors + Themes + Silver (SLV) + MAGS + VOO
 SECTORS = [
     ("XLE", "能源", True), ("XLU", "公用事業", True), ("XLP", "必需消費", True),
     ("XLF", "金融", True), ("XLRE", "房地產", True), ("XLK", "科技", True),
@@ -47,15 +47,17 @@ SECTORS = [
     ("XLC", "通訊服務", True), ("XLY", "非必需消費", True),
     ("MAGS", "科技七巨頭", True), ("VOO", "標普基準", True),
     ("SOXX", "半導體", False), ("SMH", "晶片ETF", False),
+    ("SLV", "白銀ETF", False),
     ("IEF", "7-10年美債", False), ("TLT", "20年美債", False),
 ]
 
-# Lean Core Watchlist for Tab 1 (since Tab 3 hosts the full QM Screener)
+# Tab 1 Part 3: Core Watchlist (including Silver SLV)
 CORE_WATCHLIST = [
     ("PANW", "網絡安全", "XLK"),
     ("WMT", "必需消費", "XLP"),
     ("COST", "量販零售", "XLP"),
     ("XOM", "能源石油", "XLE"),
+    ("SLV", "白銀貴金屬", "XLB"),
     ("LLY", "醫藥生科", "XLV"),
     ("NVDA", "半導體", "SOXX"),
     ("AMD", "半導體", "SOXX"),
@@ -72,45 +74,45 @@ BLOCKED_NAME_KEYWORDS = (
     "VANGUARD", "SPDR", "TRUST", "FUND", "SHARES", "SWAP", "LONG ",
 )
 
-# Futures Universe: (display_sym, name_zh, group, yf_sym, cftc_code)
+# Futures Universe: (display_sym, name_zh, group, yf_sym, cftc_code, decimals)
 FUTURES_SPECS = [
-    # FX Benchmark + 7 CME Currency Futures
-    ("DXY", "美元指數 (基準)", "FX", "DX=F", "098662"),
-    ("6E", "歐元期貨 (EUR)", "FX", "6E=F", "099741"),
-    ("6J", "日圓期貨 (JPY)", "FX", "6J=F", "097741"),
-    ("6B", "英鎊期貨 (GBP)", "FX", "6B=F", "096742"),
-    ("6A", "澳元期貨 (AUD)", "FX", "6A=F", "232741"),
-    ("6C", "加元期貨 (CAD)", "FX", "6C=F", "090741"),
-    ("6N", "紐元期貨 (NZD)", "FX", "6N=F", "112741"),
-    ("6M", "墨西哥披索 (MXN)", "FX", "6M=F", "095741"),
+    # FX Benchmark + 7 CME Currency Futures (6J needs 6 decimals ~0.006300)
+    ("DXY", "美元指數 (基準)", "FX", "DX=F", "098662", 2),
+    ("6E", "歐元期貨 (EUR)", "FX", "6E=F", "099741", 4),
+    ("6J", "日圓期貨 (JPY)", "FX", "6J=F", "097741", 6),
+    ("6B", "英鎊期貨 (GBP)", "FX", "6B=F", "096742", 4),
+    ("6A", "澳元期貨 (AUD)", "FX", "6A=F", "232741", 4),
+    ("6C", "加元期貨 (CAD)", "FX", "6C=F", "090741", 4),
+    ("6N", "紐元期貨 (NZD)", "FX", "6N=F", "112741", 4),
+    ("6M", "墨西哥披索 (MXN)", "FX", "6M=F", "095741", 5),
     # Metals
-    ("GC", "黃金期貨 (Gold)", "METALS", "GC=F", "088691"),
-    ("SI", "白銀期貨 (Silver)", "METALS", "SI=F", "084691"),
-    ("HG", "精煉銅期貨 (Copper)", "METALS", "HG=F", "085692"),
-    ("PL", "鉑金期貨 (Platinum)", "METALS", "PL=F", "076651"),
+    ("GC", "黃金期貨 (Gold)", "METALS", "GC=F", "088691", 2),
+    ("SI", "白銀期貨 (Silver)", "METALS", "SI=F", "084691", 3),
+    ("HG", "精煉銅期貨 (Copper)", "METALS", "HG=F", "085692", 4),
+    ("PL", "鉑金期貨 (Platinum)", "METALS", "PL=F", "076651", 2),
     # Energy
-    ("CL", "WTI 原油 (Crude)", "ENERGY", "CL=F", "067651"),
-    ("NG", "天然氣 (NatGas)", "ENERGY", "NG=F", "023651"),
-    ("RB", "RBOB 汽油", "ENERGY", "RB=F", "111659"),
-    ("HO", "取暖油 (Heating Oil)", "ENERGY", "HO=F", "022651"),
+    ("CL", "WTI 原油 (Crude)", "ENERGY", "CL=F", "067651", 2),
+    ("NG", "天然氣 (NatGas)", "ENERGY", "NG=F", "023651", 3),
+    ("RB", "RBOB 汽油", "ENERGY", "RB=F", "111659", 4),
+    ("HO", "取暖油 (Heating Oil)", "ENERGY", "HO=F", "022651", 4),
     # Agriculture & Softs
-    ("ZC", "粟米期貨 (Corn)", "AGRI", "ZC=F", "002602"),
-    ("ZS", "大豆期貨 (Soybeans)", "AGRI", "ZS=F", "005602"),
-    ("ZW", "小麥期貨 (Wheat)", "AGRI", "ZW=F", "001602"),
-    ("SB", "原糖期貨 (Sugar #11)", "AGRI", "SB=F", "080732"),
-    ("KC", "咖啡期貨 (Coffee)", "AGRI", "KC=F", "083731"),
-    ("CC", "可可期貨 (Cocoa)", "AGRI", "CC=F", "073732"),
-    ("LE", "活牛期貨 (Live Cattle)", "AGRI", "LE=F", "057642"),
-    # Equity Index Futures (for COT crowding alerts + charts)
-    ("ES", "標普500期貨 (E-mini)", "INDEX", "ES=F", "13874A"),
-    ("NQ", "納指100期貨 (E-mini)", "INDEX", "NQ=F", "209742"),
-    ("RTY", "羅素2000期貨 (E-mini)", "INDEX", "RTY=F", "239742"),
+    ("ZC", "粟米期貨 (Corn)", "AGRI", "ZC=F", "002602", 2),
+    ("ZS", "大豆期貨 (Soybeans)", "AGRI", "ZS=F", "005602", 2),
+    ("ZW", "小麥期貨 (Wheat)", "AGRI", "ZW=F", "001602", 2),
+    ("SB", "原糖期貨 (Sugar #11)", "AGRI", "SB=F", "080732", 2),
+    ("KC", "咖啡期貨 (Coffee)", "AGRI", "KC=F", "083731", 2),
+    ("CC", "可可期貨 (Cocoa)", "AGRI", "CC=F", "073732", 1),
+    ("LE", "活牛期貨 (Live Cattle)", "AGRI", "LE=F", "057642", 2),
+    # Equity Index Futures
+    ("ES", "標普500期貨 (E-mini)", "INDEX", "ES=F", "13874A", 2),
+    ("NQ", "納指100期貨 (E-mini)", "INDEX", "NQ=F", "209742", 2),
+    ("RTY", "羅素2000期貨 (E-mini)", "INDEX", "RTY=F", "239742", 2),
 ]
 
 
 def http_json(url, payload=None, headers=None, retries=3):
     for attempt in range(retries):
-        hdrs = {"User-Agent": "TacticalHubV3.0"}
+        hdrs = {"User-Agent": "TacticalHubV3.1"}
         if headers:
             hdrs.update(headers)
         req = urllib.request.Request(url, headers=hdrs)
@@ -119,7 +121,7 @@ def http_json(url, payload=None, headers=None, retries=3):
             data = json.dumps(payload).encode("utf-8")
             req.add_header("Content-Type", "application/json")
         try:
-            with urllib.request.urlopen(req, data=data, timeout=35) as resp:
+            with urllib.request.urlopen(req, data=data, timeout=45) as resp:
                 raw_text = resp.read().decode("utf-8", errors="replace").strip()
                 if raw_text.startswith("<"):
                     raise ValueError("Returned HTML instead of JSON.")
@@ -215,12 +217,12 @@ def get_hourly_bars(ticker, calendar_days=HOURLY_CALENDAR_DAYS):
 def format_daily_candles(bars, limit=505, decimals=2):
     return [
         {
-            "time": datetime.fromtimestamp(b["t"] / 1000, timezone.utc).strftime("%Y-%m-%d"),
-            "open": round(float(b["o"]), decimals),
-            "high": round(float(b["h"]), decimals),
-            "low": round(float(b["l"]), decimals),
-            "close": round(float(b["c"]), decimals),
-            "volume": int(b.get("v", 0)),
+            "time": b["time"] if isinstance(b.get("time"), str) else datetime.fromtimestamp(b["t"] / 1000, timezone.utc).strftime("%Y-%m-%d"),
+            "open": round(float(b.get("o", b.get("open", 0))), decimals),
+            "high": round(float(b.get("h", b.get("high", 0))), decimals),
+            "low": round(float(b.get("l", b.get("low", 0))), decimals),
+            "close": round(float(b.get("c", b.get("close", 0))), decimals),
+            "volume": int(b.get("v", b.get("volume", 0)) or 0),
         }
         for b in bars[-limit:]
     ]
@@ -239,7 +241,7 @@ def calc_ema_list(closes, period):
 def build_mini_candle_payload(daily_bars, tail=48, decimals=2):
     if not daily_bars:
         return []
-    closes = [float(b["c"]) for b in daily_bars]
+    closes = [float(b.get("c", b.get("close", 0))) for b in daily_bars]
     ema21 = calc_ema_list(closes, 21)
     ema50 = calc_ema_list(closes, 50)
     start_idx = max(0, len(daily_bars) - tail)
@@ -247,10 +249,10 @@ def build_mini_candle_payload(daily_bars, tail=48, decimals=2):
     for i in range(start_idx, len(daily_bars)):
         b = daily_bars[i]
         out.append([
-            round(float(b["o"]), decimals),
-            round(float(b["h"]), decimals),
-            round(float(b["l"]), decimals),
-            round(float(b["c"]), decimals),
+            round(float(b.get("o", b.get("open", 0))), decimals),
+            round(float(b.get("h", b.get("high", 0))), decimals),
+            round(float(b.get("l", b.get("low", 0))), decimals),
+            round(float(b.get("c", b.get("close", 0))), decimals),
             round(ema21[i], decimals),
             round(ema50[i], decimals),
         ])
@@ -561,7 +563,7 @@ def fetch_drive_pdfs():
         return []
     try:
         opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
-        req = urllib.request.Request(DRIVE_BRIDGE_URL, headers={"User-Agent": "Mozilla/5.0 TacticalHubV3"})
+        req = urllib.request.Request(DRIVE_BRIDGE_URL, headers={"User-Agent": "Mozilla/5.0 TacticalHubV3.1"})
         with opener.open(req, timeout=35) as resp:
             raw = resp.read().decode("utf-8", errors="replace").strip()
             if raw.startswith("<"):
@@ -584,7 +586,6 @@ def save_ticker_candle_file(sym, daily_candles, hourly_candles=None):
 # MODULE A: CFTC COT + YFINANCE FUTURES & 10-YEAR SEASONALITY
 # ==============================================================================
 def fetch_cftc_cot_3y():
-    """Fetch last 3 years of CFTC Legacy Futures-Only COT data directly from CFTC public zip archives."""
     cot_by_code = {spec[4]: [] for spec in FUTURES_SPECS}
     cur_year = datetime.now(timezone.utc).year
     years = [cur_year - 2, cur_year - 1, cur_year]
@@ -592,7 +593,7 @@ def fetch_cftc_cot_3y():
     for yr in years:
         url = f"https://www.cftc.gov/files/dea/history/deacot{yr}.zip"
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "TacticalHubV3.0"})
+            req = urllib.request.Request(url, headers={"User-Agent": "TacticalHubV3.1"})
             with urllib.request.urlopen(req, timeout=45) as resp:
                 zbytes = resp.read()
             with zipfile.ZipFile(io.BytesIO(zbytes)) as zf:
@@ -645,7 +646,6 @@ def fetch_cftc_cot_3y():
         if not rows:
             continue
         rows.sort(key=lambda x: x[0])
-        # Deduplicate by date
         dedup = {}
         for r in rows:
             dedup[r[0]] = r
@@ -662,20 +662,9 @@ def fetch_cftc_cot_3y():
         c_now, s_now, oi_now = comm_all[-1], spec_all[-1], s_rows[-1][3]
         c_chg = c_now - comm_all[-2] if len(comm_all) >= 2 else 0
         s_chg = s_now - spec_all[-2] if len(spec_all) >= 2 else 0
-
         cot_1y = pct_rank(comm_all[-52:], c_now)
         cot_3y = pct_rank(comm_all[-156:], c_now)
         spec_1y = pct_rank(spec_all[-52:], s_now)
-
-        signal = "NEUTRAL"
-        if cot_1y >= 80 and spec_1y <= 25:
-            signal = "BULL_DIVERGENCE"
-        elif cot_1y <= 20 and spec_1y >= 75:
-            signal = "BEAR_CROWDED"
-        elif cot_1y >= 80:
-            signal = "COMM_ACCUM"
-        elif cot_1y <= 20:
-            signal = "COMM_DIST"
 
         out[code] = {
             "report_date": s_rows[-1][0],
@@ -687,15 +676,12 @@ def fetch_cftc_cot_3y():
             "cot_1y": cot_1y,
             "cot_3y": cot_3y,
             "spec_1y": spec_1y,
-            "signal": signal,
             "trail_12w": [[x[0][5:], x[1], x[2]] for x in s_rows[-12:]],
         }
-    print(f"SUCCESS [COT]: Parsed {len(out)}/{len(FUTURES_SPECS)} CFTC contracts.")
     return out
 
 
 def calc_10y_seasonality(closes_10y, dates_10y, forward_days=20):
-    """Calculate 10-year historical win-rate and average return for the next 20 trading days around today's calendar day."""
     if len(closes_10y) < 300:
         return {"win_rate": 50, "avg_ret": 0.0, "samples": 0}
     today_doy = datetime.now(timezone.utc).timetuple().tm_yday
@@ -707,20 +693,14 @@ def calc_10y_seasonality(closes_10y, dates_10y, forward_days=20):
         if dt.year >= cur_year or dt.year in used_years:
             continue
         doy = dt.timetuple().tm_yday
-        diff = abs(doy - today_doy)
-        diff = min(diff, 365 - diff)
+        diff = min(abs(doy - today_doy), 365 - abs(doy - today_doy))
         if diff <= 5 and closes_10y[i] > 0:
             used_years.add(dt.year)
-            r = ((closes_10y[i + forward_days] - closes_10y[i]) / closes_10y[i]) * 100.0
-            rets.append(r)
+            rets.append(((closes_10y[i + forward_days] - closes_10y[i]) / closes_10y[i]) * 100.0)
     if not rets:
         return {"win_rate": 50, "avg_ret": 0.0, "samples": 0}
     wins = sum(1 for r in rets if r > 0)
-    return {
-        "win_rate": round((wins / len(rets)) * 100),
-        "avg_ret": round(sum(rets) / len(rets), 2),
-        "samples": len(rets),
-    }
+    return {"win_rate": round((wins / len(rets)) * 100), "avg_ret": round(sum(rets) / len(rets), 2), "samples": len(rets)}
 
 
 def fetch_futures_and_cot(universe_tickers):
@@ -729,7 +709,6 @@ def fetch_futures_and_cot(universe_tickers):
     mini_fut = {}
 
     if yf is None:
-        print("WARN [Futures]: yfinance not installed, skipping futures download.")
         return {"updated_at": "", "items": [], "mini_candles": {}, "ratios": {}, "equity_cot_alerts": []}
 
     yf_syms = [s[3] for s in FUTURES_SPECS]
@@ -740,7 +719,7 @@ def fetch_futures_and_cot(universe_tickers):
         df_all = None
 
     price_lookup = {}
-    for disp_sym, name_zh, grp, yf_sym, cftc_code in FUTURES_SPECS:
+    for disp_sym, name_zh, grp, yf_sym, cftc_code, decimals in FUTURES_SPECS:
         try:
             if df_all is None:
                 continue
@@ -754,16 +733,21 @@ def fetch_futures_and_cot(universe_tickers):
             sub_2y = sub.tail(505)
             bars = []
             for idx, row in sub_2y.iterrows():
+                o_v = float(row["Open"]) if row["Open"] == row["Open"] else float(row["Close"])
+                h_v = float(row["High"]) if row["High"] == row["High"] else float(row["Close"])
+                l_v = float(row["Low"]) if row["Low"] == row["Low"] else float(row["Close"])
+                c_v = float(row["Close"])
+                if c_v <= 0:
+                    continue
                 bars.append({
                     "t": int(idx.timestamp() * 1000),
-                    "o": float(row["Open"]),
-                    "h": float(row["High"]),
-                    "l": float(row["Low"]),
-                    "c": float(row["Close"]),
+                    "o": o_v, "h": h_v, "l": l_v, "c": c_v,
                     "v": int(row["Volume"]) if row["Volume"] == row["Volume"] else 0,
                 })
 
-            decimals = 4 if grp == "FX" and disp_sym != "DXY" else 2
+            if len(bars) < 20:
+                continue
+
             save_ticker_candle_file(disp_sym, format_daily_candles(bars, decimals=decimals), [])
             mini_fut[disp_sym] = build_mini_candle_payload(bars, tail=48, decimals=decimals)
             if disp_sym not in universe_tickers:
@@ -772,40 +756,26 @@ def fetch_futures_and_cot(universe_tickers):
             m = calc_metrics(bars, decimals=decimals)
             price_lookup[disp_sym] = m["close"]
             cot = cot_map.get(cftc_code)
-
-            # Triple Confluence: COT >= 80 + Seasonality WinRate >= 65% + Above 21EMA
             confluence = bool(cot and cot["cot_1y"] >= 80 and seas["win_rate"] >= 65 and m["above_ema21"])
 
             items.append({
-                "ticker": disp_sym,
-                "name": name_zh,
-                "group": grp,
-                "yf_sym": yf_sym,
-                "close": m["close"],
-                "chg1d": m["chg1d"],
-                "chg20d": m["chg20d"],
-                "chg60d": m["chg60d"],
-                "rsi14": m["rsi14"],
-                "atr14": m["atr14"],
-                "atr_dist50": m["atr_dist50"],
-                "above_ema21": m["above_ema21"],
-                "above_ma50": m["above_ma50"],
-                "tightness": m["tightness"],
-                "seasonality": seas,
-                "cot": cot,
+                "ticker": disp_sym, "name": name_zh, "group": grp, "yf_sym": yf_sym,
+                "decimals": decimals, "close": m["close"], "chg1d": m["chg1d"],
+                "chg20d": m["chg20d"], "chg60d": m["chg60d"], "rsi14": m["rsi14"],
+                "atr14": m["atr14"], "atr_dist50": m["atr_dist50"],
+                "above_ema21": m["above_ema21"], "above_ma50": m["above_ma50"],
+                "tightness": m["tightness"], "seasonality": seas, "cot": cot,
                 "confluence": confluence,
             })
         except Exception as e:
             print(f"WARN [Futures {disp_sym}]: {e}")
 
-    # Cross-asset ratios (Gold/Silver, Copper/Gold)
     ratios = {}
     if price_lookup.get("GC") and price_lookup.get("SI"):
         ratios["gold_silver"] = round(price_lookup["GC"] / price_lookup["SI"], 2)
     if price_lookup.get("HG") and price_lookup.get("GC"):
         ratios["copper_gold_x1000"] = round((price_lookup["HG"] / price_lookup["GC"]) * 1000.0, 3)
 
-    # Equity index COT crowding alerts for Tab 1
     eq_alerts = []
     for it in items:
         if it["group"] == "INDEX" and it.get("cot"):
@@ -816,7 +786,6 @@ def fetch_futures_and_cot(universe_tickers):
                 eq_alerts.append(f"🟢 {it['ticker']} 期貨商業主力極度吸納 (COT {c['cot_1y']}%)")
 
     hkt_now = (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M HKT")
-    print(f"SUCCESS [Futures]: Built {len(items)} futures contracts with 2Y candles, COT & 10Y seasonality.")
     return {
         "updated_at": f"自動更新於 {hkt_now}",
         "items": items,
@@ -827,7 +796,7 @@ def fetch_futures_and_cot(universe_tickers):
 
 
 # ==============================================================================
-# MODULE B: FETCH QM SCREENER JSON FROM PRIVATE GITHUB REPO (ROUTE B)
+# MODULE B: FETCH QM SCREENER + OHLCV FROM PRIVATE GITHUB REPO (ROUTE B)
 # ==============================================================================
 def fetch_github_repo_json(repo, path, token):
     url = f"https://api.github.com/repos/{repo}/contents/{path}"
@@ -842,14 +811,71 @@ def fetch_github_repo_json(repo, path, token):
         return json.loads(raw_bytes.decode("utf-8"))
     if isinstance(meta, dict) and meta.get("download_url"):
         req = urllib.request.Request(meta["download_url"], headers=headers)
-        with urllib.request.urlopen(req, timeout=35) as resp:
+        with urllib.request.urlopen(req, timeout=45) as resp:
             return json.loads(resp.read().decode("utf-8"))
     return {}
 
 
-def sync_qm_screener(universe_tickers, strong_sector_etfs, massive_dyn_tickers):
+def parse_ohlcv_map(ohlcv_raw):
+    """Handle flexible shapes of ohlcv.json: {SYM: [...]}, {bars: {SYM: [...]}}, {data: {SYM: [...]}}, or [{Ticker, Date, ...}]."""
+    out = {}
+    if isinstance(ohlcv_raw, list):
+        for r in ohlcv_raw:
+            if not isinstance(r, dict):
+                continue
+            tk = (r.get("Ticker") or r.get("ticker") or r.get("symbol") or "").upper()
+            if tk:
+                out.setdefault(tk, []).append(r)
+        return out
+
+    if isinstance(ohlcv_raw, dict):
+        # Check nested containers first
+        for container_key in ("bars", "candles", "data", "ohlcv", "history", "tickers"):
+            sub = ohlcv_raw.get(container_key)
+            if isinstance(sub, dict):
+                for k, v in sub.items():
+                    if isinstance(v, list) and v:
+                        out[k.upper()] = v
+                if out:
+                    return out
+            elif isinstance(sub, list):
+                for r in sub:
+                    if isinstance(r, dict):
+                        tk = (r.get("Ticker") or r.get("ticker") or r.get("symbol") or "").upper()
+                        if tk:
+                            out.setdefault(tk, []).append(r)
+                if out:
+                    return out
+
+        # Direct dict mapping SYM -> list of bar dicts or [t,o,h,l,c,v]
+        for k, v in ohlcv_raw.items():
+            if isinstance(v, list) and v:
+                out[k.upper()] = v
+    return out
+
+
+def normalize_bar_item(h):
+    if isinstance(h, dict):
+        d_str = str(h.get("Date") or h.get("date") or h.get("time") or h.get("t") or "")[:10]
+        if not d_str:
+            return None
+        o = float(h.get("Open") if h.get("Open") is not None else (h.get("open") if h.get("open") is not None else h.get("o", 0)))
+        hi = float(h.get("High") if h.get("High") is not None else (h.get("high") if h.get("high") is not None else h.get("h", 0)))
+        lo = float(h.get("Low") if h.get("Low") is not None else (h.get("low") if h.get("low") is not None else h.get("l", 0)))
+        c = float(h.get("Close") if h.get("Close") is not None else (h.get("close") if h.get("close") is not None else h.get("c", 0)))
+        v = int(float(h.get("Volume") if h.get("Volume") is not None else (h.get("volume") if h.get("volume") is not None else h.get("v", 0)) or 0))
+        if c <= 0:
+            return None
+        return {"time": d_str, "open": round(o, 2), "high": round(hi, 2), "low": round(lo, 2), "close": round(c, 2), "volume": v}
+    if isinstance(h, (list, tuple)) and len(h) >= 5:
+        d_str = str(h[0])[:10]
+        return {"time": d_str, "open": round(float(h[1]), 2), "high": round(float(h[2]), 2), "low": round(float(h[3]), 2), "close": round(float(h[4]), 2), "volume": int(float(h[5]) if len(h) > 5 and h[5] else 0)}
+    return None
+
+
+def sync_qm_screener(universe_tickers, massive_dyn_tickers):
     if not SCREENER_TOKEN:
-        print("WARN [QM Screener]: SCREENER_REPO_TOKEN is empty, skipping Route B sync.")
+        print("WARN [QM Screener]: SCREENER_REPO_TOKEN is empty.")
         return None
     try:
         scr = fetch_github_repo_json(SCREENER_REPO, "latest/screener.json", SCREENER_TOKEN)
@@ -862,65 +888,45 @@ def sync_qm_screener(universe_tickers, strong_sector_etfs, massive_dyn_tickers):
         except Exception as e:
             print(f"WARN [QM Screener ohlcv.json]: {e}")
 
-        # Build lookup of OHLCV rows by ticker from ohlcv.json (supports list or dict-by-ticker)
-        ohlcv_by_sym = {}
-        if isinstance(ohlcv_raw, dict):
-            for k, v in ohlcv_raw.items():
-                if isinstance(v, list) and v and isinstance(v[0], dict):
-                    ohlcv_by_sym[k.upper()] = v
-            if not ohlcv_by_sym and isinstance(ohlcv_raw.get("rows"), list):
-                for r in ohlcv_raw["rows"]:
-                    tk = (r.get("Ticker") or r.get("ticker") or "").upper()
-                    if tk:
-                        ohlcv_by_sym.setdefault(tk, []).append(r)
-        elif isinstance(ohlcv_raw, list):
-            for r in ohlcv_raw:
-                tk = (r.get("Ticker") or r.get("ticker") or "").upper()
-                if tk:
-                    ohlcv_by_sym.setdefault(tk, []).append(r)
-
-        # Save candle files & pre-compute mini candles for every candidate
+        ohlcv_by_sym = parse_ohlcv_map(ohlcv_raw)
         cand_list = scr.get("candidates") or scr.get("Candidates") or []
         mini_scr = {}
+
         for row in cand_list:
             tk = (row.get("Ticker") or "").upper()
             if not tk:
                 continue
             hist = ohlcv_by_sym.get(tk) or []
-            if len(hist) >= 10:
-                bars = []
-                for h in hist:
-                    d_str = str(h.get("Date") or h.get("time") or "")[:10]
-                    if not d_str:
-                        continue
-                    bars.append({
-                        "time": d_str,
-                        "open": round(float(h.get("Open") or h.get("open") or 0), 2),
-                        "high": round(float(h.get("High") or h.get("high") or 0), 2),
-                        "low": round(float(h.get("Low") or h.get("low") or 0), 2),
-                        "close": round(float(h.get("Close") or h.get("close") or 0), 2),
-                        "volume": int(h.get("Volume") or h.get("volume") or 0),
-                    })
-                if bars:
-                    save_ticker_candle_file(tk, bars, [])
-                    if tk not in universe_tickers:
-                        universe_tickers.append(tk)
-                    closes = [b["close"] for b in bars]
-                    e10 = calc_ema_list(closes, 10)
-                    e20 = calc_ema_list(closes, 20)
-                    # Store [open, high, low, close, ema10, ema20] for last 48 bars
-                    slice_start = max(0, len(bars) - 48)
-                    mini_scr[tk] = [
-                        [bars[i]["open"], bars[i]["high"], bars[i]["low"], bars[i]["close"], round(e10[i], 2), round(e20[i], 2)]
-                        for i in range(slice_start, len(bars))
-                    ]
+            bars = [nb for nb in (normalize_bar_item(h) for h in hist) if nb is not None]
+            bars.sort(key=lambda x: x["time"])
 
-            # Tag confluence if Theme_RS_Proxy > 0 or ticker also in Massive EP/RS
+            # Fallback to Massive daily bars if ohlcv.json lacked this symbol
+            if len(bars) < 10 and API_KEY:
+                try:
+                    m_bars = get_daily_bars(tk, calendar_days=365)
+                    if m_bars:
+                        bars = format_daily_candles(m_bars, limit=300, decimals=2)
+                except Exception:
+                    pass
+
+            if bars:
+                save_ticker_candle_file(tk, bars, [])
+                if tk not in universe_tickers:
+                    universe_tickers.append(tk)
+                closes = [b["close"] for b in bars]
+                e10 = calc_ema_list(closes, 10)
+                e20 = calc_ema_list(closes, 20)
+                slice_start = max(0, len(bars) - 48)
+                mini_scr[tk] = [
+                    [bars[i]["open"], bars[i]["high"], bars[i]["low"], bars[i]["close"], round(e10[i], 2), round(e20[i], 2)]
+                    for i in range(slice_start, len(bars))
+                ]
+
             theme_rs = float(row.get("Theme_RS_Proxy") or 0)
             row["_confluence"] = (theme_rs > 0) or (tk in massive_dyn_tickers)
 
         scr["mini_candles"] = mini_scr
-        print(f"SUCCESS [QM Screener]: Synced {len(cand_list)} candidates & {len(mini_scr)} mini charts from {SCREENER_REPO}.")
+        print(f"SUCCESS [QM Screener]: {len(cand_list)} candidates, {len(mini_scr)} mini charts ready.")
         return scr
     except Exception as e:
         print(f"ERROR [QM Screener Route B]: {e}")
@@ -1080,14 +1086,14 @@ def main():
             "rsi14": m["rsi14"], "atr14": m["atr14"], "stop": m["stop"], "news": news_line,
         })
 
-    # Build Tab 2: Futures + CFTC COT + 10Y Seasonality
+    # Build Tab 2: Futures + CFTC COT + 10Y Seasonality (includes Silver SI + Gold/Silver ratio)
     futures_data = fetch_futures_and_cot(universe_tickers)
     with open(FUTURES_FILE, "w", encoding="utf-8") as f:
         json.dump(futures_data, f, ensure_ascii=False, separators=(",", ":"))
 
-    # Cross-Asset Macro Strip for Tab 1 (DXY, CL, GC, HG)
+    # Cross-Asset Macro Strip for Tab 1 (DXY, CL, GC, SI, HG)
     macro_strip = []
-    for sym in ("DXY", "CL", "GC", "HG"):
+    for sym in ("DXY", "CL", "GC", "SI", "HG"):
         it = next((x for x in futures_data.get("items", []) if x["ticker"] == sym), None)
         if it:
             macro_strip.append({
@@ -1096,9 +1102,8 @@ def main():
                 "cot_1y": it["cot"]["cot_1y"] if it.get("cot") else None,
             })
 
-    # Sync Tab 3: Private Repo QM Screener (Route B)
-    strong_etfs = {k for k, v in sec_rel20_map.items() if v > 0}
-    screener_data = sync_qm_screener(universe_tickers, strong_etfs, today_dyn_set)
+    # Sync Tab 3: Private Repo QM Screener + OHLCV
+    screener_data = sync_qm_screener(universe_tickers, today_dyn_set)
     if screener_data:
         with open(SCREENER_FILE, "w", encoding="utf-8") as f:
             json.dump(screener_data, f, ensure_ascii=False, separators=(",", ":"))
@@ -1130,7 +1135,7 @@ def main():
 
     pdf_list = fetch_drive_pdfs()
     summary_out = {
-        "version": "3.0",
+        "version": "3.1",
         "latest_date": sorted_dates[-1],
         "universe_tickers": sorted(universe_tickers),
         "reports_by_date": reports_by_date,
@@ -1143,7 +1148,7 @@ def main():
     with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
         json.dump(summary_out, f, ensure_ascii=False, separators=(",", ":"))
 
-    print(f"SUCCESS: V3.0 Total War Room built! summary={os.path.getsize(SUMMARY_FILE)/1024:.1f}KB, futures={len(futures_data.get('items', []))}, screener={'OK' if screener_data else 'SKIPPED'}.")
+    print(f"SUCCESS: V3.1 built! summary={os.path.getsize(SUMMARY_FILE)/1024:.1f}KB, futures={len(futures_data.get('items', []))}.")
 
 
 if __name__ == "__main__":

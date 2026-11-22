@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head><script type='text/javascript' nonce='vsuIqP6KCsmCZXRFS/Gzfg==' src='https://contribution.usercontent.google.com/ozPqhbJVat8GdWtiZ5wkX6rOjwTcSbKsxG6yzE49pFjW6VXcd_aw4_mqJWrQ_CVrPHrfAw444xG3k3WQ99jK8bWpxBcD6Orvpvl6GilwLETT0xUOQs0oEaujpt7g2w27adVq5QYZuOh3Em_1IkVAIz_mV2VrDvoqp72NrevOXOlq54UGLGdiIOIZEsUnq1Cmvbb1Gln7UVvicauzS1z0aGrgrMUtMdJ78BVqRfjG7sAcyhWlyXa-IwZqDaFVdmQLftZ1-SwFVfdAikb5aEuNqA7ittU7qUutEepNwop5UTLW00hDB_kFAvFadB7AaFwQaAxp7ymEBRJJ_gNB8F_baHup0GPUCAc4W8mh80mHSGK0UEGSJkNikFdklFOdK6IZcc-Vcs_lT4C8wGMuxsiqrR9rer9LzKnsOtCN105JoV4AXFp_Ufeg_GhVbX3xd08Uf6kkbppdDGfNexC4a3gsZRAzFJB-AzivhjY2jRwK5DdDYuPQwekHqaNpHE7Pi8I1-FtMM3lpE0dj2vDCEizu-e8TjoGcQh7dBG09vcGubtayjHN9Rtr-HhPCHYUzs6PVojvr7Bou7YoqKLdk--TAcgna7doONSN1Wu2gkyWNLQL9VInZpubXefqbUdEtIKscziEgL6IO21yZLdv2gaAa0sbj0c5Oxu-UAa4ORI-sPGZxzMLZO2EabDJLM3TvmS-Yd9IvYvtGHDoN3wHl1VgJo1y6bA'></script>
+<head><script type='text/javascript' nonce='MgJRWK2FvaoFJoCFBTPTCg==' src='https://contribution.usercontent.google.com/daq4Qum4ukJ8IV3M17XxaH1jQrZRTRrY1ucAJxsY3_2z3GS6MJEkv_J7FmLgC2LY3NpFvv-FSKRDxZv_pIDL1AyRkH_1zu7IGmmQQ8R9krlwPATbSWZCqHgr1qh-L2Fb4nb9bK3t1hnK34YShA1HoqkijWj-ePfmi8-KnT_E1n1ilrKuhNW4OdkTGah1VEOR42qbkdeGhnzn9TU6twz11NOny6h0yKYSENTUjehBVqgdMwB_-Zpf2BbqaZe-08uA1RIXqJnbOYZgHs7K963ttFZdXJzZLf-ONlsmqne-Ddz96gfHxt2tNlr1b90nd13GXsL6ie7y1DPCvVwhFqY_0rpo60Dl_oEQ-y1g5S0QE0Wx9c4Hs0LU_YayIDrTH6tiloUxsSXOgrWXOOFNnLXjCCd4aAwpB2J0Yrsd7fHZDcQ7DDsPfbEjugMkhJO5ZSdsznzU1adYyW2Gv9NLtm7m9YGHtFJcCFVxh3pdBdGT7PaX7iNQfskxshnB2s78DMODQQIpjYyYL2Zqpl6vquTJ_hOdBtqZXA7EUEmNq1R9dkwP5cem-xTSleMO5NWKRo9iG3NYmyiZcXHaOS1s9SaH6MaliRiIlltZBDKb-ZFUTLo57Bc9Mtnax9JsPDkeXmR9GxDRc7OEljTRx-RFf1zzaQxzKXKbaidClD6vDk2z-_nsHrPQfjPFPLGDiX_mGdEZIr3sxrl5hLhfbwOfvbo36p9xrw'></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>美股與期貨動能戰情總部 · Total War Room V3.0</title>
@@ -36,6 +36,13 @@
     @keyframes shimmer {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
+    }
+    @keyframes pulseRedAlert {
+      0%, 100% { background-color: rgba(153, 27, 27, 0.85); border-color: rgba(248, 113, 113, 0.9); box-shadow: 0 0 12px rgba(239, 68, 68, 0.65); }
+      50% { background-color: rgba(69, 10, 10, 0.55); border-color: rgba(239, 68, 68, 0.35); box-shadow: 0 0 2px rgba(239, 68, 68, 0.15); }
+    }
+    .alert-flash-red {
+      animation: pulseRedAlert 1.2s infinite;
     }
     body.compact-mode .compact-hide { display: none !important; }
     .chart-fullscreen {
@@ -246,7 +253,7 @@
             <!-- 預設收合：跨資產宏觀條 (DXY / CL / GC / HG) -->
             <div class="rounded-xl bg-[#09100e] border border-[#22322b] p-2.5">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-300">🌐 跨資產宏觀晴雨表（美元 DXY · 原油 CL · 黃金 GC · 銅 HG）</span>
+                <span class="text-xs font-bold text-slate-300">🌐 跨資產宏觀晴雨表（美元 DXY · 原油 CL · 黃金 GC · 白銀 SI · 銅 HG）</span>
                 <button type="button" id="btn-toggle-macro-strip" class="px-2 py-0.5 rounded bg-[#15221d] border border-[#2b3f36] text-[11px] font-bold text-amber-300">▼ 展開宏觀條</button>
               </div>
               <div id="macro-strip-grid" class="hidden grid-cols-2 sm:grid-cols-4 gap-2 mt-2.5"></div>
@@ -401,10 +408,13 @@
           <div id="fut-ratios-box" class="flex flex-wrap gap-2 text-xs font-bold"></div>
         </div>
 
-        <!-- 極端 COT 狙擊榜 & 三重共振 -->
+        <!-- 極端 COT 狙擊榜 & 12 週籌碼走勢 Trend -->
         <div class="rounded-2xl bg-[#09110e] border border-[#22322b] p-3 sm:p-4 space-y-2">
-          <h3 class="text-xs sm:text-sm font-extrabold text-amber-300">🎯 CFTC COT 極端籌碼背離 & 三重共振雷達（COT ≥80% 或 ≤20%）</h3>
-          <div id="cot-radar-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"></div>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-xs sm:text-sm font-extrabold text-amber-300">🎯 CFTC COT 極端籌碼背離 & 12 週 Trend（青線: 商業主力 · 紫線: 投機客）</h3>
+            <span class="text-[10px] text-slate-400">COT ≥80% 或 ≤20% 自動上榜</span>
+          </div>
+          <div id="cot-radar-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
         </div>
 
         <!-- 期貨分類分頁 -->
@@ -435,7 +445,10 @@
               <h2 class="text-base sm:text-lg font-bold text-slate-100">🎯 QM Momentum Screener v2.1 戰情室</h2>
               <span id="scr-date-badge" class="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/50 text-amber-300 text-xs font-extrabold">--</span>
             </div>
-            <p id="scr-verdict-line" class="text-xs text-slate-300 mt-1">正在同步 logg1314/qm-screener-auto ...</p>
+            <div id="scr-verdict-box" class="mt-1.5 px-2.5 py-1.5 rounded-xl border border-[#2a3f36] bg-[#0b1411] inline-flex flex-wrap items-center gap-2">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Screener 環境判定</span>
+              <span id="scr-verdict-line" class="text-xs font-extrabold text-slate-200">正在同步 logg1314/qm-screener-auto ...</span>
+            </div>
           </div>
           <div class="flex flex-wrap items-center gap-1.5">
             <button type="button" id="btn-scr-copy-ai" class="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-200 text-xs font-extrabold">📋 複製 Tier S/A AI_Summary</button>
@@ -853,8 +866,8 @@ function findScreenerCandidate(sym) {
 function plotNativeBars(symbol, tf, bars, isReal) {
   if (!LW_CHART) initCharts();
   var isFut = isFuturesSymbol(symbol);
-  var isFxDec = isFut && ["6E","6J","6B","6A","6C","6N","6M"].indexOf(symbol) !== -1;
-  var dec = isFxDec ? 4 : 2;
+  var fItem = isFut ? FUTURES_DATA.items.find(function(x) { return x.ticker === symbol; }) : null;
+  var dec = isFut ? (fItem && fItem.decimals != null ? fItem.decimals : (symbol === "6J" ? 6 : (["6E","6B","6A","6C","6N","6M"].indexOf(symbol) !== -1 ? 4 : 2))) : 2;
 
   LW_CANDLE.applyOptions({ priceFormat: { type: "price", precision: dec, minMove: isFxDec ? 0.0001 : 0.01 } });
   LW_CANDLE.setData(bars.map(function(b) { return { time: b.time, open: b.open, high: b.high, low: b.low, close: b.close }; }));
@@ -918,7 +931,7 @@ function plotNativeBars(symbol, tf, bars, isReal) {
     document.getElementById("candle-sector-badge").textContent = "QM " + (scrRow.Setup || "") + " · Tier " + (scrRow.Tier || "");
     document.getElementById("candle-etf-compare").innerHTML = 'Pivot <b class="text-emerald-300">$' + scrRow.Pivot_Price + '</b> · 5D Stop <b class="text-rose-300">$' + scrRow.Swing_Low_5D + '</b>';
   } else if (isFut) {
-    var fItem = FUTURES_DATA.items.find(function(x) { return x.ticker === symbol; });
+    
     document.getElementById("candle-sector-badge").textContent = fItem ? fItem.name : "CME/ICE 期貨";
     document.getElementById("candle-etf-compare").innerHTML = (fItem && fItem.cot) ? ('COT 1Y: <b class="text-amber-300">' + fItem.cot.cot_1y + '%</b> · 季節性勝率: <b class="text-emerald-300">' + fItem.seasonality.win_rate + '%</b>') : "";
   } else {
@@ -974,6 +987,26 @@ function renderCandlestick(symbol, tfOverride) {
 }
 
 // ==================== MINI CANDLE SVG HELPER (Supports optional Pivot & Stop dashed lines) ====================
+function buildCotTrendSvg(trail12w) {
+  if (!trail12w || trail12w.length < 2) return "";
+  var w = 240, h = 54, pad = 4, pw = w - pad * 2, ph = h - pad * 2;
+  var vals = [];
+  for (var i = 0; i < trail12w.length; i++) { vals.push(trail12w[i][1]); vals.push(trail12w[i][2]); }
+  var maxV = Math.max.apply(null, vals), minV = Math.min.apply(null, vals), span = (maxV - minV) || 1;
+  function xAt(idx) { return pad + (idx / (trail12w.length - 1)) * pw; }
+  function yAt(v) { return pad + ph - ((v - minV) / span) * ph; }
+  var zY = yAt(0).toFixed(1), pComm = [], pSpec = [];
+  for (var i = 0; i < trail12w.length; i++) {
+    var x = xAt(i).toFixed(1);
+    pComm.push(x + "," + yAt(trail12w[i][1]).toFixed(1));
+    pSpec.push(x + "," + yAt(trail12w[i][2]).toFixed(1));
+  }
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" class="w-full h-[54px] bg-[#060a09] rounded-lg border border-[#1a2822] mt-1.5">'
+    + '<line x1="' + pad + '" y1="' + zY + '" x2="' + (w - pad) + '" y2="' + zY + '" stroke="#334155" stroke-dasharray="2,2" />'
+    + '<polyline fill="none" stroke="#c084fc" stroke-width="1.4" points="' + pSpec.join(" ") + '" />'
+    + '<polyline fill="none" stroke="#2dd4bf" stroke-width="1.8" points="' + pComm.join(" ") + '" /></svg>';
+}
+
 function buildMiniCandleSvg(rows, pivotPrice, stopPrice) {
   if (!rows || rows.length < 5) return '<div class="h-[72px] rounded-lg bg-[#060a09] border border-[#1a2822] flex items-center justify-center text-[10px] text-slate-500">無迷你圖數據</div>';
   var w = 240, h = 76, pad = 4, pw = w - pad * 2, ph = h - pad * 2;
@@ -1266,6 +1299,7 @@ function renderWatchlist() {
       + '<div class="grid grid-cols-2 gap-1.5"><button type="button" data-sym="' + w.ticker + '" class="view-candle-btn py-1.5 rounded-lg bg-[#16241e] text-amber-300 text-xs font-bold">2Y 大圖</button>'
       + '<button type="button" data-ticker="' + w.ticker + '" data-entry="' + w.close + '" data-stop="' + w.stop + '" data-atr="' + (w.atr14 || 2) + '" class="send-calc-btn py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-semibold">帶入計算機</button></div></div>';
   }).join("") || '<p class="text-xs text-slate-500">無符合條件股票。</p>';
+  hydrateScreenerMiniCandles(items);
   bindCandleButtons();
   bindSendCalcButtons();
 }
@@ -1319,7 +1353,8 @@ function renderFuturesTab() {
     var c = it.cot, isBull = c.cot_1y >= 80;
     return '<button type="button" data-sym="' + it.ticker + '" class="view-candle-btn text-left p-2.5 rounded-xl border ' + (isBull ? "bg-emerald-950/35 border-emerald-600/40" : "bg-rose-950/35 border-rose-600/40") + ' hover:brightness-125">'
       + '<div class="flex justify-between items-center"><span class="text-xs font-extrabold text-white">' + it.ticker + ' · ' + it.name + '</span><span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold ' + (isBull ? "bg-emerald-500/25 text-emerald-200" : "bg-rose-500/25 text-rose-200") + '">' + (isBull ? "🟢 主力極吸納" : "🔴 主力狂派貨") + '</span></div>'
-      + '<div class="text-[11px] text-slate-300 mt-1">商業 COT 1Y: <b class="text-amber-300">' + c.cot_1y + '%</b> (3Y: ' + c.cot_3y + '%) · 投機客: <b>' + c.spec_1y + '%</b> · 10Y季節勝率: <b>' + it.seasonality.win_rate + '%</b></div></button>';
+      + '<div class="text-[11px] text-slate-300 mt-1">商業 COT 1Y: <b class="text-amber-300">' + c.cot_1y + '%</b> (3Y: ' + c.cot_3y + '%) · 投機客: <b>' + c.spec_1y + '%</b> · 10Y勝率: <b>' + it.seasonality.win_rate + '%</b></div>'
+      + buildCotTrendSvg(c.trail_12w) + '</button>';
   }).join("") || '<p class="text-xs text-slate-400">本週暫無 COT 分位數 ≥80% 或 ≤20% 之極端品種。</p>';
 
   // Filter & Sort: DXY pinned first in FX, other 7 FX sorted by 20D% descending
@@ -1337,7 +1372,7 @@ function renderFuturesTab() {
 
   document.getElementById("futures-cards-grid").innerHTML = list.map(function(it) {
     var c = it.cot, s = it.seasonality || { win_rate: 50, avg_ret: 0 };
-    var dec = (it.group === "FX" && it.ticker !== "DXY") ? 4 : 2;
+    var dec = (it.decimals != null) ? it.decimals : ((it.group === "FX" && it.ticker !== "DXY") ? (it.ticker === "6J" ? 6 : 4) : 2);
     var mini = (FUTURES_DATA.mini_candles || {})[it.ticker];
     var cotBadge = c ? ('<span class="px-1.5 py-0.5 rounded bg-[#14221c] text-[10px] font-bold ' + (c.cot_1y >= 80 ? "text-emerald-300" : (c.cot_1y <= 20 ? "text-rose-300" : "text-slate-300")) + '">COT 1Y: ' + c.cot_1y + '%</span>') : '';
     return '<div class="p-3 rounded-xl border ' + (it.ticker === "DXY" ? "border-amber-500/60 bg-amber-950/15" : "border-[#22322b] bg-[#0b1310]") + ' flex flex-col justify-between gap-2">'
@@ -1394,7 +1429,11 @@ function renderScreenerTab() {
   if (!SCREENER_DATA) return;
   var reg = SCREENER_DATA.market_regime || {};
   document.getElementById("scr-date-badge").textContent = "美股基準日：" + (SCREENER_DATA.last_us_bar_date || "-") + " · 生成：" + (SCREENER_DATA.generated_at_hkt || "-");
-  document.getElementById("scr-verdict-line").textContent = "Screener 環境判定：" + (reg.verdict || "-") + "（" + (reg.note || "") + "）";
+  var vText = (reg.verdict || "-") + "（" + (reg.note || "") + "）";
+  document.getElementById("scr-verdict-line").textContent = vText;
+  var vBox = document.getElementById("scr-verdict-box");
+  var isDanger = /defensive|caution|risk-off|bear|avoid/i.test(String(reg.verdict || "") + " " + String(reg.note || ""));
+  vBox.className = "mt-1.5 px-3 py-1.5 rounded-xl border inline-flex flex-wrap items-center gap-2 " + (isDanger ? "alert-flash-red text-rose-100" : "border-emerald-500/50 bg-emerald-950/40 text-emerald-200");
 
   // Build Theme pills dynamically
   var all = SCREENER_DATA.candidates || SCREENER_DATA.Candidates || [];
@@ -1438,7 +1477,7 @@ function renderScreenerTab() {
       + (isExt ? '<span class="px-1.5 py-0.5 rounded bg-rose-500/25 text-rose-200 text-[10px] font-bold">⚠️ EXT</span>' : '')
       + '</div><p class="text-[11px] text-amber-300/90 mt-0.5">' + (r.Setup || "") + ' · ' + (r.Theme || "") + '</p></div>'
       + '<a href="' + tvUrl(tk) + '" target="_blank" rel="noopener noreferrer" class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[11px] font-extrabold shrink-0">TV↗</a></div>'
-      + '<button type="button" data-sym="' + tk + '" class="compact-hide view-candle-btn block w-full" title="白: 10EMA · 青: 20EMA · 綠虛線: Pivot · 紅虛線: 5D Stop">' + buildMiniCandleSvg(minis[tk], pv, st5) + '</button>'
+      + '<button type="button" id="scr-mini-' + tk + '" data-sym="' + tk + '" class="compact-hide view-candle-btn block w-full" title="白: 10EMA · 青: 20EMA · 綠虛線: Pivot · 紅虛線: 5D Stop">' + buildMiniCandleSvg(minis[tk], pv, st5) + '</button>'
       + '<div class="grid grid-cols-3 gap-1 text-[10px] font-bold bg-[#080e0c] p-2 rounded-lg border border-[#1a2822]">'
       + '<div>RS 3M/1M: <span class="text-white">' + r.RSRating + '/' + r.RS_1M + '</span></div>'
       + '<div>Pivot: <span class="text-emerald-300">$' + pv.toFixed(2) + ' (' + r.Dist_to_Pivot + '%)</span></div>'
@@ -1453,6 +1492,7 @@ function renderScreenerTab() {
       + '<button type="button" data-aisum="' + encodeURIComponent(r.AI_Summary || "") + '" class="copy-aisum-btn py-1.5 rounded-lg bg-sky-500/20 text-sky-300 text-xs font-bold">複製摘要</button></div></div>';
   }).join("") || '<p class="col-span-full text-xs text-slate-500">無符合篩選條件嘅 QM 候選股。</p>';
 
+  hydrateScreenerMiniCandles(items);
   bindCandleButtons();
   bindSendCalcButtons();
   document.querySelectorAll(".copy-aisum-btn").forEach(function(b) {
