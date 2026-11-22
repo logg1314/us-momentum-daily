@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head><script type='text/javascript' nonce='MgJRWK2FvaoFJoCFBTPTCg==' src='https://contribution.usercontent.google.com/daq4Qum4ukJ8IV3M17XxaH1jQrZRTRrY1ucAJxsY3_2z3GS6MJEkv_J7FmLgC2LY3NpFvv-FSKRDxZv_pIDL1AyRkH_1zu7IGmmQQ8R9krlwPATbSWZCqHgr1qh-L2Fb4nb9bK3t1hnK34YShA1HoqkijWj-ePfmi8-KnT_E1n1ilrKuhNW4OdkTGah1VEOR42qbkdeGhnzn9TU6twz11NOny6h0yKYSENTUjehBVqgdMwB_-Zpf2BbqaZe-08uA1RIXqJnbOYZgHs7K963ttFZdXJzZLf-ONlsmqne-Ddz96gfHxt2tNlr1b90nd13GXsL6ie7y1DPCvVwhFqY_0rpo60Dl_oEQ-y1g5S0QE0Wx9c4Hs0LU_YayIDrTH6tiloUxsSXOgrWXOOFNnLXjCCd4aAwpB2J0Yrsd7fHZDcQ7DDsPfbEjugMkhJO5ZSdsznzU1adYyW2Gv9NLtm7m9YGHtFJcCFVxh3pdBdGT7PaX7iNQfskxshnB2s78DMODQQIpjYyYL2Zqpl6vquTJ_hOdBtqZXA7EUEmNq1R9dkwP5cem-xTSleMO5NWKRo9iG3NYmyiZcXHaOS1s9SaH6MaliRiIlltZBDKb-ZFUTLo57Bc9Mtnax9JsPDkeXmR9GxDRc7OEljTRx-RFf1zzaQxzKXKbaidClD6vDk2z-_nsHrPQfjPFPLGDiX_mGdEZIr3sxrl5hLhfbwOfvbo36p9xrw'></script>
+<head><script type='text/javascript' nonce='C78eqQFt2rWsY1dgoQAmOQ==' src='https://contribution.usercontent.google.com/gGdIJi4M6gYxgAvc3BgrSabvxzHeiyQXawlepuGPwJwdDPxu0g9V_XZugWPQ3IqUQY9DU_TD6e8wIWfU9iOFSyYPJYxa6RBto_NKOGRRJafGmMAIIOgviKyyLtc9eQGcZQcckWA-IbQ1kPe30SxByfRmWajlP9Z8xNd7_KK0jbl5Mx3jgR4EUXf2HH4bKE9mxYTStt-bzofe4WeEB6pfD5NmuQTh-mWPhWg9cdx9w_P4zhnQXyUrLMdrPkWFkqZ_3f4Ffqo9GbnpgyltSWxLwfDqM_jEhIhdNknn-iz968pBkgDrfMGiOFqJNB2mZWUa99bwF4dj1F8hqvfqAUK6RJjKNiG1s7vPzVMYqEDIzr-djbW2BN3mG9fJ_H5staDzK0PRP_lgsBF511ibCDM3fr5q58-Rtm7yp0SvcsN1Nq4Q20jfYIkyqIyk-825rEwXP3xF7qE-Dz0g0sZFuow06Pvo4uGgYR2kkbsp7M6aOdHsMIQ6-zRCsPR0dZ9CzvJBLTrkcqvfeHTHIRtPcSqM_AOaRYHrMGywWal4tyDHfmMK9Q5r580upP2cP2eg52B25aJtDhmUqQtshazgP4cLSgGTfJIcyWy6reOex8EPYs1y20r4VuK0tffoxX7ss-FeDq95eicueSpETbGp4qTb8TERjp_jl6D4RBtCv781oY2U4bT6LY5en9PPidTWoW3RJMoQDHZTT99ThkrvBu--5xw1iw'></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>美股與期貨動能戰情總部 · Total War Room V3.0</title>
@@ -921,8 +921,9 @@ function plotNativeBars(symbol, tf, bars, isReal) {
   LW_CHART.timeScale().setVisibleLogicalRange({ from: Math.max(0, bars.length - showCount), to: bars.length + 3 });
 
   var last = bars[bars.length - 1];
+  var isFxQuote = isFut && ["6E","6J","6B","6A","6C","6N","6M"].indexOf(symbol) !== -1;
   var lastMetric = isFut ? ("量 " + fmtContracts(last.volume || 0)) : ("額 " + fmtDollarVol(last.close * (last.volume || 0)));
-  document.getElementById("candle-title").textContent = symbol + " · " + (isFxDec ? "" : "$") + last.close.toFixed(dec) + " · " + lastMetric;
+  document.getElementById("candle-title").textContent = symbol + " · " + (isFxQuote ? "" : "$") + last.close.toFixed(dec) + " · " + lastMetric;
   var mb = document.getElementById("candle-mode-badge");
   mb.textContent = isReal ? ((isFut ? "Futures " : "Native ") + tf + " (" + bars.length + "根)") : ("預覽 " + tf);
   document.getElementById("candle-tv-btn").href = tvUrl(isFut ? (symbol + "1!") : symbol);
@@ -1283,6 +1284,34 @@ function getFilteredWatchlist() {
   return (CURRENT_REPORT.watchlist || []).filter(function(x) {
     return (ACTIVE_BUCKET === "ALL" || x.bucket === ACTIVE_BUCKET) && (!strongOnly || x.sec_strong) && (!q || x.ticker.indexOf(q) !== -1 || (x.sector || "").toUpperCase().indexOf(q) !== -1);
   });
+}
+
+function hydrateScreenerMiniCandles(items) {
+  if (!items || !items.length) return;
+  var minis = (SCREENER_DATA && SCREENER_DATA.mini_candles) ? SCREENER_DATA.mini_candles : (SUMMARY.mini_candles || {});
+  for (var i = 0; i < Math.min(items.length, 24); i++) {
+    var tk = String(items[i].Ticker || items[i].ticker || "").toUpperCase();
+    if (!tk || minis[tk] || CANDLE_CACHE[tk]) continue;
+    (function(sym) {
+      fetch("./data/candles/" + encodeURIComponent(sym) + ".json?t=" + Date.now())
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(j) {
+          if (!j || !j["1D"] || j["1D"].length < 5) return;
+          CANDLE_CACHE[sym] = j;
+          var bars = j["1D"], closes = bars.map(function(b) { return Number(b.close) || 0; });
+          var k10 = 2/11, k20 = 2/21, e10 = closes[0], e20 = closes[0], rows = [];
+          for (var idx = 0; idx < bars.length; idx++) {
+            e10 = idx === 0 ? closes[0] : closes[idx]*k10 + e10*(1-k10);
+            e20 = idx === 0 ? closes[0] : closes[idx]*k20 + e20*(1-k20);
+            if (idx >= bars.length - 48) rows.push([bars[idx].open, bars[idx].high, bars[idx].low, bars[idx].close, +e10.toFixed(2), +e20.toFixed(2)]);
+          }
+          minis[sym] = rows;
+          var holder = document.getElementById("scr-mini-" + sym);
+          var rowObj = items.find(function(x) { return String(x.Ticker || x.ticker || "").toUpperCase() === sym; }) || {};
+          if (holder) holder.innerHTML = buildMiniCandleSvg(rows, Number(rowObj.Pivot_Price || 0), Number(rowObj.Swing_Low_5D || 0));
+        }).catch(function() {});
+    })(tk);
+  }
 }
 
 function renderWatchlist() {
