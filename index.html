@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head><script type='text/javascript' nonce='C78eqQFt2rWsY1dgoQAmOQ==' src='https://contribution.usercontent.google.com/gGdIJi4M6gYxgAvc3BgrSabvxzHeiyQXawlepuGPwJwdDPxu0g9V_XZugWPQ3IqUQY9DU_TD6e8wIWfU9iOFSyYPJYxa6RBto_NKOGRRJafGmMAIIOgviKyyLtc9eQGcZQcckWA-IbQ1kPe30SxByfRmWajlP9Z8xNd7_KK0jbl5Mx3jgR4EUXf2HH4bKE9mxYTStt-bzofe4WeEB6pfD5NmuQTh-mWPhWg9cdx9w_P4zhnQXyUrLMdrPkWFkqZ_3f4Ffqo9GbnpgyltSWxLwfDqM_jEhIhdNknn-iz968pBkgDrfMGiOFqJNB2mZWUa99bwF4dj1F8hqvfqAUK6RJjKNiG1s7vPzVMYqEDIzr-djbW2BN3mG9fJ_H5staDzK0PRP_lgsBF511ibCDM3fr5q58-Rtm7yp0SvcsN1Nq4Q20jfYIkyqIyk-825rEwXP3xF7qE-Dz0g0sZFuow06Pvo4uGgYR2kkbsp7M6aOdHsMIQ6-zRCsPR0dZ9CzvJBLTrkcqvfeHTHIRtPcSqM_AOaRYHrMGywWal4tyDHfmMK9Q5r580upP2cP2eg52B25aJtDhmUqQtshazgP4cLSgGTfJIcyWy6reOex8EPYs1y20r4VuK0tffoxX7ss-FeDq95eicueSpETbGp4qTb8TERjp_jl6D4RBtCv781oY2U4bT6LY5en9PPidTWoW3RJMoQDHZTT99ThkrvBu--5xw1iw'></script>
+<head><script type='text/javascript' nonce='KE0QhJlzcKydBlFGvc0F+w==' src='https://contribution.usercontent.google.com/YfBT3NcrEVNqum8lJYqIAkC7YHqRiC7fcFORAtuaHjN37TNuVcR8yoZgtXWhFa_3wHMYVvsR4uNcGJUERuZelShU-78JX9R42hfQm_agQhF59koVkF94MP1QAMrfjLxhnDZ7xSGoQYSCtuV-WQZTANN0eX9IefBbHIFHeme7ldun5AjAXaWzk7xWihygGN1crCAIz0uyZ0QTzQHLLL5lc76E_kRy_0EBUkLJVe6Uv2X4L7IfL-0Opcpeak86HnqyCT_Z6Qxi35lCQxez8Y5WNar8inzCtlVrUA_SkLfJEi9R82-YH86KXvktXx1CO_0p0iC9LtCop8VchNRSgwXdciC8Ejnh91_xWSO28Uubvq9Nz6UeISASaBFZ-oHXIsyYnEIrcWr-WTUEszwCkjjcwdv8EGuM_QC5WbLnEhk-7p-eHQw7t-7NV9pwyFhhCAZnL03giaMtEiKighylHtrDlWT3gzukmjwGpWFORjyIJXPEz3W9poeiHR1HMOhgA5zBiRrt7WgqsIdeJrUK9QgdsNkJy9Nd9OOIMzvx-yt3fRzyhJRJcZRliXzwBUdA6b4dyUSG1d70o1MckjzwEZZmyv59VU5S9QPe0DbxHP54--U0OEJRmZB9lxWfuMem6MGyGjEIqYPdQPrMhJu4aoV3N53tlJDT7ESPKae40XaIoJAG0GfYYsgZPDryht6Syvl4RarfNboxyhu8IlXEqU7XEuwTWg'></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>美股與期貨動能戰情總部 · Total War Room V3.0</title>
@@ -869,7 +869,7 @@ function plotNativeBars(symbol, tf, bars, isReal) {
   var fItem = isFut ? FUTURES_DATA.items.find(function(x) { return x.ticker === symbol; }) : null;
   var dec = isFut ? (fItem && fItem.decimals != null ? fItem.decimals : (symbol === "6J" ? 6 : (["6E","6B","6A","6C","6N","6M"].indexOf(symbol) !== -1 ? 4 : 2))) : 2;
 
-  LW_CANDLE.applyOptions({ priceFormat: { type: "price", precision: dec, minMove: isFxDec ? 0.0001 : 0.01 } });
+  LW_CANDLE.applyOptions({ priceFormat: { type: "price", precision: dec, minMove: Math.pow(10, -dec) } });
   LW_CANDLE.setData(bars.map(function(b) { return { time: b.time, open: b.open, high: b.high, low: b.low, close: b.close }; }));
   LW_EMA10.setData(calcEma(bars, 10));
   LW_EMA21.setData(calcEma(bars, 21));
@@ -981,9 +981,9 @@ function renderCandlestick(symbol, tfOverride) {
     if (ACTIVE_TF === "1H" && (!payload["1H"] || payload["1H"].length < 10)) showToast("此標的暫無 1H 數據，已自動顯示日線");
     var bars = (ACTIVE_TF === "1W") ? aggregateWeekly(raw) : raw;
     if (bars.length >= 5) plotNativeBars(ACTIVE_SYMBOL, ACTIVE_TF, bars, true);
-  }).catch(function() {
+  }).catch(function(err) {
     mask.classList.add("hidden");
-    showToast("尚未有 " + ACTIVE_SYMBOL + " 緩存數據，請先執行 V3.0 Actions");
+    console.error("Chart error:", err); showToast("載入 " + ACTIVE_SYMBOL + " 失敗：" + (err && err.message ? err.message : "請先執行 V3.0 Actions"));
   });
 }
 
