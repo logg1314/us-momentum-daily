@@ -854,18 +854,22 @@ def normalize_bar_item(h):
     return None
 
 
-def ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym=None):
-    """Ensure data/candles/{tk}.json exists and return its 1D bars."""
+def ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym=None, latest_date=""):
+    """Ensure data/candles/{tk}.json exists and is up-to-date (>= latest_date)."""
     tk = tk.upper()
     path = os.path.join(CANDLES_DIR, f"{tk}.json")
+    cached_bars = []
     if os.path.exists(path):
         try:
             with open(path, "r", encoding="utf-8") as f:
                 j = json.load(f)
             if j.get("1D") and len(j["1D"]) >= 5:
-                if tk not in universe_tickers:
-                    universe_tickers.append(tk)
-                return j["1D"]
+                cached_bars = j["1D"]
+                last_dt = str(cached_bars[-1].get("time") or "")[:10]
+                if not latest_date or last_dt >= latest_date:
+                    if tk not in universe_tickers:
+                        universe_tickers.append(tk)
+                    return cached_bars
         except Exception:
             pass
 
@@ -874,13 +878,18 @@ def ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym=None):
         bars = [nb for nb in (normalize_bar_item(h) for h in ohlcv_by_sym[tk]) if nb is not None]
         bars.sort(key=lambda x: x["time"])
 
-    if len(bars) < 10 and API_KEY:
+    # If ohlcv_by_sym is missing or stale compared to latest_date, fetch fresh bars from Massive API
+    need_api = (len(bars) < 10) or (latest_date and str(bars[-1].get("time") or "")[:10] < latest_date)
+    if need_api and API_KEY:
         try:
             m_bars = get_daily_bars(tk, calendar_days=380)
             if m_bars:
                 bars = format_daily_candles(m_bars, limit=300, decimals=2)
         except Exception:
             pass
+
+    if not bars:
+        bars = cached_bars
 
     if bars:
         save_ticker_candle_file(tk, bars, [])
@@ -889,7 +898,7 @@ def ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym=None):
     return bars
 
 
-def sync_qm_screener(universe_tickers, massive_dyn_tickers):
+def sync_qm_screener(universe_tickers, massive_dyn_tickers, latest_date=""):
     if not SCREENER_TOKEN:
         return None, {}
     try:
@@ -910,7 +919,7 @@ def sync_qm_screener(universe_tickers, massive_dyn_tickers):
             tk = (row.get("Ticker") or "").upper()
             if not tk:
                 continue
-            bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
+            bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym, latest_date=latest_date)
             if bars:
                 closes = [b["close"] for b in bars]
                 e10 = calc_ema_list(closes, 10)
@@ -1022,6 +1031,7 @@ def fetch_ai_context_from_screener_repo():
 
 
 def convert_ai_context_to_paper_war_room(ctx, universe_tickers, spy_bars, ohlcv_by_sym):
+    latest_us_dt = datetime.fromtimestamp(spy_bars[-1]["t"] / 1000, timezone.utc).strftime("%Y-%m-%d") if spy_bars else ""
     acc_raw = ctx.get("account_stats") or {}
     active_book = ctx.get("active_book") or []
     pending_raw = ctx.get("pending_orders") or []
@@ -1038,7 +1048,7 @@ def convert_ai_context_to_paper_war_room(ctx, universe_tickers, spy_bars, ohlcv_
         tk = str(item.get("ticker") or "").upper()
         if not tk:
             continue
-        bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
+        bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym, latest_date=latest_us_dt)
         fill_p = safe_float(item.get("fill_price") or item.get("entry_price"))
         last_c = safe_float(item.get("last_close") or item.get("current_price"), bars[-1]["close"] if bars else fill_p)
         init_st = safe_float(item.get("stop_loss") or item.get("init_stop"))
@@ -1123,7 +1133,7 @@ def convert_ai_context_to_paper_war_room(ctx, universe_tickers, spy_bars, ohlcv_
         tk = str(c.get("ticker") or "").upper()
         if not tk:
             continue
-        ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
+        ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym, latest_date=latest_us_dt)
         ctrl_out.append({
             "scan_date": str(c.get("scan_date") or "")[:10],
             "ticker": tk,
@@ -1204,11 +1214,14 @@ def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existin
     setup_buckets = {}
     tier_buckets = {}
 
+    latest_us_dt = datetime.fromtimestamp(spy_bars[-1]["t"] / 1000, timezone.utc).strftime("%Y-%m-%d") if spy_bars else ""
     for row in ledger_rows:
         tk = (row.get("ticker") or "").strip().upper()
         if not tk:
             continue
         status = (row.get("status") or "OPEN").strip().upper()
+        if status in ("EXPIRED", "EXPIRED_NO_FILL", "CANCELLED"):
+            continue
         entry_date = (row.get("entry_date") or row.get("plan_date") or "").strip()[:10]
         fill_price = safe_float(row.get("fill_price") or row.get("trigger_price"))
         init_stop = safe_float(row.get("stop_loss"))
@@ -1226,7 +1239,7 @@ def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existin
         regime_raw = (row.get("market_regime") or "Unknown").strip()
         regime_short = regime_raw.split("(")[0].strip()
 
-        bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
+        bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym, latest_date=latest_us_dt)
         last_close = bars[-1]["close"] if bars else (exit_price if exit_price > 0 else fill_price)
         last_bar_date = bars[-1]["time"] if bars else ""
 
@@ -1318,7 +1331,7 @@ def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existin
         tk = (p.get("ticker") or "").strip().upper()
         if not tk or st in ("EXPIRED", "CANCELLED", "FILLED"):
             continue
-        ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
+        ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym, latest_date=latest_us_dt)
         active_pending.append({
             "order_id": p.get("order_id", ""),
             "plan_date": p.get("plan_date", ""),
@@ -1342,7 +1355,7 @@ def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existin
         scan_close = safe_float(c.get("scan_close"))
         if not tk or scan_close <= 0:
             continue
-        bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
+        bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym, latest_date=latest_us_dt)
         cur_close = bars[-1]["close"] if bars else scan_close
         fwd_bars = [b for b in bars if b["time"] > scan_dt] if bars else []
         max_after = max((b["high"] for b in fwd_bars), default=cur_close)
@@ -1636,7 +1649,7 @@ def main():
             })
 
     # Tab 3: Private Repo QM Screener + OHLCV
-    screener_data, ohlcv_by_sym = sync_qm_screener(universe_tickers, today_dyn_set)
+    screener_data, ohlcv_by_sym = sync_qm_screener(universe_tickers, today_dyn_set, latest_date=trade_date)
     if screener_data:
         with open(SCREENER_FILE, "w", encoding="utf-8") as f:
             json.dump(screener_data, f, ensure_ascii=False, separators=(",", ":"))
