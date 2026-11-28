@@ -1215,11 +1215,18 @@ def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existin
     tier_buckets = {}
 
     latest_us_dt = datetime.fromtimestamp(spy_bars[-1]["t"] / 1000, timezone.utc).strftime("%Y-%m-%d") if spy_bars else ""
+    ledger_order_ids = set()
+    active_open_tickers = set()
     for row in ledger_rows:
+        oid = (row.get("order_id") or "").strip().upper()
+        if oid:
+            ledger_order_ids.add(oid)
         tk = (row.get("ticker") or "").strip().upper()
         if not tk:
             continue
         status = (row.get("status") or "OPEN").strip().upper()
+        if status == "OPEN":
+            active_open_tickers.add(tk)
         if status in ("EXPIRED", "EXPIRED_NO_FILL", "CANCELLED"):
             continue
         entry_date = (row.get("entry_date") or row.get("plan_date") or "").strip()[:10]
@@ -1324,21 +1331,35 @@ def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existin
             "notes": row.get("notes", ""),
         })
 
-    # Pending Orders (status == NEW or PENDING)
+    # Pending Orders (strictly active NEW/PENDING only, not already in Ledger_Mirror, deduplicated)
     active_pending = []
+    seen_pending_keys = set()
     for p in pending_rows:
-        st = (p.get("sync_status") or "").strip().upper()
+        st = (p.get("sync_status") or p.get("status") or "").strip().upper()
+        oid = (p.get("order_id") or "").strip().upper()
         tk = (p.get("ticker") or "").strip().upper()
-        if not tk or st in ("EXPIRED", "CANCELLED", "FILLED"):
+        plan_dt = (p.get("plan_date") or "").strip()[:10]
+        if not tk:
             continue
+        if oid and oid in ledger_order_ids:
+            continue
+        if st and st not in ("NEW", "PENDING", "QUEUED", "ACTIVE"):
+            continue
+        if latest_us_dt and plan_dt and plan_dt <= latest_us_dt:
+            continue
+        trig = safe_float(p.get("trigger_price"))
+        dedup_key = (tk, round(trig, 2))
+        if dedup_key in seen_pending_keys:
+            continue
+        seen_pending_keys.add(dedup_key)
         ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym, latest_date=latest_us_dt)
         active_pending.append({
             "order_id": p.get("order_id", ""),
-            "plan_date": p.get("plan_date", ""),
+            "plan_date": plan_dt,
             "ticker": tk,
             "setup_tag": p.get("setup_tag", ""),
             "tier": p.get("screener_tier", ""),
-            "trigger_price": safe_float(p.get("trigger_price")),
+            "trigger_price": trig,
             "stop_loss": safe_float(p.get("stop_loss")),
             "shares": int(safe_float(p.get("shares"))),
             "risk_usd": safe_float(p.get("risk_usd")),
