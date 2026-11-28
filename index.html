@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head><script type='text/javascript' nonce='Cg1sdfShvQCR1XE5OKUbMg==' src='https://contribution.usercontent.google.com/FuKS0Dfiff1G62oMB_RIuMpjo9nwEUwE0MUxMAvB9YLcidPzIsFaMo0G-Y853WgvJxVxeW7nxsbVojl09DXwiqCzCswaErm1VvrBCvt9xPYgvV2yFjCH7gx4jM28aw5stm3L5dGXrYdlKpM8mb7dXuFiT82uRoXN-ogXen-3qj2gIacfmxCjsRcO0Nq2Z5jiUvxu1ITFlMTVJ2K5ChfSTE3AgeXrYjgMxjARQjnErAGjylALXFx-fiHch_1v9HyTNyZUwClsaYxUJnIj5zqi-RG3RqWoql2D_Tnw31sDkJyhx2dK-9elm1oyQyZe34PRfNJT1oRxOJQY65ePHEL0MQAhGAHDoRFtCBwd9Y5oTndO8I3-7Fyrb52F5aN-sK0UaTuz3_ENFQyIA_wyFvPTm1EOiCPYqJ8_E4Z0KT56cCjrU8kuXIZkuYr85DpFCs5KSt06xvt8cnmhvFVoKkNZ9jWNGhwwOoNrc284Atz7flD0L15iG430OrkKRjiGV87tYRTrAWWgdfhJbtRjciNieW575ZvkLMLW51hbQgrohifDJVF7Uxd9WRCx3NUGH2NlntrbSI2gqnxCcfnM5zlL_k3OKxiAFX116lUU1l9hu5cgKD_TH30x-C5Y8trrLlwdMK7PPoLrUiI9FFi-Dr_L5793_NRLNhp6TyLb_CJhkb1Yt6y7i_x3AylkE5Z5A3XzytzX0r4cjHTMgrxx9A'></script>
+<head><script type='text/javascript' nonce='G4XjobKTqcNua775sDIAJw==' src='https://contribution.usercontent.google.com/_4qRsR6PDDukUEYwuFJko6dhH0iH2h3vHEQKligK4lnKtHnxLGCS_mfXVClDSMqYy__YaL_z1Dwtb5L4W9zhGrOH7QRbC9D1ZKAfe_V61DZ2jjIW2wjFrfGwVZfrkLqV4mnAu5tysvMrjFrS6CNdXXfom2tdQ3UMpNrnmC0WvM9II7wII9ltnDRq42loeIDMi1pjF-HErSAqN3lDq6uJ1E9Kq__JwL-xfEADSNMm4KG6o2QwfKxB90CIIDXQpCPjEK1h-X2NkrtrmrSJcbkTrYK9BknkSe_BPmo93-GD7YU5WJNS63gdEQP_8aHo3QnfQKFaE1UWmLlf5D6HhGSYwe01ndjjLAL7XuXFcNvppqdFsjDeox93_CMTA9FAe7NCJJU--3PjgdvAif0KTf8fCfHHB3ryKgOjLTXJcRaIF5SQYrK9P4tMABetAydDbcGYocMOs_q6IDMvtuLpQ0hzW-Fllbe5DdKw47ZBIvJSsWLt1PrfLCaw4jDhdpnJhMivC_aE9was6ZU4yFKRva7mf6I6pBy3uqUuiM_1BcMAYqcgfc4X4k51yvMUjE4VgLOSNPG5-Vxsx15hDTVVhNC0zljYxjt-ZshTRu8i1RUZz6k_bnUU0lqo_7upYxn1mf45plkIgUXZyxDn5l3gB_3DpopoaGEE22kdbnI1JabIDWjRaN417tfZl3mU04VAzk63Gt0UYkEG9YYvROpQCw'></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TACTICAL WAR ROOM V5.0 · 全市場動能與 AI Paper 戰情終端</title>
@@ -261,12 +261,17 @@
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-1.5">
-          <!-- 3-Min Cantonese Briefing Mini Player -->
-          <div id="audio-brief-bar" class="inline-flex items-center gap-1 px-2 py-1 rounded-[3px] bg-[#132019] border border-[#243B2E] text-[11px] font-mono-hud">
-            <button type="button" id="btn-audio-play" class="inline-flex items-center gap-1 text-[#E5C158] hover:text-white font-extrabold" title="播放 3 分鐘廣東話戰報簡報 (自動偵測 briefing.mp3 或啟用 zh-HK 語音)">
+          <!-- 3-Min Cantonese Briefing Player with Interactive Scrubbing Bar & Repeat -->
+          <div id="audio-brief-bar" class="inline-flex flex-wrap items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-[#132019] border border-[#243B2E] text-[11px] font-mono-hud">
+            <button type="button" id="btn-audio-play" class="inline-flex items-center gap-1 text-[#E5C158] hover:text-white font-extrabold" title="播放 / 暫停粵語戰報">
               <svg id="audio-play-icon" class="w-3.5 h-3.5" fill="currentColor" viewbox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg>
-              <span id="audio-status-lbl">3m 粵語簡報</span>
+              <span id="audio-status-lbl">粵語簡報</span>
             </button>
+            <button type="button" id="btn-audio-replay" class="px-1 text-slate-300 hover:text-[#E5C158] font-bold" title="由頭重播 (Repeat)">↺</button>
+            <div class="flex items-center gap-1.5">
+              <input id="audio-seek-bar" type="range" min="0" max="100" value="0" step="1" class="w-24 sm:w-32 h-1.5 accent-[#FF2A5F] cursor-pointer bg-[#070C09] rounded-none" title="點擊或拖動跳至任意段落"/>
+              <span id="audio-progress-txt" class="text-[10px] text-slate-300 min-w-[38px]">0/0</span>
+            </div>
             <button type="button" id="btn-audio-speed" class="px-1.5 py-0.2 rounded-[2px] bg-[#070C09] border border-[#243B2E] text-[10px] text-slate-300 hover:text-white font-bold">1.25x</button>
             <button type="button" id="btn-audio-stop" class="hidden px-1 text-[#FF2A5F] hover:text-white font-bold" title="停止播放">■</button>
             <audio id="briefing-audio-el" preload="none" class="hidden"></audio>
@@ -2937,80 +2942,186 @@ function toggleWallMode(forceState, targetEtf) {
   }
 }
 
-// --- 3. 3-Min Cantonese Briefing Mini Player (MP3 + zh-HK SpeechSynthesis Fallback) ---
-function buildCantoneseBriefScript() {
+// --- 3. Full Cantonese Briefing Player (MP3 + Chrome-Safe Chunked zh-HK TTS + Seek Bar + Repeat) ---
+var TTS_CHUNKS = [];
+var TTS_IDX = 0;
+var TTS_PAUSED = false;
+var TTS_RUN_ID = 0;
+
+function buildCantoneseBriefChunks() {
   var r = CURRENT_REPORT || {};
   var br = r.breadth || {};
   var idxList = r.indices || [];
-  var spy = idxList[0] || { close: 0, chg1d: 0 };
-  var qqq = idxList[1] || { close: 0, chg1d: 0 };
+  var spy = idxList[0] || { close: 0, chg1d: 0, chg20d: 0 };
+  var qqq = idxList[1] || { close: 0, chg1d: 0, chg20d: 0 };
+  var iwm = idxList[2] || { close: 0, chg1d: 0 };
   var secs = (r.sectors || []).slice().sort(function(a, b) { return (b.rel20 || 0) - (a.rel20 || 0); });
-  var topS = secs[0] ? (secs[0].name + " " + secs[0].ticker) : "防禦板塊";
-  var botS = secs.length ? (secs[secs.length - 1].name + " " + secs[secs.length - 1].ticker) : "落後板塊";
-  var riskTxt = (br.ratio5d || 0) < 1.0 ? "Stockbee 五日比率低於一點零，今日維持鎖倉防守，單筆風險上限零點三巴仙。" : "Stockbee 五日比率重上警戒線，可按紀律解鎖至零點五巴仙風險。";
-  var pt = PAPER_DATA || FALLBACK_PAPER_DATA;
-  var ptTxt = "";
-  if (pt && pt.account) {
-    ptTxt = "紙盤觀察室方面，最新帳戶淨值為 " + Math.round(pt.account.live_equity || 100000) + " 美元，累積回報 " + fmtPct(pt.account.total_return_pct) + "，現金比例 " + Number(pt.account.cash_pct || 0).toFixed(0) + " 巴仙，目前持有 " + (pt.account.open_positions || 0) + " 隻倉位。";
+  var top1 = secs[0] ? (secs[0].name + " " + secs[0].ticker + "，二十日相對強度 " + fmtPct(secs[0].rel20)) : "防禦板塊";
+  var top2 = secs[1] ? (secs[1].name + " " + secs[1].ticker + "，相對強度 " + fmtPct(secs[1].rel20)) : "";
+  var bot1 = secs.length ? (secs[secs.length - 1].name + " " + secs[secs.length - 1].ticker) : "落後板塊";
+
+  var riskTxt = (br.ratio5d || 0) < 1.0
+    ? "Stockbee 五日比率報 " + Number(br.ratio5d || 0).toFixed(2) + "，低於一點零，今日維持鎖倉防守，單筆風險上限零點三巴仙。"
+    : "Stockbee 五日比率報 " + Number(br.ratio5d || 0).toFixed(2) + "，企上警戒線，可按紀律解鎖至零點五巴仙風險。";
+
+  var chunks = [];
+  chunks.push({ tag: "開場", text: "各位早安，歡迎收聽 " + (r.trade_date || "最新交易日") + " 美股動能戰情簡報。大市五維評分今日報 " + (br.score || 0) + " 分。" });
+  chunks.push({ tag: "風控閘門", text: riskTxt });
+  chunks.push({ tag: "四大指數", text: "指數表現方面，標普五百收報 " + Number(spy.close || 0).toFixed(1) + "，單日變動 " + fmtPct(spy.chg1d) + "；納指一百變動 " + fmtPct(qqq.chg1d) + "；羅素二千變動 " + fmtPct(iwm.chg1d) + "。" });
+  chunks.push({ tag: "市場寬度", text: "市場寬度方面，單日升超過四巴仙有 " + (br.up4 || 0) + " 隻，跌超過四巴仙有 " + (br.dn4 || 0) + " 隻，T2108 報 " + Number(br.t2108 || 0).toFixed(1) + " 巴仙，五十二週淨新高為 " + (br.net_nhnl || 0) + "。" });
+  chunks.push({ tag: "板塊輪動", text: "板塊輪動方面，最強領先為 " + top1 + (top2 ? ("，其次為 " + top2) : "") + "；而 " + bot1 + " 相對最弱。" });
+
+  if (r.ai_brief && r.ai_brief.tldr) {
+    chunks.push({ tag: "AI 定調", text: "今日重點定調：" + r.ai_brief.tldr });
   }
-  return "各位早安，歡迎收聽 " + (r.trade_date || "最新交易日") + " 美股動能戰情簡報。"
-    + "大市五維評分今日報 " + (br.score || 0) + " 分。" + riskTxt
-    + "指數表現方面，標普五百收報 " + Number(spy.close || 0).toFixed(1) + "，單日變動 " + fmtPct(spy.chg1d) + "；納指一百變動 " + fmtPct(qqq.chg1d) + "。"
-    + "市場寬度方面，單日升超過四巴仙有 " + (br.up4 || 0) + " 隻，跌超過四巴仙有 " + (br.dn4 || 0) + " 隻，T2108 報 " + Number(br.t2108 || 0).toFixed(1) + " 巴仙。"
-    + "板塊輪動以 " + topS + " 表現最強，" + botS + " 相對落後。"
-    + ((r.ai_brief && r.ai_brief.tldr) ? ("今日重點定調：" + r.ai_brief.tldr + "。") : "")
-    + ptTxt + "祝今日交易順利，嚴守止損紀律。";
+  if (r.ai_brief && Array.isArray(r.ai_brief.bullets) && r.ai_brief.bullets.length) {
+    chunks.push({ tag: "盤面重點", text: r.ai_brief.bullets.slice(0, 2).join("。") });
+  }
+
+  // Screener Tier S/A Highlights
+  if (SCREENER_DATA && (SCREENER_DATA.candidates || SCREENER_DATA.Candidates)) {
+    var cands = (SCREENER_DATA.candidates || SCREENER_DATA.Candidates).filter(function(x) { return x.Tier === "S" || x.Tier === "A"; }).slice(0, 3);
+    if (cands.length) {
+      var names = cands.map(function(x) { return x.Ticker + "，評分 " + x.Score; }).join("；");
+      chunks.push({ tag: "Screener 焦點", text: "選股器方面，今日排名前列嘅焦點股包括：" + names + "。" });
+    }
+  }
+
+  // Paper Trade Active Book
+  var pt = PAPER_DATA || FALLBACK_PAPER_DATA;
+  if (pt && pt.account) {
+    var acc = pt.account;
+    var openT = (pt.trades || []).filter(function(t) { return t.status === "OPEN"; });
+    var holdTxt = openT.length ? ("現有持倉包括：" + openT.map(function(t) { return t.ticker + " 浮動 " + (t.unrealized_r >= 0 ? "正" : "負") + Math.abs(t.unrealized_r || 0).toFixed(2) + " R"; }).join("，") + "。") : "目前空倉觀望。";
+    chunks.push({ tag: "Paper 戰績", text: "紙盤觀察室方面，最新帳戶淨值 " + Math.round(acc.live_equity || 100000) + " 美元，累積回報 " + fmtPct(acc.total_return_pct) + "，現金比例 " + Number(acc.cash_pct || 0).toFixed(0) + " 巴仙。" + holdTxt });
+  }
+
+  chunks.push({ tag: "紀律總結", text: "最後提提大家，開市跳空超過樞紐價加半倍 ADR 堅決唔追高，嚴守移動止損紀律。簡報完畢，祝今日交易順利。" });
+  return chunks;
+}
+
+function updateAudioUiIcons(isPlaying) {
+  var icon = document.getElementById("audio-play-icon");
+  if (!icon) return;
+  icon.innerHTML = isPlaying
+    ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>'
+    : '<polygon points="6 4 20 12 6 20 6 4"/>';
+}
+
+function fmtSecMMSS(sec) {
+  sec = Math.max(0, Math.floor(sec || 0));
+  var m = Math.floor(sec / 60), s = sec % 60;
+  return m + ":" + (s < 10 ? "0" : "") + s;
 }
 
 function stopAudioBrief() {
+  TTS_RUN_ID++;
   AUDIO_PLAYING = false;
   AUDIO_USING_TTS = false;
+  TTS_PAUSED = false;
+  TTS_IDX = 0;
   var el = document.getElementById("briefing-audio-el");
   if (el) { try { el.pause(); el.currentTime = 0; } catch(e){} }
   if ("speechSynthesis" in window) { try { window.speechSynthesis.cancel(); } catch(e){} }
-  document.getElementById("audio-status-lbl").textContent = "3m 粵語簡報";
+  updateAudioUiIcons(false);
+  document.getElementById("audio-status-lbl").textContent = "粵語簡報";
   document.getElementById("btn-audio-stop").classList.add("hidden");
+  var bar = document.getElementById("audio-seek-bar");
+  if (bar) bar.value = 0;
+  var ptxt = document.getElementById("audio-progress-txt");
+  if (ptxt) ptxt.textContent = TTS_CHUNKS.length ? ("0/" + TTS_CHUNKS.length) : "0/0";
 }
 
-function startTtsBrief() {
-  if (!("speechSynthesis" in window)) { showToast("此瀏覽器不支援語音朗讀"); stopAudioBrief(); return; }
+function speakChunkAt(idx, runId) {
+  if (runId !== TTS_RUN_ID) return;
+  if (!TTS_CHUNKS.length || idx >= TTS_CHUNKS.length) {
+    stopAudioBrief();
+    return;
+  }
+  TTS_IDX = idx;
+  var ch = TTS_CHUNKS[idx];
+  var bar = document.getElementById("audio-seek-bar");
+  if (bar) { bar.max = Math.max(1, TTS_CHUNKS.length - 1); bar.value = idx; }
+  document.getElementById("audio-progress-txt").textContent = (idx + 1) + "/" + TTS_CHUNKS.length;
+  document.getElementById("audio-status-lbl").textContent = ch.tag;
+  document.getElementById("btn-audio-stop").classList.remove("hidden");
+  updateAudioUiIcons(true);
+
   window.speechSynthesis.cancel();
-  var u = new SpeechSynthesisUtterance(buildCantoneseBriefScript());
+  var u = new SpeechSynthesisUtterance(ch.text);
   u.lang = "zh-HK";
   u.rate = AUDIO_SPEEDS[AUDIO_SPEED_IDX];
   var voices = window.speechSynthesis.getVoices() || [];
   var hkV = voices.find(function(v) { return /zh[-_]HK/i.test(v.lang); }) || voices.find(function(v) { return /zh/i.test(v.lang); });
   if (hkV) u.voice = hkV;
-  u.onend = function() { stopAudioBrief(); };
-  u.onerror = function() { stopAudioBrief(); };
+
+  // Keep reference on window to prevent Chrome GC from killing onend callback
+  window._activeUtterance = u;
+  u.onend = function() {
+    if (runId !== TTS_RUN_ID || TTS_PAUSED) return;
+    setTimeout(function() { speakChunkAt(idx + 1, runId); }, 120);
+  };
+  u.onerror = function(ev) {
+    if (runId !== TTS_RUN_ID) return;
+    if (ev && ev.error === "interrupted") return;
+    setTimeout(function() { speakChunkAt(idx + 1, runId); }, 150);
+  };
+  window.speechSynthesis.speak(u);
+}
+
+function startTtsBrief(startIdx) {
+  if (!("speechSynthesis" in window)) { showToast("此瀏覽器不支援語音朗讀"); stopAudioBrief(); return; }
+  TTS_CHUNKS = buildCantoneseBriefChunks();
+  TTS_RUN_ID++;
   AUDIO_PLAYING = true;
   AUDIO_USING_TTS = true;
-  document.getElementById("audio-status-lbl").textContent = "朗讀中 (粵語)";
-  document.getElementById("btn-audio-stop").classList.remove("hidden");
-  window.speechSynthesis.speak(u);
+  TTS_PAUSED = false;
+  speakChunkAt(Math.max(0, Math.min(startIdx || 0, TTS_CHUNKS.length - 1)), TTS_RUN_ID);
 }
 
 function toggleAudioBrief() {
   var el = document.getElementById("briefing-audio-el");
   if (AUDIO_PLAYING) {
-    if (AUDIO_USING_TTS) { stopAudioBrief(); return; }
+    if (AUDIO_USING_TTS) {
+      TTS_RUN_ID++;
+      TTS_PAUSED = true;
+      AUDIO_PLAYING = false;
+      try { window.speechSynthesis.cancel(); } catch(e){}
+      updateAudioUiIcons(false);
+      document.getElementById("audio-status-lbl").textContent = "已暫停";
+      return;
+    }
     el.pause(); AUDIO_PLAYING = false;
+    updateAudioUiIcons(false);
     document.getElementById("audio-status-lbl").textContent = "已暫停";
+    return;
+  }
+  if (AUDIO_USING_TTS && TTS_PAUSED) {
+    startTtsBrief(TTS_IDX);
     return;
   }
   el.src = "./data/briefing.mp3?t=" + Date.now();
   el.playbackRate = AUDIO_SPEEDS[AUDIO_SPEED_IDX];
+  el.ontimeupdate = function() {
+    if (!AUDIO_USING_TTS && el.duration > 0) {
+      var bar = document.getElementById("audio-seek-bar");
+      bar.max = Math.floor(el.duration);
+      bar.value = Math.floor(el.currentTime);
+      document.getElementById("audio-progress-txt").textContent = fmtSecMMSS(el.currentTime) + "/" + fmtSecMMSS(el.duration);
+    }
+  };
   el.onended = stopAudioBrief;
-  el.onerror = function() { startTtsBrief(); };
+  el.onerror = function() { startTtsBrief(0); };
   var playP = el.play();
   if (playP && typeof playP.then === "function") {
     playP.then(function() {
       AUDIO_PLAYING = true; AUDIO_USING_TTS = false;
-      document.getElementById("audio-status-lbl").textContent = "播放中 MP3";
+      updateAudioUiIcons(true);
+      document.getElementById("audio-status-lbl").textContent = "MP3 播放";
       document.getElementById("btn-audio-stop").classList.remove("hidden");
-    }).catch(function() { startTtsBrief(); });
+    }).catch(function() { startTtsBrief(0); });
   } else {
-    startTtsBrief();
+    startTtsBrief(0);
   }
 }
 
@@ -3246,13 +3357,31 @@ function bindEventsOnce() {
   document.getElementById("wall-etf-select").addEventListener("change", function(ev) { renderTacticalWall(ev.currentTarget.value); });
   document.getElementById("btn-audio-play").addEventListener("click", toggleAudioBrief);
   document.getElementById("btn-audio-stop").addEventListener("click", stopAudioBrief);
+  document.getElementById("btn-audio-replay").addEventListener("click", function() {
+    var el = document.getElementById("briefing-audio-el");
+    if (!AUDIO_USING_TTS && el && el.duration > 0) {
+      el.currentTime = 0; el.play(); AUDIO_PLAYING = true; updateAudioUiIcons(true);
+    } else {
+      startTtsBrief(0);
+    }
+  });
+  document.getElementById("audio-seek-bar").addEventListener("input", function(ev) {
+    var val = Number(ev.currentTarget.value || 0);
+    var el = document.getElementById("briefing-audio-el");
+    if (!AUDIO_USING_TTS && el && el.duration > 0) {
+      el.currentTime = val;
+      document.getElementById("audio-progress-txt").textContent = fmtSecMMSS(val) + "/" + fmtSecMMSS(el.duration);
+    } else {
+      startTtsBrief(val);
+    }
+  });
   document.getElementById("btn-audio-speed").addEventListener("click", function() {
     AUDIO_SPEED_IDX = (AUDIO_SPEED_IDX + 1) % AUDIO_SPEEDS.length;
     var sp = AUDIO_SPEEDS[AUDIO_SPEED_IDX];
     this.textContent = sp + "x";
     var el = document.getElementById("briefing-audio-el");
     if (el) el.playbackRate = sp;
-    if (AUDIO_PLAYING && AUDIO_USING_TTS) startTtsBrief();
+    if (AUDIO_PLAYING && AUDIO_USING_TTS) startTtsBrief(TTS_IDX);
   });
   document.getElementById("scr-search").addEventListener("input", renderScreenerTab);
   document.getElementById("btn-scr-copy-ai").addEventListener("click", function() {
