@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head><script type='text/javascript' nonce='fSPdaGm02ITF9I7KqsUJ1Q==' src='https://contribution.usercontent.google.com/-0UstIrI3yv0WrfvCJj4Bgl1wsoPjLWDnwE4qH-dcjfebSRF4IJXXG9baNLmOia-l4LobCmWiThw7etP_B1CikEgvBiV_NdALpGc_RpVUQalJS1z4l0EcAOYifyf8M0HXR_h1_iHeBcpvJ3glcCb0cqiy4cDnPJ1Q8FTgxkknuxjGQEitqe64baOhlamfCaJOxo9laESRgVINGzJa8QlrXzckqtytyISabn0RTGhc2_0N_pMBoug3JNkk7fPI5besxVO7Ovtn2d_P-fxIFJJuh7Gvur0pHagNI64HfMNb3lpbBZWRqRMPaJbTKv5h9xigXupo7vaiU1bLp4BAWGRQcFd9sTENKQr1oV3wtCHzJUHoyq7tIdm9ehVRdTavM6ee71FXiCdya3I2VVR36TmM_3E1-OZA3KA3vJIEfV6XvzXMLb-GFHeEbb1eruUd1fXnVOQwfSQ0eIZHrltjJeMdr--EQMPrjuGJV7uPpi7SZNA1G7BGqK6bHFbPhj95fAvAg85tagteM-XZOZ4Sadi47LfRYpRcnzwQgMePq33zWdorBPGZpx_jOsLpYhlLtyeP9dH2L-q47uSkOSvI5KV_RXCCVZtdbPshtV6Fi3YK25Hv1Q0V-uhESOf7-L67I7v0LJXsIsKSzF46VbzPMORmXKRVxjoQslfyacVJW_cbkV4VunivIIGR5M50jYok23zqjmCwVAByvEN6U4FswwWnBG0YOmpY60nO1I'></script>
+<head><script type='text/javascript' nonce='Cg1sdfShvQCR1XE5OKUbMg==' src='https://contribution.usercontent.google.com/FuKS0Dfiff1G62oMB_RIuMpjo9nwEUwE0MUxMAvB9YLcidPzIsFaMo0G-Y853WgvJxVxeW7nxsbVojl09DXwiqCzCswaErm1VvrBCvt9xPYgvV2yFjCH7gx4jM28aw5stm3L5dGXrYdlKpM8mb7dXuFiT82uRoXN-ogXen-3qj2gIacfmxCjsRcO0Nq2Z5jiUvxu1ITFlMTVJ2K5ChfSTE3AgeXrYjgMxjARQjnErAGjylALXFx-fiHch_1v9HyTNyZUwClsaYxUJnIj5zqi-RG3RqWoql2D_Tnw31sDkJyhx2dK-9elm1oyQyZe34PRfNJT1oRxOJQY65ePHEL0MQAhGAHDoRFtCBwd9Y5oTndO8I3-7Fyrb52F5aN-sK0UaTuz3_ENFQyIA_wyFvPTm1EOiCPYqJ8_E4Z0KT56cCjrU8kuXIZkuYr85DpFCs5KSt06xvt8cnmhvFVoKkNZ9jWNGhwwOoNrc284Atz7flD0L15iG430OrkKRjiGV87tYRTrAWWgdfhJbtRjciNieW575ZvkLMLW51hbQgrohifDJVF7Uxd9WRCx3NUGH2NlntrbSI2gqnxCcfnM5zlL_k3OKxiAFX116lUU1l9hu5cgKD_TH30x-C5Y8trrLlwdMK7PPoLrUiI9FFi-Dr_L5793_NRLNhp6TyLb_CJhkb1Yt6y7i_x3AylkE5Z5A3XzytzX0r4cjHTMgrxx9A'></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TACTICAL WAR ROOM V4.5 · 全市場動能與 AI Paper 戰情終端</title>
+  <title>TACTICAL WAR ROOM V5.0 · 全市場動能與 AI Paper 戰情終端</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,6 +22,7 @@
     .font-mono-hud { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
     table td, table th, .num-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
     input, select { font-size: 16px !important; }
+    @media (min-width: 768px) { #chart-pos-ruler input, #any-ticker-input { font-size: 13px !important; } }
 
     /* Armor Cards & 8px L-Shaped Tactical Corner Brackets */
     .hud-card {
@@ -133,6 +134,12 @@
       color: #ffd1dc !important;
     }
 
+    /* Sleek Tactical Scrollbar */
+    .hud-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .hud-scroll::-webkit-scrollbar-track { background: #070C09; }
+    .hud-scroll::-webkit-scrollbar-thumb { background: #243B2E; border-radius: 2px; }
+    .hud-scroll::-webkit-scrollbar-thumb:hover { background: #C9A24D; }
+
     /* Dual-Cockpit Desktop Split Mode (>=1280px) */
     @media (min-width: 1280px) {
       #main-content.cockpit-split {
@@ -144,9 +151,15 @@
       }
       #main-content.cockpit-split #shared-chart-section {
         position: sticky;
-        top: 108px;
+        top: 116px;
+        max-height: calc(100vh - 126px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
         grid-column: 1;
         margin-bottom: 0;
+      }
+      #main-content.cockpit-split #chart-stage {
+        height: clamp(270px, 48vh, 420px) !important;
       }
       #main-content.cockpit-split #view-screener,
       #main-content.cockpit-split #view-paper {
@@ -241,13 +254,23 @@
           <div>
             <h1 class="text-sm sm:text-base font-extrabold tracking-wider text-slate-100 leading-tight font-mono-hud flex items-center gap-1.5">
               <span>TACTICAL WAR ROOM</span>
-              <span class="hud-gold-text font-bold text-xs">V4.5</span>
+              <span class="hud-gold-text font-bold text-xs">V5.0</span>
               <span class="hidden md:inline text-[11px] text-slate-400 font-normal">// 全市場動能與 AI PAPER 終端機</span>
             </h1>
             <p id="header-meta" class="text-[11px] text-slate-400 font-mono-hud">SYNCING TELEMETRY...</p>
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-1.5">
+          <!-- 3-Min Cantonese Briefing Mini Player -->
+          <div id="audio-brief-bar" class="inline-flex items-center gap-1 px-2 py-1 rounded-[3px] bg-[#132019] border border-[#243B2E] text-[11px] font-mono-hud">
+            <button type="button" id="btn-audio-play" class="inline-flex items-center gap-1 text-[#E5C158] hover:text-white font-extrabold" title="播放 3 分鐘廣東話戰報簡報 (自動偵測 briefing.mp3 或啟用 zh-HK 語音)">
+              <svg id="audio-play-icon" class="w-3.5 h-3.5" fill="currentColor" viewbox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+              <span id="audio-status-lbl">3m 粵語簡報</span>
+            </button>
+            <button type="button" id="btn-audio-speed" class="px-1.5 py-0.2 rounded-[2px] bg-[#070C09] border border-[#243B2E] text-[10px] text-slate-300 hover:text-white font-bold">1.25x</button>
+            <button type="button" id="btn-audio-stop" class="hidden px-1 text-[#FF2A5F] hover:text-white font-bold" title="停止播放">■</button>
+            <audio id="briefing-audio-el" preload="none" class="hidden"></audio>
+          </div>
           <button type="button" id="btn-cockpit-toggle" class="hidden xl:inline-flex items-center gap-1 px-2.5 py-1 hud-btn text-[11px] font-bold font-mono-hud" title="桌面版左右雙艙並排 (支援 ↑/↓ 鍵盤切股)">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><line x1="15" y1="4" x2="15" y2="20"/></svg>
             <span>雙艙: ON</span>
@@ -301,7 +324,7 @@
   <main id="main-content" class="hidden max-w-6xl mx-auto px-1.5 sm:px-4 py-4 space-y-4">
 
     <!-- ==================== SHARED / FLOATING INTERACTIVE 2Y CANDLESTICK INSPECTOR ==================== -->
-    <section id="shared-chart-section" class="hud-card hud-corners p-3 sm:p-4">
+    <section id="shared-chart-section" class="hud-card hud-corners hud-scroll p-3 sm:p-4">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
         <div>
           <div class="flex flex-wrap items-center gap-1.5">
@@ -322,6 +345,10 @@
             <button type="button" data-tf="1D" class="tf-btn px-2 py-1 bg-[#1b2e23] text-[#E5C158]">1D</button>
             <button type="button" data-tf="1W" class="tf-btn px-2 py-1 text-slate-400 hover:text-white">1W</button>
           </div>
+          <button type="button" id="btn-wall-toggle" class="px-2.5 py-1 hud-btn text-xs font-bold font-mono-hud inline-flex items-center gap-1" title="切換 2×2 四格戰術牆（子行業 ETF + 旗下最強 3 隻龍頭）">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            <span>2×2 戰術牆</span>
+          </button>
           <button type="button" id="btn-fullscreen" class="px-2.5 py-1 hud-btn text-xs font-bold font-mono-hud">全螢幕</button>
           <a id="candle-tv-btn" href="#" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 hud-btn text-xs font-extrabold font-mono-hud text-sky-300">TV ↗</a>
           <button type="button" data-collapse="chart-collapsible-body" class="collapse-btn px-2 py-1 hud-btn text-xs font-bold font-mono-hud">▲</button>
@@ -333,9 +360,9 @@
         <div id="chart-pos-ruler" class="mb-2 px-2.5 py-1.5 rounded-[2px] bg-[#070C09] border border-[#243B2E] flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono-hud">
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-[#E5C158] font-extrabold tracking-wide">POSITION &amp; ADR RULER</span>
-            <label class="flex items-center gap-1 text-slate-400">RISK $<input id="ruler-risk" type="number" step="10" value="180" class="hud-input w-16 px-1.5 py-0.5 text-[11px] font-bold text-white"/></label>
-            <label class="flex items-center gap-1 text-slate-400">PIVOT<input id="ruler-entry" type="number" step="0.01" value="100" class="hud-input w-20 px-1.5 py-0.5 text-[11px] font-bold text-emerald-300"/></label>
-            <label class="flex items-center gap-1 text-slate-400">STOP<input id="ruler-stop" type="number" step="0.01" value="95" class="hud-input w-20 px-1.5 py-0.5 text-[11px] font-bold text-rose-300"/></label>
+            <label class="flex items-center gap-1 text-slate-400">RISK $<input id="ruler-risk" type="number" step="10" value="180" class="hud-input w-20 px-1.5 py-0.5 text-xs font-bold text-white"/></label>
+            <label class="flex items-center gap-1 text-slate-400">PIVOT<input id="ruler-entry" type="number" step="0.01" value="100" class="hud-input w-24 px-1.5 py-0.5 text-xs font-bold text-emerald-300"/></label>
+            <label class="flex items-center gap-1 text-slate-400">STOP<input id="ruler-stop" type="number" step="0.01" value="95" class="hud-input w-24 px-1.5 py-0.5 text-xs font-bold text-rose-300"/></label>
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-slate-300">SHARES: <b id="ruler-shares" class="text-[#E5C158] text-xs">--</b></span>
@@ -386,6 +413,23 @@
           <div id="chart-loading-mask" class="hidden absolute inset-0 z-20 bg-[#070C09]/85 flex items-center justify-center text-xs font-bold font-mono-hud text-[#E5C158]">LOADING OHLCV STREAM...</div>
           <div id="lw-chart-container" class="w-full h-full"></div>
           <div id="tv-embed-container" class="hidden w-full h-full"></div>
+        </div>
+        <!-- 2x2 Subsector Tactical Wall (ETF + Top 3 Leaders) -->
+        <div id="wall-stage" class="hidden space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 px-2 py-1.5 rounded-[2px] bg-[#070C09] border border-[#243B2E] text-xs font-mono-hud">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-[#E5C158] font-extrabold">2×2 TACTICAL WALL</span>
+              <select id="wall-etf-select" class="hud-input px-2 py-0.5 text-xs font-bold font-mono-hud"></select>
+              <span id="wall-members-label" class="text-[11px] text-slate-400">--</span>
+            </div>
+            <span class="text-[10px] text-slate-400">點擊任意格標題即可切回單圖詳查</span>
+          </div>
+          <div id="wall-grid" class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div class="rounded-[2px] border border-[#243B2E] bg-[#0C1510] p-2"><div class="flex justify-between items-center mb-1"><button type="button" id="wall-hdr-0" class="text-xs font-extrabold font-mono-hud text-[#E5C158] hover:underline">--</button><span id="wall-stat-0" class="text-[10px] font-mono-hud text-slate-300">--</span></div><div id="wall-chart-0" class="w-full h-[220px]"></div></div>
+            <div class="rounded-[2px] border border-[#243B2E] bg-[#0C1510] p-2"><div class="flex justify-between items-center mb-1"><button type="button" id="wall-hdr-1" class="text-xs font-extrabold font-mono-hud text-white hover:underline">--</button><span id="wall-stat-1" class="text-[10px] font-mono-hud text-slate-300">--</span></div><div id="wall-chart-1" class="w-full h-[220px]"></div></div>
+            <div class="rounded-[2px] border border-[#243B2E] bg-[#0C1510] p-2"><div class="flex justify-between items-center mb-1"><button type="button" id="wall-hdr-2" class="text-xs font-extrabold font-mono-hud text-white hover:underline">--</button><span id="wall-stat-2" class="text-[10px] font-mono-hud text-slate-300">--</span></div><div id="wall-chart-2" class="w-full h-[220px]"></div></div>
+            <div class="rounded-[2px] border border-[#243B2E] bg-[#0C1510] p-2"><div class="flex justify-between items-center mb-1"><button type="button" id="wall-hdr-3" class="text-xs font-extrabold font-mono-hud text-white hover:underline">--</button><span id="wall-stat-3" class="text-[10px] font-mono-hud text-slate-300">--</span></div><div id="wall-chart-3" class="w-full h-[220px]"></div></div>
+          </div>
         </div>
         <div id="rsi-pane-wrap" class="hidden mt-2">
           <div class="flex items-center justify-between px-1 mb-0.5 text-[10px] font-bold font-mono-hud">
@@ -659,6 +703,7 @@
             </div>
           </div>
           <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" id="btn-scr-pace-rvol" class="px-2.5 py-1.5 rounded-[3px] bg-[#132019] hover:bg-[#182920] border border-[#C9A24D]/70 text-[#E5C158] text-xs font-extrabold font-mono-hud" title="透過 Cloudflare Worker 即時計算美股盤中時段校正量比 Pace RVOL">同步盤中 Pace RVOL</button>
             <button type="button" id="btn-scr-copy-ai" class="px-2.5 py-1.5 rounded-[3px] bg-amber-500/20 hover:bg-amber-500/30 border border-[#C9A24D]/60 text-amber-200 text-xs font-extrabold">複製 Tier S/A AI_Summary</button>
             <button type="button" id="btn-scr-copy-tv" class="px-2.5 py-1.5 rounded-[3px] bg-[#132019] hover:bg-[#182920] border border-[#243B2E] text-sky-300 text-xs font-bold font-mono-hud">Copy TV List</button>
             <button type="button" id="btn-scr-export-tv" class="px-2.5 py-1.5 rounded-[3px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold">匯出 TV (.txt)</button>
@@ -677,10 +722,13 @@
             <button type="button" data-scrtab="EP" class="scrtab-btn px-2.5 py-1 rounded-lg text-slate-400">Post-EP</button>
             <button type="button" data-scrtab="STAGE2" class="scrtab-btn px-2.5 py-1 rounded-lg text-slate-400">Early Stage2</button>
           </div>
-          <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
-            <label class="flex items-center gap-1 text-amber-300 cursor-pointer"><input id="scr-tier-sa" type="checkbox" class="accent-amber-400"/>只睇 Tier S/A</label>
-            <label class="flex items-center gap-1 text-sky-300 cursor-pointer"><input id="scr-inside-nr7" type="checkbox" class="accent-sky-400"/>Inside/NR7</label>
-            <label class="flex items-center gap-1 text-rose-300 cursor-pointer"><input id="scr-hide-ext" type="checkbox" checked="" class="accent-rose-400"/>隱藏 Extended</label>
+          <div class="flex flex-wrap items-center gap-2 text-xs font-bold font-mono-hud">
+            <label class="flex items-center gap-1 text-[#E5C158] cursor-pointer"><input id="scr-tier-sa" type="checkbox" class="accent-amber-400"/>Tier S/A</label>
+            <label class="flex items-center gap-1 text-emerald-300 cursor-pointer" title="早期轉強: Early Stage 2 或 RS_1M &gt; RS_3M"><input id="scr-f-early" type="checkbox" class="accent-emerald-400"/>早期轉強</label>
+            <label class="flex items-center gap-1 text-sky-300 cursor-pointer" title="Inside Day 內包日"><input id="scr-inside-nr7" type="checkbox" class="accent-sky-400"/>Inside Day</label>
+            <label class="flex items-center gap-1 text-purple-300 cursor-pointer" title="VCP 縮量窄幅 (VCP&lt;=0.75 或 量縮&lt;=0.75 或 NR7)"><input id="scr-f-vcp" type="checkbox" class="accent-purple-400"/>VCP縮量窄幅</label>
+            <label class="flex items-center gap-1 text-[#ffd1dc] cursor-pointer" title="恐慌抗跌分 (RS_1M&gt;=80 + 距Pivot&lt;=8% + 強主題)"><input id="scr-f-panic" type="checkbox" class="accent-rose-400"/>恐慌抗跌分</label>
+            <label class="flex items-center gap-1 text-slate-400 cursor-pointer"><input id="scr-hide-ext" type="checkbox" checked="" class="accent-rose-400"/>隱藏 Extended</label>
             <input id="scr-search" type="text" placeholder="搜尋代號/描述" class="hud-input w-36 sm:w-44 min-w-0 rounded-[3px] px-2.5 py-1 text-xs"/>
           </div>
         </div>
@@ -749,6 +797,15 @@
             <div class="text-xs font-extrabold text-sky-300">待觸發 BUY_STOP 掛單（Pending Orders）</div>
             <div id="pt-pending-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"></div>
           </div>
+        </div>
+
+        <!-- 市寬環境戰績歸因卡 (Stockbee r5d < 1.0 鎖倉期 vs >= 1.0 解鎖期) -->
+        <div class="rounded-[3px] border border-[#243B2E] bg-[#080e0c] p-3 sm:p-4 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-sm font-bold text-slate-100">市寬環境戰績歸因對比（Stockbee r5d &lt; 1.0 鎖倉期 vs &gt;= 1.0 解鎖期）</h3>
+            <span class="text-[10px] font-mono-hud text-slate-400">驗證嚴格鎖倉 0.3% 與解鎖 0.5%+ 之實戰勝率及平均 R</span>
+          </div>
+          <div id="pt-breadth-split-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
         </div>
 
         <!-- 策略歸因分析 (Regime / Setup / Tier) -->
@@ -866,7 +923,7 @@
     </section>
 
     <footer class="text-center text-xs text-slate-500 py-4">
-      TACTICAL WAR ROOM V4.5 · QUANTITATIVE MOMENTUM TERMINAL · 僅供個人覆盤參考
+      TACTICAL WAR ROOM V5.0 · QUANTITATIVE MOMENTUM TERMINAL · 僅供個人覆盤參考
     </footer>
   </main>
 
@@ -1851,7 +1908,7 @@ function renderSectorViews() {
       + '<div class="col-span-4 sm:col-span-3 min-w-0"><span class="font-extrabold text-xs sm:text-sm text-white">' + s.ticker + '</span> <span class="text-[11px] text-slate-400">' + s.name + '</span></div>'
       + '<div class="col-span-5 sm:col-span-5"><div class="relative h-5 bg-[#060a09] rounded border border-[#1a2822] overflow-hidden"><div class="absolute top-0 bottom-0 left-1/2 w-px bg-slate-600/70"></div><div class="absolute top-1 bottom-1 rounded-sm ' + (isPos ? "bg-emerald-500" : "bg-rose-500") + '" style="' + barStyle + '"></div></div>'
       + '<div class="flex justify-between text-[10px] text-slate-400 mt-0.5"><span class="' + pctClass(s.chg1d) + '">1D ' + fmtPct(s.chg1d) + '</span><span class="font-bold ' + (isPos ? "text-emerald-300" : "text-rose-300") + '">' + (key === "rsi14" ? ("RSI " + rawVal.toFixed(1)) : fmtPct(rawVal)) + '</span></div></div>'
-      + '<div class="col-span-3 sm:col-span-4 flex items-center justify-end gap-1.5"><button type="button" data-sym="' + s.ticker + '" class="view-candle-btn px-2 py-1 rounded bg-[#182620] text-amber-300 text-[11px] font-bold">2Y燭圖</button><a href="' + tvUrl(s.ticker) + '" target="_blank" rel="noopener noreferrer" class="px-2 py-1 rounded bg-sky-500/20 text-sky-300 text-[11px] font-extrabold">TV ↗</a></div></div>';
+      + '<div class="col-span-3 sm:col-span-4 flex items-center justify-end gap-1.5"><button type="button" data-sym="' + s.ticker + '" class="view-candle-btn px-2 py-1 rounded-[2px] bg-[#132019] border border-[#243B2E] text-[#E5C158] text-[11px] font-bold font-mono-hud">2Y燭圖</button>' + (CORE_30_SUBSECTORS[s.ticker] ? '<button type="button" data-wallef="' + s.ticker + '" class="open-wall-btn px-2 py-1 rounded-[2px] bg-[#132019] border border-[#243B2E] text-emerald-300 text-[11px] font-bold font-mono-hud">2×2</button>' : '') + '<a href="' + tvUrl(s.ticker) + '" target="_blank" rel="noopener noreferrer" class="px-2 py-1 rounded bg-sky-500/20 text-sky-300 text-[11px] font-extrabold">TV ↗</a></div></div>';
   }).join("");
 
   renderRrgSvg();
@@ -2080,11 +2137,16 @@ function ensureScreenerLoaded() {
     });
 }
 
+var PACE_RVOL_MAP = {};
+
 function getFilteredScreenerList() {
   if (!SCREENER_DATA) return [];
   var all = SCREENER_DATA.candidates || SCREENER_DATA.Candidates || [];
   var saOnly = document.getElementById("scr-tier-sa").checked;
-  var inNr7 = document.getElementById("scr-inside-nr7").checked;
+  var earlyOnly = document.getElementById("scr-f-early") && document.getElementById("scr-f-early").checked;
+  var inOnly = document.getElementById("scr-inside-nr7").checked;
+  var vcpOnly = document.getElementById("scr-f-vcp") && document.getElementById("scr-f-vcp").checked;
+  var panicOnly = document.getElementById("scr-f-panic") && document.getElementById("scr-f-panic").checked;
   var hideExt = document.getElementById("scr-hide-ext").checked;
   var q = (document.getElementById("scr-search").value || "").trim().toUpperCase();
 
@@ -2093,13 +2155,21 @@ function getFilteredScreenerList() {
     var style = (r.Style || "").toUpperCase();
     var tier = (r.Tier || "").toUpperCase();
     var score = Number(r.Score || 0);
+    var rs3m = Number(r.RSRating || 0), rs1m = Number(r.RS_1M || 0);
+    var vcpR = Number(r.VCP_Ratio || 9), dryR = Number(r.Vol_Dryup_Ratio || 9), distPv = Math.abs(Number(r.Dist_to_Pivot || 99));
+    var isIn = (r.Inside_Day === true || String(r.Inside_Day).toUpperCase() === "TRUE");
+    var isNr7 = (r.NR7 === true || String(r.NR7).toUpperCase() === "TRUE");
+
     if (ACTIVE_SCRTAB === "STRONG" && !(tier === "S" || tier === "A" || score >= 80)) return false;
     if (ACTIVE_SCRTAB === "SETUP" && !(setup.indexOf("VCP") !== -1 || setup.indexOf("FLAG") !== -1)) return false;
     if (ACTIVE_SCRTAB === "EP" && !(r.Is_Post_EP === true || String(r.Is_Post_EP).toUpperCase() === "TRUE" || setup.indexOf("EP") !== -1)) return false;
     if (ACTIVE_SCRTAB === "STAGE2" && !(style.indexOf("EARLY_STAGE2") !== -1)) return false;
     if (ACTIVE_SCR_THEME !== "ALL" && (r.Theme || "") !== ACTIVE_SCR_THEME) return false;
     if (saOnly && !(tier === "S" || tier === "A")) return false;
-    if (inNr7 && !(r.Inside_Day === true || String(r.Inside_Day).toUpperCase() === "TRUE" || r.NR7 === true || String(r.NR7).toUpperCase() === "TRUE")) return false;
+    if (earlyOnly && !(style.indexOf("EARLY") !== -1 || (rs1m > rs3m && rs1m >= 75))) return false;
+    if (inOnly && !isIn) return false;
+    if (vcpOnly && !(vcpR <= 0.78 || dryR <= 0.78 || isNr7)) return false;
+    if (panicOnly && !(rs1m >= 80 && distPv <= 8.0 && (Number(r.Theme_RS_Proxy || 0) > 0 || score >= 80))) return false;
     if (hideExt && (r.Is_Extended === true || String(r.Is_Extended).toUpperCase() === "TRUE")) return false;
     if (q && (r.Ticker || "").toUpperCase().indexOf(q) === -1 && (r.Chart_Description || "").toUpperCase().indexOf(q) === -1 && (r.Theme || "").toUpperCase().indexOf(q) === -1) return false;
     return true;
@@ -2156,6 +2226,7 @@ function renderScreenerTab() {
       + (isIn ? '<span class="px-1.5 py-0.5 rounded bg-purple-500/25 text-purple-200 text-[10px] font-bold">ID</span>' : '')
       + (isNr7 ? '<span class="px-1.5 py-0.5 rounded bg-indigo-500/25 text-indigo-200 text-[10px] font-bold">NR7</span>' : '')
       + (isExt ? '<span class="px-1.5 py-0.5 rounded bg-rose-500/25 text-rose-200 text-[10px] font-bold">[WARN] EXT</span>' : '')
+      + (PACE_RVOL_MAP[tk] ? '<span class="px-1.5 py-0.5 rounded-[2px] font-mono-hud text-[10px] font-extrabold ' + (PACE_RVOL_MAP[tk].pace_rvol >= 1.5 ? 'bg-[#C9A24D]/25 border border-[#C9A24D] text-[#E5C158]' : 'bg-[#132019] border border-[#243B2E] text-slate-300') + '">PACE ' + Number(PACE_RVOL_MAP[tk].pace_rvol).toFixed(2) + 'x</span>' : '')
       + '</div><p class="text-[11px] text-amber-300/90 mt-0.5">' + (r.Setup || "") + ' · ' + (r.Theme || "") + '</p></div>'
       + '<a href="' + tvUrl(tk) + '" target="_blank" rel="noopener noreferrer" class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[11px] font-extrabold shrink-0">TV↗</a></div>'
       + '<button type="button" id="scr-mini-' + tk + '" data-sym="' + tk + '" class="compact-hide view-candle-btn block w-full" title="白: 10EMA · 青: 20EMA · 綠虛線: Pivot · 紅虛線: 5D Stop">' + buildMiniCandleSvg(minis[tk], pv, st5) + '</button>'
@@ -2275,7 +2346,17 @@ function updateCalc() {
 
 function bindCandleButtons() {
   document.querySelectorAll(".view-candle-btn").forEach(function(btn) {
-    btn.onclick = function(ev) { renderCandlestick(ev.currentTarget.getAttribute("data-sym")); document.getElementById("shared-chart-section").scrollIntoView({ behavior: "smooth", block: "center" }); };
+    btn.onclick = function(ev) {
+      if (IS_WALL_MODE) toggleWallMode(false);
+      renderCandlestick(ev.currentTarget.getAttribute("data-sym"));
+      document.getElementById("shared-chart-section").scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+  });
+  document.querySelectorAll(".open-wall-btn").forEach(function(btn) {
+    btn.onclick = function(ev) {
+      toggleWallMode(true, ev.currentTarget.getAttribute("data-wallef"));
+      document.getElementById("shared-chart-section").scrollIntoView({ behavior: "smooth", block: "center" });
+    };
   });
 }
 function bindSendCalcButtons() {
@@ -2498,14 +2579,22 @@ function renderPaperTab() {
       + '<button type="button" data-sym="' + t.ticker + '" class="view-candle-btn w-full py-1.5 rounded-lg bg-[#16241e] hover:bg-[#20332b] text-amber-300 text-xs font-bold">展開 2Y 交易線圖（買入/止損/2R）</button></div>';
   }).join("") || '<p class="col-span-full text-xs text-slate-500">暫無持倉紀錄。</p>';
 
-  // Pending Orders
+  // Breadth Regime Attribution Split Card (r5d < 1.0 Locked vs >= 1.0 Unlocked)
+  renderBreadthRegimeSplitCard(d);
+
+  // Pending Orders with Gap-Too-Wide (Pivot + 0.5x ADR%) Anti-Chase Guard
   var pend = d.pending_orders || [];
   var pBox = document.getElementById("pt-pending-box");
   pBox.classList.toggle("hidden", pend.length === 0);
   document.getElementById("pt-pending-list").innerHTML = pend.map(function(p) {
-    return '<div class="p-2.5 rounded-lg bg-[#0d1714] border border-sky-700/40 text-xs flex items-center justify-between gap-2">'
-      + '<div><span class="font-extrabold text-white">' + p.ticker + '</span> <span class="text-sky-300 font-bold">BUY_STOP @ $' + p.trigger_price.toFixed(2) + '</span><p class="text-[10px] text-slate-400">止損 $' + p.stop_loss.toFixed(2) + ' · ' + p.shares + ' 股 ($' + p.risk_usd.toFixed(0) + ') · 2R $' + p.partial_2r_target.toFixed(2) + '</p></div>'
-      + '<button type="button" data-sym="' + p.ticker + '" class="view-candle-btn px-2 py-1 rounded bg-[#182620] text-amber-300 text-[11px] font-bold">看圖</button></div>';
+    var adrP = Number(p.adr20_pct || 4.0);
+    var maxChase = Number(p.max_chase_price || (p.trigger_price * (1 + 0.5 * adrP / 100)));
+    var isGapWide = (String(p.gap_status || p.sync_status || "").toUpperCase() === "SKIPPED_GAP_TOO_WIDE");
+    return '<div class="p-2.5 rounded-[3px] border text-xs flex items-center justify-between gap-2 ' + (isGapWide ? 'bg-[#1a0d12] border-[#FF2A5F]/80 opacity-85' : 'bg-[#0d1714] border-[#243B2E]') + '">'
+      + '<div><div class="flex flex-wrap items-center gap-1.5"><span class="font-extrabold text-white font-mono-hud">' + p.ticker + '</span> <span class="text-sky-300 font-bold font-mono-hud">BUY_STOP @ $' + Number(p.trigger_price || 0).toFixed(2) + '</span>'
+      + (isGapWide ? '<span class="px-1.5 py-0.5 rounded-[2px] bg-[#FF2A5F]/25 border border-[#FF2A5F] text-[#ffd1dc] text-[9px] font-extrabold font-mono-hud">SKIPPED_GAP_TOO_WIDE</span>' : '<span class="px-1.5 py-0.5 rounded-[2px] bg-[#132019] border border-[#243B2E] text-[#E5C158] text-[9px] font-mono-hud">MAX CHASE $' + maxChase.toFixed(2) + '</span>')
+      + '</div><p class="text-[10px] text-slate-400 font-mono-hud mt-0.5">止損 $' + Number(p.stop_loss || 0).toFixed(2) + ' · ' + p.shares + ' 股 ($' + Number(p.risk_usd || 0).toFixed(0) + ') · 2R $' + Number(p.partial_2r_target || 0).toFixed(2) + ' · +0.5×ADR上限</p></div>'
+      + '<button type="button" data-sym="' + p.ticker + '" class="view-candle-btn px-2 py-1 rounded-[2px] bg-[#182620] text-[#E5C158] text-[11px] font-bold font-mono-hud shrink-0">看圖</button></div>';
   }).join("");
 
   // Control Group (PASS / WATCH)
@@ -2653,6 +2742,276 @@ function highlightLockedCard(sym) {
       el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   });
+}
+
+
+// ==================== V4.5 STEP 2: PACE RVOL, 2x2 TACTICAL WALL, 3-MIN CANTONESE BRIEFING, BREADTH SPLIT ====================
+var IS_WALL_MODE = false;
+var WALL_CHARTS = [null, null, null, null];
+var AUDIO_SPEEDS = [1.0, 1.25, 1.5];
+var AUDIO_SPEED_IDX = 1;
+var AUDIO_PLAYING = false;
+var AUDIO_USING_TTS = false;
+
+function renderBreadthRegimeSplitCard(d) {
+  var box = document.getElementById("pt-breadth-split-grid");
+  if (!box) return;
+  var split = d.breadth_regime_split;
+  if (!split) {
+    // Client-side fallback calculation from trades + breadth_history
+    var r5Map = {};
+    (SUMMARY.breadth_history || []).forEach(function(bh) { if (bh.date) r5Map[bh.date] = Number(bh.r5 || 0); });
+    var lk = { label: "Stockbee r5d < 1.0 (鎖倉 0.3%)", count: 0, wins: 0, sum_r: 0, sum_mfe: 0, sum_mae: 0 };
+    var ul = { label: "Stockbee r5d >= 1.0 (解鎖 0.5%+)", count: 0, wins: 0, sum_r: 0, sum_mfe: 0, sum_mae: 0 };
+    (d.trades || []).forEach(function(t) {
+      var mmdd = String(t.entry_date || "").slice(5, 10);
+      var r5v = r5Map[mmdd];
+      var isLk = (r5v != null) ? (r5v < 1.0) : /defensive|caution|risk-off|bear/i.test(String(t.market_regime || ""));
+      var b = isLk ? lk : ul;
+      var effR = t.status === "OPEN" ? Number(t.unrealized_r || 0) : Number(t.realized_r || 0);
+      b.count += 1; if (effR > 0) b.wins += 1;
+      b.sum_r += effR; b.sum_mfe += Number(t.mfe_r || 0); b.sum_mae += Number(t.mae_r || 0);
+    });
+    function finC(b) {
+      return { label: b.label, count: b.count, win_rate: b.count ? +(b.wins / b.count * 100).toFixed(1) : null, avg_r: b.count ? +(b.sum_r / b.count).toFixed(2) : 0, total_r: +b.sum_r.toFixed(2), avg_mfe: b.count ? +(b.sum_mfe / b.count).toFixed(2) : 0, avg_mae: b.count ? +(b.sum_mae / b.count).toFixed(2) : 0 };
+    }
+    split = { locked: finC(lk), unlocked: finC(ul) };
+  }
+  function cardHtml(obj, isLocked) {
+    var borderCls = isLocked ? "border-[#FF2A5F]/55 bg-[#140d10]" : "border-emerald-600/50 bg-[#0b1712]";
+    var titleCol = isLocked ? "text-[#ffd1dc]" : "text-emerald-300";
+    var wrTxt = (obj.win_rate != null) ? (obj.win_rate.toFixed(1) + "%") : "--";
+    return '<div class="p-3 rounded-[3px] border ' + borderCls + ' font-mono-hud">'
+      + '<div class="flex items-center justify-between gap-1 mb-2"><span class="text-xs font-extrabold ' + titleCol + '">' + obj.label + '</span><span class="px-1.5 py-0.5 rounded-[2px] bg-[#070C09] border border-[#243B2E] text-[10px] text-slate-300">' + obj.count + ' 筆</span></div>'
+      + '<div class="grid grid-cols-4 gap-1.5 text-[11px]">'
+      + '<div><span class="text-[10px] text-slate-400 block">勝率</span><b class="text-white">' + wrTxt + '</b></div>'
+      + '<div><span class="text-[10px] text-slate-400 block">平均 R</span><b class="' + pctClass(obj.avg_r) + '">' + (obj.avg_r >= 0 ? "+" : "") + obj.avg_r.toFixed(2) + 'R</b></div>'
+      + '<div><span class="text-[10px] text-slate-400 block">累計 R</span><b class="' + pctClass(obj.total_r) + '">' + (obj.total_r >= 0 ? "+" : "") + obj.total_r.toFixed(2) + 'R</b></div>'
+      + '<div><span class="text-[10px] text-slate-400 block">MFE / MAE</span><b class="text-emerald-300">+' + obj.avg_mfe.toFixed(2) + '</b>/<b class="text-rose-300">' + obj.avg_mae.toFixed(2) + '</b></div>'
+      + '</div></div>';
+  }
+  box.innerHTML = cardHtml(split.locked, true) + cardHtml(split.unlocked, false);
+}
+
+// --- 1. Pace RVOL Sync via Cloudflare Worker ---
+function syncIntradayPaceRvol() {
+  if (!MASSIVE_PROXY_URL) { showToast("請先設定 Cloudflare Worker PROXY 網址"); return; }
+  var list = getFilteredScreenerList().slice(0, 15);
+  if (!list.length) { showToast("目前 Screener 清單無標的"); return; }
+  var btn = document.getElementById("btn-scr-pace-rvol");
+  btn.textContent = "同步中...";
+  var tickers = list.map(function(r) { return (r.Ticker || "").toUpperCase(); }).filter(Boolean);
+  var base = MASSIVE_PROXY_URL.replace(/\/+$/, "");
+  fetch(base + "?mode=pace&tickers=" + encodeURIComponent(tickers.join(",")))
+    .then(function(r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(function(j) {
+      btn.textContent = "同步盤中 Pace RVOL";
+      var res = j.results || j;
+      var updated = 0;
+      if (Array.isArray(res)) {
+        res.forEach(function(item) { if (item && item.ticker && item.pace_rvol != null) { PACE_RVOL_MAP[item.ticker.toUpperCase()] = item; updated++; } });
+      } else if (res && typeof res === "object") {
+        Object.keys(res).forEach(function(k) { if (res[k] && res[k].pace_rvol != null) { PACE_RVOL_MAP[k.toUpperCase()] = res[k]; updated++; } });
+      }
+      if (updated > 0) {
+        renderScreenerTab();
+        showToast("已更新 " + updated + " 隻標的盤中 Pace RVOL");
+      } else {
+        // Graceful fallback: compute EOD volume ratio from cached Screener metrics when market is closed or Worker is v1
+        list.forEach(function(r) {
+          var tk = (r.Ticker || "").toUpperCase();
+          if (tk && r.Vol_Dryup_Ratio != null) PACE_RVOL_MAP[tk] = { ticker: tk, pace_rvol: Number(r.Vol_Dryup_Ratio) || 1.0, source: "EOD" };
+        });
+        renderScreenerTab();
+        showToast("盤外時段 / Worker 尚未更新 Pace 接口，已顯示最新收市量比");
+      }
+    }).catch(function() {
+      btn.textContent = "同步盤中 Pace RVOL";
+      list.forEach(function(r) {
+        var tk = (r.Ticker || "").toUpperCase();
+        if (tk && r.Vol_Dryup_Ratio != null) PACE_RVOL_MAP[tk] = { ticker: tk, pace_rvol: Number(r.Vol_Dryup_Ratio) || 1.0, source: "EOD" };
+      });
+      renderScreenerTab();
+      showToast("已套用最新收市量比（請更新 Worker 程式碼以啟用盤中 Pace RVOL）");
+    });
+}
+
+// --- 2. 2x2 Subsector Tactical Wall ---
+function fetchBarsForWall(sym) {
+  sym = sym.toUpperCase();
+  if (CANDLE_CACHE[sym] && CANDLE_CACHE[sym]["1D"] && CANDLE_CACHE[sym]["1D"].length >= 5) {
+    return Promise.resolve(CANDLE_CACHE[sym]["1D"]);
+  }
+  var inUni = (SUMMARY.universe_tickers || []).indexOf(sym) !== -1;
+  var url = inUni
+    ? ("./data/candles/" + encodeURIComponent(sym) + ".json?t=" + Date.now())
+    : (MASSIVE_PROXY_URL ? (MASSIVE_PROXY_URL.replace(/\/+$/, "") + "?ticker=" + encodeURIComponent(sym)) : "");
+  if (!url) return Promise.resolve([]);
+  return fetch(url)
+    .then(function(r) { if (!r.ok) throw new Error("404"); return r.json(); })
+    .then(function(j) {
+      if (j && j["1D"] && j["1D"].length >= 5) { CANDLE_CACHE[sym] = j; return j["1D"]; }
+      return [];
+    }).catch(function() {
+      if (inUni && MASSIVE_PROXY_URL) {
+        return fetch(MASSIVE_PROXY_URL.replace(/\/+$/, "") + "?ticker=" + encodeURIComponent(sym))
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(j) { if (j && j["1D"]) { CANDLE_CACHE[sym] = j; return j["1D"]; } return []; })
+          .catch(function() { return []; });
+      }
+      return [];
+    });
+}
+
+function populateWallSelector() {
+  var sel = document.getElementById("wall-etf-select");
+  if (!sel || sel.options.length > 0) return;
+  Object.keys(CORE_30_SUBSECTORS).forEach(function(etf) {
+    var opt = document.createElement("option");
+    opt.value = etf;
+    opt.textContent = etf + " (" + CORE_30_SUBSECTORS[etf].slice(0, 3).join(", ") + ")";
+    sel.appendChild(opt);
+  });
+}
+
+function renderWallCell(idx, sym, bars) {
+  var hdr = document.getElementById("wall-hdr-" + idx);
+  var stat = document.getElementById("wall-stat-" + idx);
+  var cont = document.getElementById("wall-chart-" + idx);
+  if (!hdr || !cont) return;
+  hdr.textContent = (idx === 0 ? "[ETF] " : ("#"+idx+" ")) + sym + " ↗";
+  hdr.onclick = function() { toggleWallMode(false); renderCandlestick(sym, "1D"); };
+
+  if (WALL_CHARTS[idx]) { try { WALL_CHARTS[idx].remove(); } catch(e){} WALL_CHARTS[idx] = null; }
+  cont.innerHTML = "";
+  if (!bars || bars.length < 5) {
+    stat.textContent = "NO DATA";
+    cont.innerHTML = '<div class="h-full flex items-center justify-center text-[11px] font-mono-hud text-slate-500">無 K 線數據</div>';
+    return;
+  }
+  var last = bars[bars.length - 1], prev = bars[bars.length - 2] || last;
+  var chg1d = prev.close > 0 ? ((last.close - prev.close) / prev.close) * 100 : 0;
+  stat.innerHTML = '<span class="text-white font-bold">$' + last.close.toFixed(2) + '</span> <span class="' + pctClass(chg1d) + '">' + fmtPct(chg1d) + '</span>';
+
+  var ch = LightweightCharts.createChart(cont, {
+    width: cont.clientWidth || 320, height: 220,
+    layout: { background: { type: "solid", color: "#0C1510" }, textColor: "#94a3b8" },
+    grid: { vertLines: { color: "#14231b" }, horzLines: { color: "#14231b" } },
+    rightPriceScale: { borderColor: "#243B2E" },
+    timeScale: { borderColor: "#243B2E" }
+  });
+  var cs = ch.addCandlestickSeries({ upColor: "#10b981", downColor: "#f43f5e", borderVisible: false, wickUpColor: "#10b981", wickDownColor: "#f43f5e" });
+  cs.setData(bars.map(function(b) { return { time: b.time, open: b.open, high: b.high, low: b.low, close: b.close }; }));
+  ch.addLineSeries({ color: "#2dd4bf", lineWidth: 1.3, priceLineVisible: false }).setData(calcEma(bars, 21));
+  ch.addLineSeries({ color: "#fbbf24", lineWidth: 1.4, priceLineVisible: false }).setData(calcEma(bars, 50));
+  ch.timeScale().setVisibleLogicalRange({ from: Math.max(0, bars.length - 90), to: bars.length + 2 });
+  WALL_CHARTS[idx] = ch;
+}
+
+function renderTacticalWall(etfSym) {
+  populateWallSelector();
+  var etf = (etfSym || "").toUpperCase();
+  if (!CORE_30_SUBSECTORS[etf]) etf = CORE_30_SUBSECTORS[ACTIVE_SYMBOL] ? ACTIVE_SYMBOL : "SMH";
+  document.getElementById("wall-etf-select").value = etf;
+  var syms = [etf].concat(CORE_30_SUBSECTORS[etf].slice(0, 3));
+  document.getElementById("wall-members-label").textContent = "焦點組別：" + syms.join(" · ");
+  syms.forEach(function(s, idx) {
+    document.getElementById("wall-stat-" + idx).textContent = "LOADING...";
+    fetchBarsForWall(s).then(function(bars) { renderWallCell(idx, s, bars); });
+  });
+}
+
+function toggleWallMode(forceState, targetEtf) {
+  IS_WALL_MODE = (typeof forceState === "boolean") ? forceState : !IS_WALL_MODE;
+  document.getElementById("chart-stage").classList.toggle("hidden", IS_WALL_MODE);
+  document.getElementById("indicator-toolbar").classList.toggle("hidden", IS_WALL_MODE);
+  document.getElementById("chart-pos-ruler").classList.toggle("hidden", IS_WALL_MODE);
+  document.getElementById("wall-stage").classList.toggle("hidden", !IS_WALL_MODE);
+  var btn = document.getElementById("btn-wall-toggle");
+  if (btn) btn.classList.toggle("hud-btn-gold", IS_WALL_MODE);
+  if (IS_WALL_MODE) {
+    document.getElementById("chart-collapsible-body").classList.remove("hidden");
+    renderTacticalWall(targetEtf || ACTIVE_SYMBOL);
+  } else {
+    setTimeout(resizeCharts, 60);
+  }
+}
+
+// --- 3. 3-Min Cantonese Briefing Mini Player (MP3 + zh-HK SpeechSynthesis Fallback) ---
+function buildCantoneseBriefScript() {
+  var r = CURRENT_REPORT || {};
+  var br = r.breadth || {};
+  var idxList = r.indices || [];
+  var spy = idxList[0] || { close: 0, chg1d: 0 };
+  var qqq = idxList[1] || { close: 0, chg1d: 0 };
+  var secs = (r.sectors || []).slice().sort(function(a, b) { return (b.rel20 || 0) - (a.rel20 || 0); });
+  var topS = secs[0] ? (secs[0].name + " " + secs[0].ticker) : "防禦板塊";
+  var botS = secs.length ? (secs[secs.length - 1].name + " " + secs[secs.length - 1].ticker) : "落後板塊";
+  var riskTxt = (br.ratio5d || 0) < 1.0 ? "Stockbee 五日比率低於一點零，今日維持鎖倉防守，單筆風險上限零點三巴仙。" : "Stockbee 五日比率重上警戒線，可按紀律解鎖至零點五巴仙風險。";
+  var pt = PAPER_DATA || FALLBACK_PAPER_DATA;
+  var ptTxt = "";
+  if (pt && pt.account) {
+    ptTxt = "紙盤觀察室方面，最新帳戶淨值為 " + Math.round(pt.account.live_equity || 100000) + " 美元，累積回報 " + fmtPct(pt.account.total_return_pct) + "，現金比例 " + Number(pt.account.cash_pct || 0).toFixed(0) + " 巴仙，目前持有 " + (pt.account.open_positions || 0) + " 隻倉位。";
+  }
+  return "各位早安，歡迎收聽 " + (r.trade_date || "最新交易日") + " 美股動能戰情簡報。"
+    + "大市五維評分今日報 " + (br.score || 0) + " 分。" + riskTxt
+    + "指數表現方面，標普五百收報 " + Number(spy.close || 0).toFixed(1) + "，單日變動 " + fmtPct(spy.chg1d) + "；納指一百變動 " + fmtPct(qqq.chg1d) + "。"
+    + "市場寬度方面，單日升超過四巴仙有 " + (br.up4 || 0) + " 隻，跌超過四巴仙有 " + (br.dn4 || 0) + " 隻，T2108 報 " + Number(br.t2108 || 0).toFixed(1) + " 巴仙。"
+    + "板塊輪動以 " + topS + " 表現最強，" + botS + " 相對落後。"
+    + ((r.ai_brief && r.ai_brief.tldr) ? ("今日重點定調：" + r.ai_brief.tldr + "。") : "")
+    + ptTxt + "祝今日交易順利，嚴守止損紀律。";
+}
+
+function stopAudioBrief() {
+  AUDIO_PLAYING = false;
+  AUDIO_USING_TTS = false;
+  var el = document.getElementById("briefing-audio-el");
+  if (el) { try { el.pause(); el.currentTime = 0; } catch(e){} }
+  if ("speechSynthesis" in window) { try { window.speechSynthesis.cancel(); } catch(e){} }
+  document.getElementById("audio-status-lbl").textContent = "3m 粵語簡報";
+  document.getElementById("btn-audio-stop").classList.add("hidden");
+}
+
+function startTtsBrief() {
+  if (!("speechSynthesis" in window)) { showToast("此瀏覽器不支援語音朗讀"); stopAudioBrief(); return; }
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(buildCantoneseBriefScript());
+  u.lang = "zh-HK";
+  u.rate = AUDIO_SPEEDS[AUDIO_SPEED_IDX];
+  var voices = window.speechSynthesis.getVoices() || [];
+  var hkV = voices.find(function(v) { return /zh[-_]HK/i.test(v.lang); }) || voices.find(function(v) { return /zh/i.test(v.lang); });
+  if (hkV) u.voice = hkV;
+  u.onend = function() { stopAudioBrief(); };
+  u.onerror = function() { stopAudioBrief(); };
+  AUDIO_PLAYING = true;
+  AUDIO_USING_TTS = true;
+  document.getElementById("audio-status-lbl").textContent = "朗讀中 (粵語)";
+  document.getElementById("btn-audio-stop").classList.remove("hidden");
+  window.speechSynthesis.speak(u);
+}
+
+function toggleAudioBrief() {
+  var el = document.getElementById("briefing-audio-el");
+  if (AUDIO_PLAYING) {
+    if (AUDIO_USING_TTS) { stopAudioBrief(); return; }
+    el.pause(); AUDIO_PLAYING = false;
+    document.getElementById("audio-status-lbl").textContent = "已暫停";
+    return;
+  }
+  el.src = "./data/briefing.mp3?t=" + Date.now();
+  el.playbackRate = AUDIO_SPEEDS[AUDIO_SPEED_IDX];
+  el.onended = stopAudioBrief;
+  el.onerror = function() { startTtsBrief(); };
+  var playP = el.play();
+  if (playP && typeof playP.then === "function") {
+    playP.then(function() {
+      AUDIO_PLAYING = true; AUDIO_USING_TTS = false;
+      document.getElementById("audio-status-lbl").textContent = "播放中 MP3";
+      document.getElementById("btn-audio-stop").classList.remove("hidden");
+    }).catch(function() { startTtsBrief(); });
+  } else {
+    startTtsBrief();
+  }
 }
 
 function switchMainTab(tab) {
@@ -2879,7 +3238,22 @@ function bindEventsOnce() {
 
   // Screener Tab controls
   document.querySelectorAll(".scrtab-btn").forEach(function(b) { b.addEventListener("click", function() { ACTIVE_SCRTAB = b.getAttribute("data-scrtab"); document.querySelectorAll(".scrtab-btn").forEach(function(x) { x.className = (x.getAttribute("data-scrtab") === ACTIVE_SCRTAB) ? "scrtab-btn px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300" : "scrtab-btn px-2.5 py-1 rounded-lg text-slate-400"; }); renderScreenerTab(); }); });
-  ["scr-tier-sa","scr-inside-nr7","scr-hide-ext"].forEach(function(id) { document.getElementById(id).addEventListener("change", renderScreenerTab); });
+  ["scr-tier-sa","scr-f-early","scr-inside-nr7","scr-f-vcp","scr-f-panic","scr-hide-ext"].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.addEventListener("change", renderScreenerTab);
+  });
+  document.getElementById("btn-scr-pace-rvol").addEventListener("click", syncIntradayPaceRvol);
+  document.getElementById("btn-wall-toggle").addEventListener("click", function() { toggleWallMode(); });
+  document.getElementById("wall-etf-select").addEventListener("change", function(ev) { renderTacticalWall(ev.currentTarget.value); });
+  document.getElementById("btn-audio-play").addEventListener("click", toggleAudioBrief);
+  document.getElementById("btn-audio-stop").addEventListener("click", stopAudioBrief);
+  document.getElementById("btn-audio-speed").addEventListener("click", function() {
+    AUDIO_SPEED_IDX = (AUDIO_SPEED_IDX + 1) % AUDIO_SPEEDS.length;
+    var sp = AUDIO_SPEEDS[AUDIO_SPEED_IDX];
+    this.textContent = sp + "x";
+    var el = document.getElementById("briefing-audio-el");
+    if (el) el.playbackRate = sp;
+    if (AUDIO_PLAYING && AUDIO_USING_TTS) startTtsBrief();
+  });
   document.getElementById("scr-search").addEventListener("input", renderScreenerTab);
   document.getElementById("btn-scr-copy-ai").addEventListener("click", function() {
     var lines = getFilteredScreenerList().filter(function(r) { return r.Tier === "S" || r.Tier === "A"; }).map(function(r) { return r.AI_Summary; }).filter(Boolean);

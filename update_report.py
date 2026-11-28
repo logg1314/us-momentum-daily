@@ -1007,6 +1007,62 @@ def load_paper_trade_sources():
     return None
 
 
+
+def calc_adr20_pct(bars):
+    if not bars:
+        return 3.0
+    sub = bars[-20:]
+    vals = []
+    for b in sub:
+        lo = float(b.get("low", b.get("l", 0)) or 0)
+        hi = float(b.get("high", b.get("h", 0)) or 0)
+        if lo > 0:
+            vals.append(((hi - lo) / lo) * 100.0)
+    return round(sum(vals) / len(vals), 2) if vals else 3.0
+
+
+def build_breadth_regime_split(trades, breadth_history):
+    r5_by_mmdd = {}
+    for bh in (breadth_history or []):
+        dt_k = str(bh.get("date") or "")
+        if dt_k:
+            r5_by_mmdd[dt_k] = safe_float(bh.get("r5"), 0.5)
+
+    locked = {"label": "Stockbee r5d < 1.0 (鎖倉 0.3%)", "count": 0, "wins": 0, "sum_r": 0.0, "sum_mfe": 0.0, "sum_mae": 0.0}
+    unlocked = {"label": "Stockbee r5d >= 1.0 (解鎖 0.5%+)", "count": 0, "wins": 0, "sum_r": 0.0, "sum_mfe": 0.0, "sum_mae": 0.0}
+
+    for t in (trades or []):
+        ed = str(t.get("entry_date") or "")
+        mmdd = ed[5:10] if len(ed) >= 10 else ""
+        r5_val = r5_by_mmdd.get(mmdd)
+        if r5_val is None:
+            reg_str = str(t.get("market_regime") or "").lower()
+            is_locked = any(k in reg_str for k in ("defensive", "caution", "risk-off", "bear", "locked"))
+        else:
+            is_locked = (r5_val < 1.0)
+        bkt = locked if is_locked else unlocked
+        eff_r = safe_float(t.get("realized_r")) if str(t.get("status") or "").upper() != "OPEN" else safe_float(t.get("unrealized_r"))
+        bkt["count"] += 1
+        if eff_r > 0:
+            bkt["wins"] += 1
+        bkt["sum_r"] += eff_r
+        bkt["sum_mfe"] += safe_float(t.get("mfe_r"))
+        bkt["sum_mae"] += safe_float(t.get("mae_r"))
+
+    def fin(b):
+        c = b["count"]
+        return {
+            "label": b["label"],
+            "count": c,
+            "win_rate": round((b["wins"] / c) * 100.0, 1) if c > 0 else None,
+            "avg_r": round(b["sum_r"] / c, 2) if c > 0 else 0.0,
+            "total_r": round(b["sum_r"], 2),
+            "avg_mfe": round(b["sum_mfe"] / c, 2) if c > 0 else 0.0,
+            "avg_mae": round(b["sum_mae"] / c, 2) if c > 0 else 0.0,
+        }
+
+    return {"locked": fin(locked), "unlocked": fin(unlocked)}
+
 def safe_float(val, default=0.0):
     try:
         if val is None:
@@ -1030,7 +1086,7 @@ def fetch_ai_context_from_screener_repo():
     return None
 
 
-def convert_ai_context_to_paper_war_room(ctx, universe_tickers, spy_bars, ohlcv_by_sym):
+def convert_ai_context_to_paper_war_room(ctx, universe_tickers, spy_bars, ohlcv_by_sym, breadth_history=None):
     latest_us_dt = datetime.fromtimestamp(spy_bars[-1]["t"] / 1000, timezone.utc).strftime("%Y-%m-%d") if spy_bars else ""
     acc_raw = ctx.get("account_stats") or {}
     active_book = ctx.get("active_book") or []
@@ -1178,6 +1234,7 @@ def convert_ai_context_to_paper_war_room(ctx, universe_tickers, spy_bars, ohlcv_
         "pending_orders": pending_raw,
         "control_group": ctrl_out,
         "equity_curve": curve,
+        "breadth_regime_split": build_breadth_regime_split(enriched_trades, breadth_history),
         "attribution": {
             "by_regime": fin_b(regime_buckets),
             "by_setup": fin_b(setup_buckets),
@@ -1186,11 +1243,11 @@ def convert_ai_context_to_paper_war_room(ctx, universe_tickers, spy_bars, ohlcv_
     }
 
 
-def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existing_paper):
+def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existing_paper, breadth_history=None):
     ai_ctx = fetch_ai_context_from_screener_repo()
     if ai_ctx:
         print("SUCCESS [Paper Trade V4.0]: Synced directly from AI_Context_LATEST.json!")
-        return convert_ai_context_to_paper_war_room(ai_ctx, universe_tickers, spy_bars, ohlcv_by_sym)
+        return convert_ai_context_to_paper_war_room(ai_ctx, universe_tickers, spy_bars, ohlcv_by_sym, breadth_history=breadth_history)
     raw_src = load_paper_trade_sources()
     if not raw_src:
         print("WARN [Paper Trade V4.0]: Could not fetch live Sheet/Bridge; keeping cached paper_trade.json if present.")
@@ -1352,7 +1409,11 @@ def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existin
         if dedup_key in seen_pending_keys:
             continue
         seen_pending_keys.add(dedup_key)
-        ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym, latest_date=latest_us_dt)
+        p_bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym, latest_date=latest_us_dt)
+        adr20 = calc_adr20_pct(p_bars)
+        max_chase = round(trig * (1.0 + 0.5 * (adr20 / 100.0)), 2) if trig > 0 else 0.0
+        last_open = safe_float(p_bars[-1].get("open")) if p_bars else 0.0
+        gap_skipped = bool(trig > 0 and max_chase > 0 and last_open > max_chase and p_bars and str(p_bars[-1].get("time") or "")[:10] >= plan_dt)
         active_pending.append({
             "order_id": p.get("order_id", ""),
             "plan_date": plan_dt,
@@ -1364,7 +1425,10 @@ def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existin
             "shares": int(safe_float(p.get("shares"))),
             "risk_usd": safe_float(p.get("risk_usd")),
             "partial_2r_target": safe_float(p.get("partial_2r_target")),
-            "sync_status": st or "NEW",
+            "adr20_pct": adr20,
+            "max_chase_price": max_chase,
+            "gap_status": "SKIPPED_GAP_TOO_WIDE" if gap_skipped else "READY",
+            "sync_status": "SKIPPED_GAP_TOO_WIDE" if gap_skipped else (st or "NEW"),
             "notes": p.get("notes", ""),
         })
 
@@ -1490,6 +1554,7 @@ def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existin
         "pending_orders": active_pending,
         "control_group": control_items,
         "equity_curve": curve,
+        "breadth_regime_split": build_breadth_regime_split(enriched_trades, breadth_history),
         "attribution": {
             "by_regime": finalize_buckets(regime_buckets),
             "by_setup": finalize_buckets(setup_buckets),
@@ -1676,7 +1741,7 @@ def main():
             json.dump(screener_data, f, ensure_ascii=False, separators=(",", ":"))
 
     # Tab 4: V4.0 AI Paper Trade War Room
-    paper_data = build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existing_paper)
+    paper_data = build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existing_paper, breadth_history=breadth_history_20d)
     if paper_data:
         with open(PAPER_FILE, "w", encoding="utf-8") as f:
             json.dump(paper_data, f, ensure_ascii=False, separators=(",", ":"))
