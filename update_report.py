@@ -1,12 +1,14 @@
 import base64
+import csv
 import io
 import json
 import os
+import re
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import zipfile
-import csv
 from datetime import datetime, timedelta, timezone
 
 try:
@@ -17,8 +19,11 @@ except ImportError:
 API_KEY = os.environ.get("MASSIVE_API_KEY", "").strip()
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 DRIVE_BRIDGE_URL = os.environ.get("DRIVE_BRIDGE_URL", "").strip()
+PAPER_BRIDGE_URL = os.environ.get("PAPER_BRIDGE_URL", "").strip()
+PAPER_SHEET_ID = os.environ.get("PAPER_SHEET_ID", "1jJ7GDm2wqs80Qs1BApVnGryVpa_TvsGV7f8x3Oq3-bs").strip()
 SCREENER_TOKEN = os.environ.get("SCREENER_REPO_TOKEN", "").strip()
 SCREENER_REPO = os.environ.get("SCREENER_REPO", "logg1314/qm-screener-auto").strip()
+PAPER_REPO = os.environ.get("PAPER_REPO", "").strip()
 BASE_URL = os.environ.get("MASSIVE_BASE_URL", "https://api.massive.com").rstrip("/")
 
 DATA_DIR = "data"
@@ -26,6 +31,7 @@ CANDLES_DIR = os.path.join(DATA_DIR, "candles")
 SUMMARY_FILE = os.path.join(DATA_DIR, "summary.json")
 FUTURES_FILE = os.path.join(DATA_DIR, "futures.json")
 SCREENER_FILE = os.path.join(DATA_DIR, "screener.json")
+PAPER_FILE = os.path.join(DATA_DIR, "paper_trade.json")
 
 MAX_HISTORY_DAYS = 30
 BREADTH_BACKFILL_DAYS = 20
@@ -39,7 +45,6 @@ INDICES = [
     ("RSP", "等權標普"),
 ]
 
-# Tab 1 Part 2: Sectors + Themes + Silver (SLV) + MAGS + VOO
 SECTORS = [
     ("XLE", "能源", True), ("XLU", "公用事業", True), ("XLP", "必需消費", True),
     ("XLF", "金融", True), ("XLRE", "房地產", True), ("XLK", "科技", True),
@@ -51,7 +56,6 @@ SECTORS = [
     ("IEF", "7-10年美債", False), ("TLT", "20年美債", False),
 ]
 
-# Tab 1 Part 3: Core Watchlist (including Silver SLV)
 CORE_WATCHLIST = [
     ("PANW", "網絡安全", "XLK"),
     ("WMT", "必需消費", "XLP"),
@@ -74,9 +78,7 @@ BLOCKED_NAME_KEYWORDS = (
     "VANGUARD", "SPDR", "TRUST", "FUND", "SHARES", "SWAP", "LONG ",
 )
 
-# Futures Universe: (display_sym, name_zh, group, yf_sym, cftc_code, decimals)
 FUTURES_SPECS = [
-    # FX Benchmark + 7 CME Currency Futures (6J needs 6 decimals ~0.006300)
     ("DXY", "美元指數 (基準)", "FX", "DX=F", "098662", 2),
     ("6E", "歐元期貨 (EUR)", "FX", "6E=F", "099741", 4),
     ("6J", "日圓期貨 (JPY)", "FX", "6J=F", "097741", 6),
@@ -85,17 +87,14 @@ FUTURES_SPECS = [
     ("6C", "加元期貨 (CAD)", "FX", "6C=F", "090741", 4),
     ("6N", "紐元期貨 (NZD)", "FX", "6N=F", "112741", 4),
     ("6M", "墨西哥披索 (MXN)", "FX", "6M=F", "095741", 5),
-    # Metals
     ("GC", "黃金期貨 (Gold)", "METALS", "GC=F", "088691", 2),
     ("SI", "白銀期貨 (Silver)", "METALS", "SI=F", "084691", 3),
     ("HG", "精煉銅期貨 (Copper)", "METALS", "HG=F", "085692", 4),
     ("PL", "鉑金期貨 (Platinum)", "METALS", "PL=F", "076651", 2),
-    # Energy
     ("CL", "WTI 原油 (Crude)", "ENERGY", "CL=F", "067651", 2),
     ("NG", "天然氣 (NatGas)", "ENERGY", "NG=F", "023651", 3),
     ("RB", "RBOB 汽油", "ENERGY", "RB=F", "111659", 4),
     ("HO", "取暖油 (Heating Oil)", "ENERGY", "HO=F", "022651", 4),
-    # Agriculture & Softs
     ("ZC", "粟米期貨 (Corn)", "AGRI", "ZC=F", "002602", 2),
     ("ZS", "大豆期貨 (Soybeans)", "AGRI", "ZS=F", "005602", 2),
     ("ZW", "小麥期貨 (Wheat)", "AGRI", "ZW=F", "001602", 2),
@@ -103,7 +102,6 @@ FUTURES_SPECS = [
     ("KC", "咖啡期貨 (Coffee)", "AGRI", "KC=F", "083731", 2),
     ("CC", "可可期貨 (Cocoa)", "AGRI", "CC=F", "073732", 1),
     ("LE", "活牛期貨 (Live Cattle)", "AGRI", "LE=F", "057642", 2),
-    # Equity Index Futures
     ("ES", "標普500期貨 (E-mini)", "INDEX", "ES=F", "13874A", 2),
     ("NQ", "納指100期貨 (E-mini)", "INDEX", "NQ=F", "209742", 2),
     ("RTY", "羅素2000期貨 (E-mini)", "INDEX", "RTY=F", "239742", 2),
@@ -112,7 +110,7 @@ FUTURES_SPECS = [
 
 def http_json(url, payload=None, headers=None, retries=3):
     for attempt in range(retries):
-        hdrs = {"User-Agent": "TacticalHubV3.1"}
+        hdrs = {"User-Agent": "TacticalHubV4.0"}
         if headers:
             hdrs.update(headers)
         req = urllib.request.Request(url, headers=hdrs)
@@ -132,6 +130,16 @@ def http_json(url, payload=None, headers=None, retries=3):
                 continue
             raise
     return {}
+
+
+def http_text(url, headers=None):
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
+    hdrs = {"User-Agent": "Mozilla/5.0 TacticalHubV4.0"}
+    if headers:
+        hdrs.update(headers)
+    req = urllib.request.Request(url, headers=hdrs)
+    with opener.open(req, timeout=35) as resp:
+        return resp.read().decode("utf-8", errors="replace")
 
 
 def map_sic_to_sector_etf(sic_upper):
@@ -323,20 +331,13 @@ def calc_metrics(bars, decimals=2):
     dist_high20 = round(((high20 - c) / high20) * 100.0, 1) if high20 > 0 else 0.0
 
     return {
-        "close": round(c, decimals),
-        "chg1d": round(chg1d, 2),
-        "chg20d": round(chg20d, 2),
-        "chg60d": round(chg60d, 2),
-        "rsi14": calc_rsi14(closes),
-        "atr14": round(atr14, decimals),
-        "atr_pct": atr_pct,
-        "atr_dist50": atr_dist50,
-        "above_ema21": c >= ema21,
-        "above_ma50": c >= ma50,
-        "stop": stop,
-        "vol_ratio": vol_ratio,
-        "dollar_vol_m": dollar_vol_m,
-        "tightness": tightness,
+        "close": round(c, decimals), "chg1d": round(chg1d, 2),
+        "chg20d": round(chg20d, 2), "chg60d": round(chg60d, 2),
+        "rsi14": calc_rsi14(closes), "atr14": round(atr14, decimals),
+        "atr_pct": atr_pct, "atr_dist50": atr_dist50,
+        "above_ema21": c >= ema21, "above_ma50": c >= ma50,
+        "stop": stop, "vol_ratio": vol_ratio,
+        "dollar_vol_m": dollar_vol_m, "tightness": tightness,
         "dist_high20": dist_high20,
     }
 
@@ -562,13 +563,10 @@ def fetch_drive_pdfs():
     if not DRIVE_BRIDGE_URL:
         return []
     try:
-        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
-        req = urllib.request.Request(DRIVE_BRIDGE_URL, headers={"User-Agent": "Mozilla/5.0 TacticalHubV3.1"})
-        with opener.open(req, timeout=35) as resp:
-            raw = resp.read().decode("utf-8", errors="replace").strip()
-            if raw.startswith("<"):
-                return []
-            res = json.loads(raw)
+        raw = http_text(DRIVE_BRIDGE_URL).strip()
+        if raw.startswith("<"):
+            return []
+        res = json.loads(raw)
         files = res if isinstance(res, list) else (res.get("files") if isinstance(res, dict) else [])
         return files[:60]
     except Exception:
@@ -593,7 +591,7 @@ def fetch_cftc_cot_3y():
     for yr in years:
         url = f"https://www.cftc.gov/files/dea/history/deacot{yr}.zip"
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "TacticalHubV3.1"})
+            req = urllib.request.Request(url, headers={"User-Agent": "TacticalHubV4.0"})
             with urllib.request.urlopen(req, timeout=45) as resp:
                 zbytes = resp.read()
             with zipfile.ZipFile(io.BytesIO(zbytes)) as zf:
@@ -646,9 +644,7 @@ def fetch_cftc_cot_3y():
         if not rows:
             continue
         rows.sort(key=lambda x: x[0])
-        dedup = {}
-        for r in rows:
-            dedup[r[0]] = r
+        dedup = {r[0]: r for r in rows}
         s_rows = [dedup[k] for k in sorted(dedup.keys())]
         comm_all = [x[1] for x in s_rows]
         spec_all = [x[2] for x in s_rows]
@@ -660,22 +656,14 @@ def fetch_cftc_cot_3y():
             return round(((val - lo) / (hi - lo)) * 100) if hi > lo else 50
 
         c_now, s_now, oi_now = comm_all[-1], spec_all[-1], s_rows[-1][3]
-        c_chg = c_now - comm_all[-2] if len(comm_all) >= 2 else 0
-        s_chg = s_now - spec_all[-2] if len(spec_all) >= 2 else 0
-        cot_1y = pct_rank(comm_all[-52:], c_now)
-        cot_3y = pct_rank(comm_all[-156:], c_now)
-        spec_1y = pct_rank(spec_all[-52:], s_now)
-
         out[code] = {
             "report_date": s_rows[-1][0],
-            "comm_net": c_now,
-            "comm_chg": c_chg,
-            "spec_net": s_now,
-            "spec_chg": s_chg,
+            "comm_net": c_now, "comm_chg": c_now - comm_all[-2] if len(comm_all) >= 2 else 0,
+            "spec_net": s_now, "spec_chg": s_now - spec_all[-2] if len(spec_all) >= 2 else 0,
             "oi": oi_now,
-            "cot_1y": cot_1y,
-            "cot_3y": cot_3y,
-            "spec_1y": spec_1y,
+            "cot_1y": pct_rank(comm_all[-52:], c_now),
+            "cot_3y": pct_rank(comm_all[-156:], c_now),
+            "spec_1y": pct_rank(spec_all[-52:], s_now),
             "trail_12w": [[x[0][5:], x[1], x[2]] for x in s_rows[-12:]],
         }
     return out
@@ -817,19 +805,15 @@ def fetch_github_repo_json(repo, path, token):
 
 
 def parse_ohlcv_map(ohlcv_raw):
-    """Handle flexible shapes of ohlcv.json: {SYM: [...]}, {bars: {SYM: [...]}}, {data: {SYM: [...]}}, or [{Ticker, Date, ...}]."""
     out = {}
     if isinstance(ohlcv_raw, list):
         for r in ohlcv_raw:
-            if not isinstance(r, dict):
-                continue
-            tk = (r.get("Ticker") or r.get("ticker") or r.get("symbol") or "").upper()
-            if tk:
-                out.setdefault(tk, []).append(r)
+            if isinstance(r, dict):
+                tk = (r.get("Ticker") or r.get("ticker") or r.get("symbol") or "").upper()
+                if tk:
+                    out.setdefault(tk, []).append(r)
         return out
-
     if isinstance(ohlcv_raw, dict):
-        # Check nested containers first
         for container_key in ("bars", "candles", "data", "ohlcv", "history", "tickers"):
             sub = ohlcv_raw.get(container_key)
             if isinstance(sub, dict):
@@ -846,8 +830,6 @@ def parse_ohlcv_map(ohlcv_raw):
                             out.setdefault(tk, []).append(r)
                 if out:
                     return out
-
-        # Direct dict mapping SYM -> list of bar dicts or [t,o,h,l,c,v]
         for k, v in ohlcv_raw.items():
             if isinstance(v, list) and v:
                 out[k.upper()] = v
@@ -868,20 +850,52 @@ def normalize_bar_item(h):
             return None
         return {"time": d_str, "open": round(o, 2), "high": round(hi, 2), "low": round(lo, 2), "close": round(c, 2), "volume": v}
     if isinstance(h, (list, tuple)) and len(h) >= 5:
-        d_str = str(h[0])[:10]
-        return {"time": d_str, "open": round(float(h[1]), 2), "high": round(float(h[2]), 2), "low": round(float(h[3]), 2), "close": round(float(h[4]), 2), "volume": int(float(h[5]) if len(h) > 5 and h[5] else 0)}
+        return {"time": str(h[0])[:10], "open": round(float(h[1]), 2), "high": round(float(h[2]), 2), "low": round(float(h[3]), 2), "close": round(float(h[4]), 2), "volume": int(float(h[5]) if len(h) > 5 and h[5] else 0)}
     return None
+
+
+def ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym=None):
+    """Ensure data/candles/{tk}.json exists and return its 1D bars."""
+    tk = tk.upper()
+    path = os.path.join(CANDLES_DIR, f"{tk}.json")
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                j = json.load(f)
+            if j.get("1D") and len(j["1D"]) >= 5:
+                if tk not in universe_tickers:
+                    universe_tickers.append(tk)
+                return j["1D"]
+        except Exception:
+            pass
+
+    bars = []
+    if ohlcv_by_sym and tk in ohlcv_by_sym:
+        bars = [nb for nb in (normalize_bar_item(h) for h in ohlcv_by_sym[tk]) if nb is not None]
+        bars.sort(key=lambda x: x["time"])
+
+    if len(bars) < 10 and API_KEY:
+        try:
+            m_bars = get_daily_bars(tk, calendar_days=380)
+            if m_bars:
+                bars = format_daily_candles(m_bars, limit=300, decimals=2)
+        except Exception:
+            pass
+
+    if bars:
+        save_ticker_candle_file(tk, bars, [])
+        if tk not in universe_tickers:
+            universe_tickers.append(tk)
+    return bars
 
 
 def sync_qm_screener(universe_tickers, massive_dyn_tickers):
     if not SCREENER_TOKEN:
-        print("WARN [QM Screener]: SCREENER_REPO_TOKEN is empty.")
-        return None
+        return None, {}
     try:
         scr = fetch_github_repo_json(SCREENER_REPO, "latest/screener.json", SCREENER_TOKEN)
         if not scr:
-            return None
-
+            return None, {}
         ohlcv_raw = {}
         try:
             ohlcv_raw = fetch_github_repo_json(SCREENER_REPO, "latest/ohlcv.json", SCREENER_TOKEN)
@@ -896,23 +910,8 @@ def sync_qm_screener(universe_tickers, massive_dyn_tickers):
             tk = (row.get("Ticker") or "").upper()
             if not tk:
                 continue
-            hist = ohlcv_by_sym.get(tk) or []
-            bars = [nb for nb in (normalize_bar_item(h) for h in hist) if nb is not None]
-            bars.sort(key=lambda x: x["time"])
-
-            # Fallback to Massive daily bars if ohlcv.json lacked this symbol
-            if len(bars) < 10 and API_KEY:
-                try:
-                    m_bars = get_daily_bars(tk, calendar_days=365)
-                    if m_bars:
-                        bars = format_daily_candles(m_bars, limit=300, decimals=2)
-                except Exception:
-                    pass
-
+            bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
             if bars:
-                save_ticker_candle_file(tk, bars, [])
-                if tk not in universe_tickers:
-                    universe_tickers.append(tk)
                 closes = [b["close"] for b in bars]
                 e10 = calc_ema_list(closes, 10)
                 e20 = calc_ema_list(closes, 20)
@@ -921,16 +920,550 @@ def sync_qm_screener(universe_tickers, massive_dyn_tickers):
                     [bars[i]["open"], bars[i]["high"], bars[i]["low"], bars[i]["close"], round(e10[i], 2), round(e20[i], 2)]
                     for i in range(slice_start, len(bars))
                 ]
-
             theme_rs = float(row.get("Theme_RS_Proxy") or 0)
             row["_confluence"] = (theme_rs > 0) or (tk in massive_dyn_tickers)
 
         scr["mini_candles"] = mini_scr
-        print(f"SUCCESS [QM Screener]: {len(cand_list)} candidates, {len(mini_scr)} mini charts ready.")
-        return scr
+        return scr, ohlcv_by_sym
     except Exception as e:
         print(f"ERROR [QM Screener Route B]: {e}")
+        return None, {}
+
+
+# ==============================================================================
+# MODULE C: V4.0 AI PAPER TRADE WAR ROOM (SYNC + LIVE MTM + MAE/MFE + ATTRIBUTION)
+# ==============================================================================
+def fetch_google_sheet_tab_csv(sheet_id, tab_name):
+    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={urllib.parse.quote(tab_name)}"
+    raw = http_text(url)
+    if raw.lstrip().startswith("<"):
+        raise ValueError(f"Sheet tab {tab_name} returned HTML (not public or bridge needed).")
+    reader = csv.DictReader(io.StringIO(raw))
+    return [dict(r) for r in reader if any(v and str(v).strip() for v in r.values())]
+
+
+def load_paper_trade_sources():
+    """
+    Tries 3 automatic channels in priority order:
+    1) PAPER_BRIDGE_URL (Apps Script JSON returning {ledger, pending, control, snapshots})
+    2) Public/Link-viewable Google Sheet QM_Paper_Command_Center via gviz CSV export
+    3) Optional PAPER_REPO GitHub JSON/CSV
+    """
+    if PAPER_BRIDGE_URL:
+        try:
+            raw = http_text(PAPER_BRIDGE_URL).strip()
+            if not raw.startswith("<"):
+                j = json.loads(raw)
+                if isinstance(j, dict) and (j.get("ledger") or j.get("Ledger_Mirror")):
+                    return {
+                        "source": "Apps Script Bridge",
+                        "ledger": j.get("ledger") or j.get("Ledger_Mirror") or [],
+                        "pending": j.get("pending") or j.get("Pending_Orders") or [],
+                        "control": j.get("control") or j.get("Control_Queue") or [],
+                        "snapshots": j.get("snapshots") or j.get("Daily_Snapshots") or [],
+                    }
+        except Exception as e:
+            print(f"WARN [Paper Bridge]: {e}")
+
+    if PAPER_SHEET_ID:
+        try:
+            ledger = fetch_google_sheet_tab_csv(PAPER_SHEET_ID, "Ledger_Mirror")
+            pending = fetch_google_sheet_tab_csv(PAPER_SHEET_ID, "Pending_Orders")
+            control = fetch_google_sheet_tab_csv(PAPER_SHEET_ID, "Control_Queue")
+            snapshots = fetch_google_sheet_tab_csv(PAPER_SHEET_ID, "Daily_Snapshots")
+            return {
+                "source": "QM_Paper_Command_Center (Google Sheet)",
+                "ledger": ledger,
+                "pending": pending,
+                "control": control,
+                "snapshots": snapshots,
+            }
+        except Exception as e:
+            print(f"WARN [Paper Sheet gviz]: {e}")
+
+    if PAPER_REPO and SCREENER_TOKEN:
+        try:
+            j = fetch_github_repo_json(PAPER_REPO, "latest/paper_trade.json", SCREENER_TOKEN)
+            if j:
+                return {
+                    "source": f"GitHub ({PAPER_REPO})",
+                    "ledger": j.get("ledger") or [],
+                    "pending": j.get("pending") or [],
+                    "control": j.get("control") or [],
+                    "snapshots": j.get("snapshots") or [],
+                }
+        except Exception as e:
+            print(f"WARN [Paper GitHub]: {e}")
+
+    return None
+
+
+def safe_float(val, default=0.0):
+    try:
+        if val is None:
+            return default
+        s = str(val).replace("$", "").replace("%", "").replace(",", "").strip()
+        return float(s) if s else default
+    except Exception:
+        return default
+
+
+def fetch_ai_context_from_screener_repo():
+    if not SCREENER_TOKEN or not SCREENER_REPO:
         return None
+    for path in ("data/AI_Context_LATEST.json", "latest/AI_Context_LATEST.json", "AI_Context_LATEST.json"):
+        try:
+            j = fetch_github_repo_json(SCREENER_REPO, path, SCREENER_TOKEN)
+            if isinstance(j, dict) and (j.get("account_stats") or j.get("active_book")):
+                return j
+        except Exception:
+            continue
+    return None
+
+
+def convert_ai_context_to_paper_war_room(ctx, universe_tickers, spy_bars, ohlcv_by_sym):
+    acc_raw = ctx.get("account_stats") or {}
+    active_book = ctx.get("active_book") or []
+    pending_raw = ctx.get("pending_orders") or []
+    ctrl_raw = ctx.get("control_group_summary") or ctx.get("control_group") or []
+    snaps = ctx.get("daily_snapshots") or ctx.get("equity_curve") or []
+
+    enriched_trades = []
+    regime_buckets, setup_buckets, tier_buckets = {}, {}, {}
+    total_realized = safe_float(acc_raw.get("realized_pnl_usd"), 0.0)
+    total_unrealized = 0.0
+    total_open_risk = 0.0
+
+    for item in active_book:
+        tk = str(item.get("ticker") or "").upper()
+        if not tk:
+            continue
+        bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
+        fill_p = safe_float(item.get("fill_price") or item.get("entry_price"))
+        last_c = safe_float(item.get("last_close") or item.get("current_price"), bars[-1]["close"] if bars else fill_p)
+        init_st = safe_float(item.get("stop_loss") or item.get("init_stop"))
+        cur_st = safe_float(item.get("current_stop"), init_st)
+        t2r = safe_float(item.get("partial_2r_target") or item.get("target_2r"))
+        sh = int(safe_float(item.get("remaining_shares") or item.get("shares")))
+        ur = safe_float(item.get("unrealized_r") or item.get("r_multiple"))
+        upnl = safe_float(item.get("unrealized_pnl_usd") or item.get("unrealized_pnl"), round((last_c - fill_p) * sh, 2))
+        mfe_r = safe_float(item.get("mfe_r"), max(0.0, ur))
+        mae_r = safe_float(item.get("mae_r"), min(0.0, ur))
+        open_risk = round(max(0.0, (fill_p - cur_st) * sh), 2)
+        total_unrealized += upnl
+        total_open_risk += open_risk
+
+        setup_tag = str(item.get("setup_tag") or "Post_EP_Flag_A+")
+        tier = str(item.get("screener_tier") or item.get("tier") or "S").upper()
+        regime_short = str(item.get("market_regime") or ctx.get("market_regime") or "Defensive_Caution").split("(")[0].strip()
+
+        for grp_map, grp_key in ((regime_buckets, regime_short), (setup_buckets, setup_tag), (tier_buckets, f"Tier {tier}")):
+            bkt = grp_map.setdefault(grp_key, {"name": grp_key, "count": 0, "wins": 0, "sum_r": 0.0, "sum_mfe": 0.0, "sum_mae": 0.0})
+            bkt["count"] += 1
+            if ur > 0:
+                bkt["wins"] += 1
+            bkt["sum_r"] += ur
+            bkt["sum_mfe"] += mfe_r
+            bkt["sum_mae"] += mae_r
+
+        dist_st = round(((last_c - cur_st) / last_c) * 100.0, 2) if last_c > 0 and cur_st > 0 else 0.0
+        dist_2r = round(((t2r - last_c) / last_c) * 100.0, 2) if last_c > 0 and t2r > 0 else 0.0
+
+        enriched_trades.append({
+            "order_id": item.get("order_id", ""),
+            "ticker": tk,
+            "status": str(item.get("status") or "OPEN").upper(),
+            "setup_tag": setup_tag,
+            "tier": tier,
+            "market_regime": regime_short,
+            "entry_date": str(item.get("entry_date") or "")[:10],
+            "exit_date": str(item.get("exit_date") or "")[:10],
+            "fill_price": round(fill_p, 2),
+            "last_close": round(last_c, 2),
+            "init_stop": round(init_st, 2),
+            "current_stop": round(cur_st, 2),
+            "target_2r": round(t2r, 2),
+            "shares": sh,
+            "remaining_shares": sh,
+            "open_risk_usd": open_risk,
+            "unrealized_pnl": round(upnl, 2),
+            "unrealized_r": round(ur, 2),
+            "realized_pnl": 0.0,
+            "realized_r": 0.0,
+            "mfe_r": round(mfe_r, 2),
+            "mae_r": round(mae_r, 2),
+            "dist_stop_pct": dist_st,
+            "dist_2r_pct": dist_2r,
+            "holding_days": int(safe_float(item.get("holding_days"), 1)),
+            "notes": item.get("notes", ""),
+        })
+
+    base_cap = safe_float(acc_raw.get("starting_capital"), 100000.0)
+    live_eq = safe_float(acc_raw.get("equity_usd") or acc_raw.get("live_equity"), round(base_cap + total_realized + total_unrealized, 2))
+    cash_pct = safe_float(acc_raw.get("cash_pct"), 90.0)
+    cash_usd = safe_float(acc_raw.get("cash_usd"), round(live_eq * (cash_pct / 100.0), 2))
+
+    curve = [{"date": "Start", "equity": base_cap, "spy_equity": base_cap, "cash_pct": 100.0, "dd_pct": 0.0}]
+    for s in snaps:
+        dt_s = str(s.get("date") or "")[:10]
+        if not dt_s:
+            continue
+        curve.append({
+            "date": dt_s,
+            "equity": round(safe_float(s.get("equity_usd") or s.get("equity"), live_eq), 2),
+            "spy_equity": round(safe_float(s.get("spy_equity"), base_cap), 2),
+            "cash_pct": safe_float(s.get("cash_pct"), cash_pct),
+            "dd_pct": safe_float(s.get("dd_pct"), 0.0),
+        })
+    if len(curve) == 1:
+        curve.append({"date": str(ctx.get("as_of_date") or "Latest")[:10], "equity": live_eq, "spy_equity": base_cap, "cash_pct": cash_pct, "dd_pct": safe_float(acc_raw.get("max_drawdown_pct"), 0.0)})
+
+    ctrl_out = []
+    for c in (ctrl_raw if isinstance(ctrl_raw, list) else []):
+        tk = str(c.get("ticker") or "").upper()
+        if not tk:
+            continue
+        ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
+        ctrl_out.append({
+            "scan_date": str(c.get("scan_date") or "")[:10],
+            "ticker": tk,
+            "tier": str(c.get("screener_tier") or c.get("tier") or "S").upper(),
+            "decision": str(c.get("ai_decision") or c.get("decision") or "WATCH").upper(),
+            "reason": str(c.get("pass_reason") or c.get("reason") or ""),
+            "scan_close": round(safe_float(c.get("scan_close")), 2),
+            "cur_close": round(safe_float(c.get("cur_close") or c.get("last_close")), 2),
+            "ret_pct": round(safe_float(c.get("ret_pct") or c.get("return_pct")), 2),
+            "max_up_pct": round(safe_float(c.get("max_up_pct")), 2),
+            "max_dd_pct": round(safe_float(c.get("max_dd_pct")), 2),
+        })
+
+    def fin_b(bmap):
+        out = []
+        for _, v in bmap.items():
+            cnt = max(1, v["count"])
+            out.append({"name": v["name"], "count": v["count"], "win_rate": round((v["wins"]/cnt)*100.0, 1), "avg_r": round(v["sum_r"]/cnt, 2), "total_r": round(v["sum_r"], 2), "avg_mfe": round(v["sum_mfe"]/cnt, 2), "avg_mae": round(v["sum_mae"]/cnt, 2)})
+        return sorted(out, key=lambda x: x["total_r"], reverse=True)
+
+    hkt_now = (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M HKT")
+    return {
+        "updated_at": f"自動同步於 {hkt_now}",
+        "source": "qm-screener-auto (AI_Context_LATEST.json)",
+        "account": {
+            "starting_capital": base_cap,
+            "live_equity": live_eq,
+            "total_return_pct": round(((live_eq - base_cap) / base_cap) * 100.0, 2),
+            "realized_pnl_usd": round(total_realized, 2),
+            "unrealized_pnl_usd": round(total_unrealized, 2),
+            "cash_usd": cash_usd,
+            "cash_pct": cash_pct,
+            "open_positions": len(enriched_trades),
+            "open_risk_usd": round(total_open_risk, 2),
+            "open_risk_pct": round((total_open_risk / live_eq) * 100.0, 2) if live_eq > 0 else 0.0,
+            "max_dd_pct": safe_float(acc_raw.get("max_drawdown_pct"), 0.0),
+            "closed_count": int(safe_float(acc_raw.get("closed_trades"), 0)),
+            "win_rate": acc_raw.get("win_rate"),
+            "expectancy_r": round(sum(t["unrealized_r"] for t in enriched_trades) / max(1, len(enriched_trades)), 2),
+        },
+        "trades": enriched_trades,
+        "pending_orders": pending_raw,
+        "control_group": ctrl_out,
+        "equity_curve": curve,
+        "attribution": {
+            "by_regime": fin_b(regime_buckets),
+            "by_setup": fin_b(setup_buckets),
+            "by_tier": fin_b(tier_buckets),
+        },
+    }
+
+
+def build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existing_paper):
+    ai_ctx = fetch_ai_context_from_screener_repo()
+    if ai_ctx:
+        print("SUCCESS [Paper Trade V4.0]: Synced directly from AI_Context_LATEST.json!")
+        return convert_ai_context_to_paper_war_room(ai_ctx, universe_tickers, spy_bars, ohlcv_by_sym)
+    raw_src = load_paper_trade_sources()
+    if not raw_src:
+        print("WARN [Paper Trade V4.0]: Could not fetch live Sheet/Bridge; keeping cached paper_trade.json if present.")
+        return existing_paper
+
+    ledger_rows = raw_src.get("ledger") or []
+    pending_rows = raw_src.get("pending") or []
+    control_rows = raw_src.get("control") or []
+    snap_rows = raw_src.get("snapshots") or []
+
+    enriched_trades = []
+    total_realized_usd = 0.0
+    total_unrealized_usd = 0.0
+    total_open_risk_usd = 0.0
+    total_deployed_usd = 0.0
+    closed_r_list = []
+    wins_r = []
+    losses_r = []
+
+    regime_buckets = {}
+    setup_buckets = {}
+    tier_buckets = {}
+
+    for row in ledger_rows:
+        tk = (row.get("ticker") or "").strip().upper()
+        if not tk:
+            continue
+        status = (row.get("status") or "OPEN").strip().upper()
+        entry_date = (row.get("entry_date") or row.get("plan_date") or "").strip()[:10]
+        fill_price = safe_float(row.get("fill_price") or row.get("trigger_price"))
+        init_stop = safe_float(row.get("stop_loss"))
+        cur_stop = safe_float(row.get("current_stop") or init_stop)
+        target_2r = safe_float(row.get("partial_2r_target"))
+        shares = int(safe_float(row.get("shares")))
+        rem_shares = int(safe_float(row.get("remaining_shares"), shares if status == "OPEN" else 0))
+        risk_usd = safe_float(row.get("risk_usd"))
+        realized_pnl = safe_float(row.get("realized_pnl_usd"))
+        realized_r = safe_float(row.get("realized_r"))
+        exit_price = safe_float(row.get("exit_price"))
+        exit_date = (row.get("exit_date") or "").strip()[:10]
+        setup_tag = (row.get("setup_tag") or "Unknown").strip()
+        tier = (row.get("screener_tier") or "-").strip().upper()
+        regime_raw = (row.get("market_regime") or "Unknown").strip()
+        regime_short = regime_raw.split("(")[0].strip()
+
+        bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
+        last_close = bars[-1]["close"] if bars else (exit_price if exit_price > 0 else fill_price)
+        last_bar_date = bars[-1]["time"] if bars else ""
+
+        # Compute holding window bars for MAE / MFE
+        hold_bars = []
+        if bars and entry_date:
+            for b in bars:
+                if b["time"] >= entry_date and (not exit_date or b["time"] <= exit_date):
+                    hold_bars.append(b)
+        if not hold_bars and bars:
+            hold_bars = [bars[-1]]
+
+        init_r_per_share = abs(fill_price - init_stop) if (fill_price > 0 and init_stop > 0 and fill_price != init_stop) else (risk_usd / max(1, shares) if risk_usd > 0 else 1.0)
+        max_high = max((b["high"] for b in hold_bars), default=fill_price)
+        min_low = min((b["low"] for b in hold_bars), default=fill_price)
+        mfe_r = round((max_high - fill_price) / init_r_per_share, 2) if init_r_per_share > 0 else 0.0
+        mae_r = round((min_low - fill_price) / init_r_per_share, 2) if init_r_per_share > 0 else 0.0
+
+        unrealized_pnl = 0.0
+        unrealized_r = 0.0
+        open_risk_usd = 0.0
+        if status == "OPEN" and rem_shares > 0 and fill_price > 0:
+            unrealized_pnl = round((last_close - fill_price) * rem_shares, 2)
+            unrealized_r = round((last_close - fill_price) / init_r_per_share, 2) if init_r_per_share > 0 else 0.0
+            open_risk_usd = round(max(0.0, (fill_price - cur_stop) * rem_shares), 2)
+            total_deployed_usd += round(last_close * rem_shares, 2)
+
+        total_realized_usd += realized_pnl
+        total_unrealized_usd += unrealized_pnl
+        total_open_risk_usd += open_risk_usd
+
+        effective_r = realized_r if status != "OPEN" else unrealized_r
+        if status != "OPEN":
+            closed_r_list.append(realized_r)
+            if realized_r > 0:
+                wins_r.append(realized_r)
+            elif realized_r < 0:
+                losses_r.append(realized_r)
+
+        # Attribution buckets (include both closed & live MTM so day-1/2 data already visualizes)
+        for grp_map, grp_key in ((regime_buckets, regime_short), (setup_buckets, setup_tag), (tier_buckets, f"Tier {tier}")):
+            bkt = grp_map.setdefault(grp_key, {"name": grp_key, "count": 0, "wins": 0, "sum_r": 0.0, "sum_mfe": 0.0, "sum_mae": 0.0})
+            bkt["count"] += 1
+            if effective_r > 0:
+                bkt["wins"] += 1
+            bkt["sum_r"] += effective_r
+            bkt["sum_mfe"] += mfe_r
+            bkt["sum_mae"] += mae_r
+
+        dist_stop_pct = round(((last_close - cur_stop) / last_close) * 100.0, 2) if last_close > 0 and cur_stop > 0 else 0.0
+        dist_2r_pct = round(((target_2r - last_close) / last_close) * 100.0, 2) if last_close > 0 and target_2r > 0 else 0.0
+
+        enriched_trades.append({
+            "order_id": row.get("order_id", ""),
+            "ticker": tk,
+            "status": status,
+            "setup_tag": setup_tag,
+            "tier": tier,
+            "market_regime": regime_short,
+            "entry_date": entry_date,
+            "exit_date": exit_date,
+            "fill_price": round(fill_price, 2),
+            "last_close": round(last_close, 2),
+            "last_bar_date": last_bar_date,
+            "init_stop": round(init_stop, 2),
+            "current_stop": round(cur_stop, 2),
+            "target_2r": round(target_2r, 2),
+            "exit_price": round(exit_price, 2),
+            "shares": shares,
+            "remaining_shares": rem_shares,
+            "risk_usd": round(risk_usd, 2),
+            "open_risk_usd": open_risk_usd,
+            "unrealized_pnl": unrealized_pnl,
+            "unrealized_r": unrealized_r,
+            "realized_pnl": round(realized_pnl, 2),
+            "realized_r": round(realized_r, 2),
+            "mfe_r": mfe_r,
+            "mae_r": mae_r,
+            "dist_stop_pct": dist_stop_pct,
+            "dist_2r_pct": dist_2r_pct,
+            "holding_days": max(1, len(hold_bars)),
+            "notes": row.get("notes", ""),
+        })
+
+    # Pending Orders (status == NEW or PENDING)
+    active_pending = []
+    for p in pending_rows:
+        st = (p.get("sync_status") or "").strip().upper()
+        tk = (p.get("ticker") or "").strip().upper()
+        if not tk or st in ("EXPIRED", "CANCELLED", "FILLED"):
+            continue
+        ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
+        active_pending.append({
+            "order_id": p.get("order_id", ""),
+            "plan_date": p.get("plan_date", ""),
+            "ticker": tk,
+            "setup_tag": p.get("setup_tag", ""),
+            "tier": p.get("screener_tier", ""),
+            "trigger_price": safe_float(p.get("trigger_price")),
+            "stop_loss": safe_float(p.get("stop_loss")),
+            "shares": int(safe_float(p.get("shares"))),
+            "risk_usd": safe_float(p.get("risk_usd")),
+            "partial_2r_target": safe_float(p.get("partial_2r_target")),
+            "sync_status": st or "NEW",
+            "notes": p.get("notes", ""),
+        })
+
+    # Control Group (PASS / WATCH counterfactual performance)
+    control_items = []
+    for c in control_rows:
+        tk = (c.get("ticker") or "").strip().upper()
+        scan_dt = (c.get("scan_date") or "").strip()[:10]
+        scan_close = safe_float(c.get("scan_close"))
+        if not tk or scan_close <= 0:
+            continue
+        bars = ensure_ticker_cached(tk, universe_tickers, ohlcv_by_sym)
+        cur_close = bars[-1]["close"] if bars else scan_close
+        fwd_bars = [b for b in bars if b["time"] > scan_dt] if bars else []
+        max_after = max((b["high"] for b in fwd_bars), default=cur_close)
+        min_after = min((b["low"] for b in fwd_bars), default=cur_close)
+        ret_pct = round(((cur_close - scan_close) / scan_close) * 100.0, 2)
+        max_up_pct = round(((max_after - scan_close) / scan_close) * 100.0, 2)
+        max_dd_pct = round(((min_after - scan_close) / scan_close) * 100.0, 2)
+        control_items.append({
+            "scan_date": scan_dt,
+            "ticker": tk,
+            "tier": (c.get("screener_tier") or "-").upper(),
+            "decision": (c.get("ai_decision") or "WATCH").upper(),
+            "reason": c.get("pass_reason", ""),
+            "scan_close": round(scan_close, 2),
+            "cur_close": round(cur_close, 2),
+            "ret_pct": ret_pct,
+            "max_up_pct": max_up_pct,
+            "max_dd_pct": max_dd_pct,
+            "days_elapsed": len(fwd_bars),
+        })
+
+    # Equity Curve vs SPY normalized to $100,000
+    base_capital = 100000.0
+    curve = [{"date": "Start", "equity": base_capital, "spy_equity": base_capital, "cash_pct": 100.0, "dd_pct": 0.0}]
+    spy_by_date = {}
+    if spy_bars:
+        for b in spy_bars[-60:]:
+            d_s = datetime.fromtimestamp(b["t"] / 1000, timezone.utc).strftime("%Y-%m-%d")
+            spy_by_date[d_s] = float(b["c"])
+
+    first_spy = None
+    peak_eq = base_capital
+    for s in snap_rows:
+        dt_s = (s.get("date") or "").strip()[:10]
+        eq_v = safe_float(s.get("equity_usd"), base_capital)
+        if not dt_s:
+            continue
+        if first_spy is None and dt_s in spy_by_date:
+            first_spy = spy_by_date[dt_s]
+        spy_eq = round(base_capital * (spy_by_date[dt_s] / first_spy), 2) if (first_spy and dt_s in spy_by_date) else base_capital
+        peak_eq = max(peak_eq, eq_v)
+        dd_v = round(((eq_v - peak_eq) / peak_eq) * 100.0, 2)
+        curve.append({
+            "date": dt_s,
+            "equity": round(eq_v, 2),
+            "spy_equity": spy_eq,
+            "cash_pct": safe_float(s.get("cash_pct"), 100.0),
+            "dd_pct": dd_v,
+        })
+
+    # Append live MTM point if latest US trade date is newer than last snapshot
+    live_equity = round(base_capital + total_realized_usd + total_unrealized_usd, 2)
+    latest_spy_dt = datetime.fromtimestamp(spy_bars[-1]["t"] / 1000, timezone.utc).strftime("%Y-%m-%d") if spy_bars else ""
+    if latest_spy_dt and (len(curve) == 1 or curve[-1]["date"] < latest_spy_dt):
+        if first_spy is None and latest_spy_dt in spy_by_date:
+            first_spy = spy_by_date[latest_spy_dt]
+        spy_eq_now = round(base_capital * (spy_by_date[latest_spy_dt] / first_spy), 2) if (first_spy and latest_spy_dt in spy_by_date) else base_capital
+        peak_eq = max(peak_eq, live_equity)
+        curve.append({
+            "date": latest_spy_dt + " (MTM)",
+            "equity": live_equity,
+            "spy_equity": spy_eq_now,
+            "cash_pct": round(max(0.0, ((live_equity - total_deployed_usd) / live_equity) * 100.0), 1),
+            "dd_pct": round(((live_equity - peak_eq) / peak_eq) * 100.0, 2),
+        })
+
+    def finalize_buckets(bmap):
+        out_list = []
+        for k, v in bmap.items():
+            cnt = max(1, v["count"])
+            out_list.append({
+                "name": v["name"],
+                "count": v["count"],
+                "win_rate": round((v["wins"] / cnt) * 100.0, 1),
+                "avg_r": round(v["sum_r"] / cnt, 2),
+                "total_r": round(v["sum_r"], 2),
+                "avg_mfe": round(v["sum_mfe"] / cnt, 2),
+                "avg_mae": round(v["sum_mae"] / cnt, 2),
+            })
+        return sorted(out_list, key=lambda x: x["total_r"], reverse=True)
+
+    closed_cnt = len(closed_r_list)
+    win_rate = round((len(wins_r) / closed_cnt) * 100.0, 1) if closed_cnt > 0 else None
+    avg_win_r = round(sum(wins_r) / len(wins_r), 2) if wins_r else 0.0
+    avg_loss_r = round(abs(sum(losses_r) / len(losses_r)), 2) if losses_r else 0.0
+    expectancy_r = round(sum(closed_r_list) / closed_cnt, 2) if closed_cnt > 0 else round(sum(t["unrealized_r"] for t in enriched_trades) / max(1, len(enriched_trades)), 2)
+
+    hkt_now = (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M HKT")
+    out_paper = {
+        "updated_at": f"自動同步於 {hkt_now}",
+        "source": raw_src["source"],
+        "account": {
+            "starting_capital": base_capital,
+            "live_equity": live_equity,
+            "total_return_pct": round(((live_equity - base_capital) / base_capital) * 100.0, 2),
+            "realized_pnl_usd": round(total_realized_usd, 2),
+            "unrealized_pnl_usd": round(total_unrealized_usd, 2),
+            "cash_usd": round(live_equity - total_deployed_usd, 2),
+            "cash_pct": round(max(0.0, ((live_equity - total_deployed_usd) / live_equity) * 100.0), 1),
+            "open_positions": sum(1 for t in enriched_trades if t["status"] == "OPEN"),
+            "open_risk_usd": round(total_open_risk_usd, 2),
+            "open_risk_pct": round((total_open_risk_usd / live_equity) * 100.0, 2),
+            "max_dd_pct": min((pt["dd_pct"] for pt in curve), default=0.0),
+            "closed_count": closed_cnt,
+            "win_rate": win_rate,
+            "avg_win_r": avg_win_r,
+            "avg_loss_r": avg_loss_r,
+            "expectancy_r": expectancy_r,
+        },
+        "trades": enriched_trades,
+        "pending_orders": active_pending,
+        "control_group": control_items,
+        "equity_curve": curve,
+        "attribution": {
+            "by_regime": finalize_buckets(regime_buckets),
+            "by_setup": finalize_buckets(setup_buckets),
+            "by_tier": finalize_buckets(tier_buckets),
+        },
+    }
+    print(f"SUCCESS [Paper Trade V4.0]: Equity=${live_equity:,.2f}, Trades={len(enriched_trades)}, Pending={len(active_pending)}, Control={len(control_items)}.")
+    return out_paper
 
 
 def build_ai_brief(trade_date, indices, breadth, sectors):
@@ -981,6 +1514,7 @@ def main():
 
     os.makedirs(CANDLES_DIR, exist_ok=True)
     existing = load_json_safe(SUMMARY_FILE, {"reports_by_date": {}, "breadth_history": [], "pdf_reports": [], "scanner_history": []})
+    existing_paper = load_json_safe(PAPER_FILE, None)
     prev_reports = existing.get("reports_by_date") or {}
 
     spy_bars = get_daily_bars("SPY")
@@ -1086,12 +1620,11 @@ def main():
             "rsi14": m["rsi14"], "atr14": m["atr14"], "stop": m["stop"], "news": news_line,
         })
 
-    # Build Tab 2: Futures + CFTC COT + 10Y Seasonality (includes Silver SI + Gold/Silver ratio)
+    # Tab 2: Futures + CFTC COT + 10Y Seasonality
     futures_data = fetch_futures_and_cot(universe_tickers)
     with open(FUTURES_FILE, "w", encoding="utf-8") as f:
         json.dump(futures_data, f, ensure_ascii=False, separators=(",", ":"))
 
-    # Cross-Asset Macro Strip for Tab 1 (DXY, CL, GC, SI, HG)
     macro_strip = []
     for sym in ("DXY", "CL", "GC", "SI", "HG"):
         it = next((x for x in futures_data.get("items", []) if x["ticker"] == sym), None)
@@ -1102,11 +1635,17 @@ def main():
                 "cot_1y": it["cot"]["cot_1y"] if it.get("cot") else None,
             })
 
-    # Sync Tab 3: Private Repo QM Screener + OHLCV
-    screener_data = sync_qm_screener(universe_tickers, today_dyn_set)
+    # Tab 3: Private Repo QM Screener + OHLCV
+    screener_data, ohlcv_by_sym = sync_qm_screener(universe_tickers, today_dyn_set)
     if screener_data:
         with open(SCREENER_FILE, "w", encoding="utf-8") as f:
             json.dump(screener_data, f, ensure_ascii=False, separators=(",", ":"))
+
+    # Tab 4: V4.0 AI Paper Trade War Room
+    paper_data = build_paper_trade_war_room(universe_tickers, spy_bars, ohlcv_by_sym, existing_paper)
+    if paper_data:
+        with open(PAPER_FILE, "w", encoding="utf-8") as f:
+            json.dump(paper_data, f, ensure_ascii=False, separators=(",", ":"))
 
     scan_hist = [x for x in (existing.get("scanner_history") or []) if x.get("date") != trade_date]
     for w in watchlist_out:
@@ -1135,7 +1674,7 @@ def main():
 
     pdf_list = fetch_drive_pdfs()
     summary_out = {
-        "version": "3.1",
+        "version": "4.0",
         "latest_date": sorted_dates[-1],
         "universe_tickers": sorted(universe_tickers),
         "reports_by_date": reports_by_date,
@@ -1148,7 +1687,7 @@ def main():
     with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
         json.dump(summary_out, f, ensure_ascii=False, separators=(",", ":"))
 
-    print(f"SUCCESS: V3.1 built! summary={os.path.getsize(SUMMARY_FILE)/1024:.1f}KB, futures={len(futures_data.get('items', []))}.")
+    print(f"SUCCESS: V4.0 built! summary={os.path.getsize(SUMMARY_FILE)/1024:.1f}KB, paper={'OK' if paper_data else 'NONE'}.")
 
 
 if __name__ == "__main__":

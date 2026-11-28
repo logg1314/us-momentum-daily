@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head><script type='text/javascript' nonce='KE0QhJlzcKydBlFGvc0F+w==' src='https://contribution.usercontent.google.com/YfBT3NcrEVNqum8lJYqIAkC7YHqRiC7fcFORAtuaHjN37TNuVcR8yoZgtXWhFa_3wHMYVvsR4uNcGJUERuZelShU-78JX9R42hfQm_agQhF59koVkF94MP1QAMrfjLxhnDZ7xSGoQYSCtuV-WQZTANN0eX9IefBbHIFHeme7ldun5AjAXaWzk7xWihygGN1crCAIz0uyZ0QTzQHLLL5lc76E_kRy_0EBUkLJVe6Uv2X4L7IfL-0Opcpeak86HnqyCT_Z6Qxi35lCQxez8Y5WNar8inzCtlVrUA_SkLfJEi9R82-YH86KXvktXx1CO_0p0iC9LtCop8VchNRSgwXdciC8Ejnh91_xWSO28Uubvq9Nz6UeISASaBFZ-oHXIsyYnEIrcWr-WTUEszwCkjjcwdv8EGuM_QC5WbLnEhk-7p-eHQw7t-7NV9pwyFhhCAZnL03giaMtEiKighylHtrDlWT3gzukmjwGpWFORjyIJXPEz3W9poeiHR1HMOhgA5zBiRrt7WgqsIdeJrUK9QgdsNkJy9Nd9OOIMzvx-yt3fRzyhJRJcZRliXzwBUdA6b4dyUSG1d70o1MckjzwEZZmyv59VU5S9QPe0DbxHP54--U0OEJRmZB9lxWfuMem6MGyGjEIqYPdQPrMhJu4aoV3N53tlJDT7ESPKae40XaIoJAG0GfYYsgZPDryht6Syvl4RarfNboxyhu8IlXEqU7XEuwTWg'></script>
+<head><script type='text/javascript' nonce='8vsXjY3rQUDSoXYzpxw8xA==' src='https://contribution.usercontent.google.com/R8edk66V8RPY1zzya9NFY9hgUykYXk5GAlmf0dB7SpZUKkZiXBWCOWLS9ufJ-nQ0Pr3V3G0Tr5I_zU05Q03cdnS58IA-IFH_XEnqqCbJ0bSrpFf4uBNoO79rXbsW3ksUtheQATIDmSSub11NIRyBiFOEfTnDM2gY8_7zNOri8NUyL0soo-gyfZ8afZRHwY-9YMgdFYJPJj4tIevJt1yHoKImpTiSSe9y-tQdG_AOmZN4Li4L0HgbTyb3FkvJB6JVRQzGdJYdA9RMx4QK8sFWMN3lsn6Rhhz6sls34esJCUtUY6xXgr5fXdcAO-kJYPrx2SxPqwmoDqhz6eNME3BG4MfIexZFOYCYHmsfGf8HwMkexhCONYQvRyCj4N7jeCUNvARxDeNLIUUB6QM66LMAvCWEuchDkVw7toWTGxnF-mXJSaF5ThqnHZo4jvtcl8kR3nrgBN4DcUyVgdAogFnhmab4CUM7Dz4-jepJ763RybFREFwnKuuI-w9wJceSisntAqSXu--IReG1d9I25RMs-GeDf7xmtG-PAFausli4pkX_tc3-L7bR9tBq8xcrfI-ERjkQUP-1n2t_yZ454vKADszmRooLVOdnDJTzcZ905ekiFIVwXIqrA7hKX7PD8yGswY_AKY1u3qYVOmCIXyh6jzbBB3OKKum70Ilxx0UrZ_Y8gOvLdbC7qXZasAn2E_gWl1WtAZUqkDyYHI1KdK5cVrPzEeLw6QZq-Ygy0Rsv_j7I'></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>美股與期貨動能戰情總部 · Total War Room V3.0</title>
+  <title>全市場動能與 AI Paper Trade 戰情總部 · Total War Room V4.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
   <style>
@@ -102,7 +102,7 @@
           <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
           <div>
             <h1 class="text-sm sm:text-base font-extrabold tracking-wide text-slate-100 leading-tight">
-              TACTICAL WAR ROOM <span class="hud-gold-text font-semibold text-xs ml-1">V3.0 · 全市場動能戰情總部</span>
+              TACTICAL WAR ROOM <span class="hud-gold-text font-semibold text-xs ml-1">V4.0 · 全市場動能 + AI Paper Trade 觀察室</span>
             </h1>
             <p id="header-meta" class="text-[11px] text-slate-400">正在載入輕量數據包...</p>
           </div>
@@ -115,11 +115,12 @@
         </div>
       </div>
 
-      <!-- 3 大主分頁切換列 -->
-      <div class="grid grid-cols-3 gap-1.5">
+      <!-- 4 大主分頁切換列 -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
         <button type="button" data-maintab="equities" class="maintab-btn main-tab-active py-2 px-2 rounded-xl border text-xs sm:text-sm font-extrabold transition">📈 1. 美股動能總部</button>
         <button type="button" data-maintab="futures" class="maintab-btn main-tab-idle py-2 px-2 rounded-xl border text-xs sm:text-sm font-extrabold transition">🌐 2. 期貨 & COT 戰情</button>
         <button type="button" data-maintab="screener" class="maintab-btn main-tab-idle py-2 px-2 rounded-xl border text-xs sm:text-sm font-extrabold transition">🎯 3. QM AI Screener</button>
+        <button type="button" data-maintab="paper" class="maintab-btn main-tab-idle py-2 px-2 rounded-xl border text-xs sm:text-sm font-extrabold transition">🤖 4. AI Paper 觀察室</button>
       </div>
     </div>
   </header>
@@ -169,28 +170,47 @@
       <div id="chart-collapsible-body">
         <div id="indicator-toolbar" class="flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
           <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-bold">
-            <button type="button" data-ind="ema10" class="ind-toggle px-2 py-0.5 rounded border ind-btn-on"><span class="text-white">—</span> 10 EMA</button>
-            <button type="button" data-ind="ema21" class="ind-toggle px-2 py-0.5 rounded border ind-btn-on"><span class="text-teal-300">—</span> 21 EMA</button>
-            <button type="button" data-ind="ema50" class="ind-toggle px-2 py-0.5 rounded border ind-btn-on"><span class="text-amber-300">—</span> 50 EMA</button>
-            <button type="button" data-ind="ma200" class="ind-toggle px-2 py-0.5 rounded border ind-btn-on"><span class="text-red-500">—</span> 200 MA</button>
-            <button type="button" data-ind="bb" class="ind-toggle px-2 py-0.5 rounded border ind-btn-off"><span class="text-sky-400">≈</span> BB 保力加</button>
-            <button type="button" data-ind="rsi" class="ind-toggle px-2 py-0.5 rounded border ind-btn-off">RSI(14)</button>
+            <button type="button" data-ind="ema10" class="ind-toggle px-2 py-0.5 rounded border ind-btn-on"><span class="text-white">—</span> 10E</button>
+            <button type="button" data-ind="ema21" class="ind-toggle px-2 py-0.5 rounded border ind-btn-on"><span class="text-teal-300">—</span> 21E</button>
+            <button type="button" data-ind="ema50" class="ind-toggle px-2 py-0.5 rounded border ind-btn-on"><span class="text-amber-300">—</span> 50E</button>
+            <button type="button" data-ind="ma200" class="ind-toggle px-2 py-0.5 rounded border ind-btn-on"><span class="text-red-500">—</span> 200M</button>
+            <button type="button" data-ind="avwap" class="ind-toggle px-2 py-0.5 rounded border ind-btn-off"><span class="text-fuchsia-400">—</span> YTD VWAP</button>
+            <button type="button" data-ind="rsline" class="ind-toggle px-2 py-0.5 rounded border ind-btn-off"><span class="text-cyan-300">—</span> RS Line</button>
+            <button type="button" data-ind="volsig" class="ind-toggle px-2 py-0.5 rounded border ind-btn-on"><span class="text-indigo-300">▮</span> 縮量/PP</button>
+            <button type="button" data-ind="bb" class="ind-toggle px-2 py-0.5 rounded border ind-btn-off"><span class="text-sky-400">≈</span> BB</button>
+            <button type="button" data-ind="rsi" class="ind-toggle px-2 py-0.5 rounded border ind-btn-off">RSI</button>
             <button type="button" data-ind="macd" class="ind-toggle px-2 py-0.5 rounded border ind-btn-off">MACD</button>
           </div>
-          <div id="candle-etf-compare" class="text-[11px] text-slate-300 font-semibold">--</div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <div class="flex bg-[#101916] p-0.5 rounded-lg border border-[#22322b] text-[10px] font-bold">
+              <button type="button" data-rng="63" class="rng-btn px-1.5 py-0.5 rounded text-slate-400 hover:text-white">3M</button>
+              <button type="button" data-rng="126" class="rng-btn px-1.5 py-0.5 rounded text-slate-400 hover:text-white">6M</button>
+              <button type="button" data-rng="252" class="rng-btn px-1.5 py-0.5 rounded text-slate-400 hover:text-white">1Y</button>
+              <button type="button" data-rng="505" class="rng-btn px-1.5 py-0.5 rounded text-slate-400 hover:text-white">2Y</button>
+            </div>
+            <button type="button" id="btn-set-proxy" class="px-2 py-0.5 rounded-lg bg-[#131f1b] hover:bg-[#1c2e28] border border-[#2b3f36] text-[10px] font-bold text-amber-300" title="設定 Cloudflare Worker 網址以直接查任何美股">⚡ Worker</button>
+            <div id="candle-etf-compare" class="text-[11px] text-slate-300 font-semibold">--</div>
+          </div>
         </div>
 
         <div id="chart-stage" class="w-full h-[330px] sm:h-[400px] rounded-xl overflow-hidden border border-[#1a2621] relative bg-[#060a09]">
+          <div id="chart-ohlc-legend" class="pointer-events-none absolute top-1.5 left-2 z-10 px-2 py-1 rounded bg-[#060a09]/80 text-[10px] sm:text-[11px] font-mono text-slate-200 flex flex-wrap gap-x-2 gap-y-0.5 max-w-[92%]">--</div>
           <div id="chart-loading-mask" class="hidden absolute inset-0 z-20 bg-[#060a09]/85 flex items-center justify-center text-xs font-bold text-amber-300">正在按需載入 K 線數據...</div>
           <div id="lw-chart-container" class="w-full h-full"></div>
           <div id="tv-embed-container" class="hidden w-full h-full"></div>
         </div>
         <div id="rsi-pane-wrap" class="hidden mt-2">
-          <div class="text-[10px] font-bold text-purple-300 px-1 mb-0.5">RSI(14) · 70 超買 / 30 超賣</div>
+          <div class="flex items-center justify-between px-1 mb-0.5 text-[10px] font-bold">
+            <span class="text-purple-300">RSI(14) · 70 超買 / 30 超賣</span>
+            <span id="rsi-legend" class="font-mono text-purple-200">--</span>
+          </div>
           <div id="lw-rsi-container" class="w-full h-[105px] rounded-xl overflow-hidden border border-[#1a2621]"></div>
         </div>
         <div id="macd-pane-wrap" class="hidden mt-2">
-          <div class="text-[10px] font-bold text-sky-300 px-1 mb-0.5">MACD(12, 26, 9) · DIF / Signal / Hist</div>
+          <div class="flex items-center justify-between px-1 mb-0.5 text-[10px] font-bold">
+            <span class="text-sky-300">MACD(12, 26, 9)</span>
+            <span id="macd-legend" class="font-mono text-sky-200">DIF: -- · SIG: -- · HIST: --</span>
+          </div>
           <div id="lw-macd-container" class="w-full h-[115px] rounded-xl overflow-hidden border border-[#1a2621]"></div>
         </div>
       </div>
@@ -481,6 +501,95 @@
       </section>
     </div>
 
+
+    <!-- ======================================================================================== -->
+    <!-- MAIN TAB 4: AI PAPER TRADE 實戰觀察室 (V4.0 VISUALIZATION & ATTRIBUTION)                  -->
+    <!-- ======================================================================================== -->
+    <div id="view-paper" class="hidden space-y-4">
+      <section class="hud-card rounded-2xl p-3 sm:p-6 space-y-4">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-base sm:text-lg font-bold text-slate-100">🤖 AI Paper Trade 實戰觀察室 & 策略進化面板</h2>
+              <span id="pt-source-badge" class="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-600/50 text-emerald-300 text-[11px] font-bold">QM_Paper_Command_Center</span>
+            </div>
+            <p id="pt-meta" class="text-xs text-slate-400 mt-0.5">實時浮動淨值、Active Book、MAE/MFE 止損食糊診斷、PASS 對照組及大市環境歸因</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" id="btn-pt-copy-ledger" class="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-200 text-xs font-extrabold">📋 複製最新持倉摘要</button>
+          </div>
+        </div>
+
+        <!-- AI 風險官 (CRO) 盤前體檢卡 -->
+        <div id="pt-cro-box" class="rounded-xl bg-[#0b1411] border border-amber-500/40 p-3 text-xs text-slate-200 space-y-1">
+          <div class="font-extrabold text-amber-300">🛡️ AI 風險官 (CRO) 每日盤前體檢</div>
+          <div id="pt-cro-items" class="flex flex-wrap gap-2 text-[11px]"></div>
+        </div>
+
+        <!-- 帳戶 KPI 卡片列 -->
+        <div id="pt-kpi-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2"></div>
+
+        <!-- 資金曲線 (AI Portfolio vs SPY) + MAE/MFE 診斷圖 -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
+          <div class="lg:col-span-7 rounded-2xl border border-[#22322b] bg-[#080e0c] p-3 sm:p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div>
+                <h3 class="text-sm font-bold text-slate-100">資金淨值曲線（AI Paper 組合 vs SPY 同起步基準）</h3>
+                <p class="text-[11px] text-slate-400">金實線：AI Paper 淨值（含實時浮盈虧） · 灰虛線：SPY 同步表現</p>
+              </div>
+              <span id="pt-alpha-badge" class="px-2 py-0.5 rounded bg-[#14221c] text-xs font-extrabold text-amber-300">Alpha --</span>
+            </div>
+            <div id="pt-equity-chart" class="w-full overflow-x-auto"></div>
+          </div>
+
+          <div class="lg:col-span-5 rounded-2xl border border-[#22322b] bg-[#080e0c] p-3 sm:p-4 flex flex-col justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-100">MAE / MFE 止損與食糊診斷儀（R 倍數）</h3>
+              <p class="text-[11px] text-slate-400 mb-2">左紅條：最大浮虧 MAE(R) · 中白點：現時/平倉 R · 右綠條：最高浮盈 MFE(R)</p>
+            </div>
+            <div id="pt-maemfe-chart" class="w-full"></div>
+          </div>
+        </div>
+
+        <!-- 現行持倉 Active Book & 待觸發掛單 Pending Orders -->
+        <div class="space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-sm font-extrabold text-amber-300">📌 現行持倉 Active Book & 待觸發掛單（點擊「2Y 交易圖」直接喺 K 線睇買入/止損/2R 線）</h3>
+          </div>
+          <div id="pt-active-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+          <div id="pt-pending-box" class="hidden rounded-xl bg-[#09110e] border border-[#22322b] p-3 space-y-2">
+            <div class="text-xs font-extrabold text-sky-300">⏳ 待觸發 BUY_STOP 掛單（Pending Orders）</div>
+            <div id="pt-pending-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"></div>
+          </div>
+        </div>
+
+        <!-- 策略歸因分析 (Regime / Setup / Tier) -->
+        <div class="rounded-2xl border border-[#22322b] bg-[#080e0c] p-3 sm:p-4 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-sm font-bold text-slate-100">🧬 策略盲測與環境歸因（驗證邊套 Setup / 市況真正賺錢）</h3>
+            <div class="flex bg-[#111b17] p-0.5 rounded-lg border border-[#22322b] text-xs font-bold">
+              <button type="button" data-ptattr="by_regime" class="ptattr-btn px-2.5 py-1 rounded bg-amber-500/20 text-amber-300">按大市 Regime</button>
+              <button type="button" data-ptattr="by_setup" class="ptattr-btn px-2.5 py-1 rounded text-slate-400">按 Setup 型態</button>
+              <button type="button" data-ptattr="by_tier" class="ptattr-btn px-2.5 py-1 rounded text-slate-400">按 Screener Tier</button>
+            </div>
+          </div>
+          <div id="pt-attr-table" class="overflow-x-auto"></div>
+        </div>
+
+        <!-- PASS 對照組照妖鏡 (Control Group) -->
+        <div class="rounded-2xl border border-[#22322b] bg-[#080e0c] p-3 sm:p-4 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-slate-100">🪞 PASS / WATCH 對照組照妖鏡（AI 放棄唔買嘅股票之後點走？）</h3>
+              <p class="text-[11px] text-slate-400">追蹤 AI 決定 PASS/WATCH 之後嘅累積升跌幅與最高波幅，檢驗 AI 係「成功避雷」定「太膽小走寶」</p>
+            </div>
+            <span id="pt-ctrl-summary" class="px-2.5 py-1 rounded-lg bg-[#14221c] text-xs font-bold text-slate-200">--</span>
+          </div>
+          <div id="pt-control-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2"></div>
+        </div>
+      </section>
+    </div>
+
     <!-- ======================================================================================== -->
     <!-- SHARED PART 04: 雙軌風控計算機（支援 美股股數 ｜ 期貨 Micro/Mini 合約雙模式）                 -->
     <!-- ======================================================================================== -->
@@ -564,6 +673,7 @@
           </div>
           <p id="res-freeroll" class="text-xs sm:text-sm text-slate-200 font-semibold">--</p>
         </div>
+        <div id="res-rladder" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2 text-center text-[11px]"></div>
       </div>
     </section>
 
@@ -649,7 +759,9 @@ var DEFAULT_WEIGHTS = { ratio: 30, t2108: 25, ma: 25, vol: 10, pulse: 10 };
 var WEIGHTS = Object.assign({}, DEFAULT_WEIGHTS);
 try { var sw = localStorage.getItem("hub_v25_weights"); if (sw) WEIGHTS = Object.assign({}, DEFAULT_WEIGHTS, JSON.parse(sw)); } catch (e) {}
 
-var IND_STATE = { ema10: true, ema21: true, ema50: true, ma200: true, bb: false, rsi: false, macd: false };
+var IND_STATE = { ema10: true, ema21: true, ema50: true, ma200: true, avwap: false, rsline: false, volsig: true, bb: false, rsi: false, macd: false };
+var MASSIVE_PROXY_URL = (function(){ try { return localStorage.getItem('hub_v4_proxy_url') || 'https://massive-proxy.logg1314156.workers.dev'; } catch(e){ return 'https://massive-proxy.logg1314156.workers.dev'; } })();
+var LW_AVWAP = null, LW_RSLINE = null, LAST_BARS = [], LAST_DEC = 2, LAST_IS_FUT = false, LAST_MACD_MAP = {}, LAST_RSI_MAP = {}, LAST_EMA10_MAP = {}, LAST_EMA21_MAP = {}, LAST_EMA50_MAP = {};
 var LW_CHART = null, LW_CANDLE = null, LW_DVOL = null, LW_DVOL_MA = null;
 var LW_EMA10 = null, LW_EMA21 = null, LW_EMA50 = null, LW_MA200 = null, LW_BB_UP = null, LW_BB_LO = null;
 var LW_PRICE_LINES = [];
@@ -817,15 +929,82 @@ function initCharts() {
   LW_MACD_DIF = LW_MACD_CHART.addLineSeries({ color: "#38bdf8", lineWidth: 1.4, priceLineVisible: false });
   LW_MACD_SIG = LW_MACD_CHART.addLineSeries({ color: "#fb923c", lineWidth: 1.4, priceLineVisible: false });
 
-  LW_CHART.timeScale().subscribeVisibleLogicalRangeChange(function(range) {
+  LW_AVWAP = LW_CHART.addLineSeries({ color: "#e879f9", lineWidth: 1.5, lineStyle: 2, priceLineVisible: false, visible: IND_STATE.avwap });
+  LW_RSLINE = LW_CHART.addLineSeries({ color: "#22d3ee", lineWidth: 1.4, priceLineVisible: false, priceScaleId: "rs", visible: IND_STATE.rsline });
+  LW_CHART.priceScale("rs").applyOptions({ scaleMargins: { top: 0.15, bottom: 0.35 }, visible: false });
+
+  function syncRangeFrom(src, range) {
     if (!range || SYNC_LOCK) return;
     SYNC_LOCK = true;
     try {
-      if (IND_STATE.rsi && LW_RSI_CHART) LW_RSI_CHART.timeScale().setVisibleLogicalRange(range);
-      if (IND_STATE.macd && LW_MACD_CHART) LW_MACD_CHART.timeScale().setVisibleLogicalRange(range);
+      if (src !== LW_CHART && LW_CHART) LW_CHART.timeScale().setVisibleLogicalRange(range);
+      if (src !== LW_RSI_CHART && IND_STATE.rsi && LW_RSI_CHART) LW_RSI_CHART.timeScale().setVisibleLogicalRange(range);
+      if (src !== LW_MACD_CHART && IND_STATE.macd && LW_MACD_CHART) LW_MACD_CHART.timeScale().setVisibleLogicalRange(range);
     } catch (e) {}
     SYNC_LOCK = false;
-  });
+  }
+  LW_CHART.timeScale().subscribeVisibleLogicalRangeChange(function(r) { syncRangeFrom(LW_CHART, r); });
+  LW_RSI_CHART.timeScale().subscribeVisibleLogicalRangeChange(function(r) { syncRangeFrom(LW_RSI_CHART, r); });
+  LW_MACD_CHART.timeScale().subscribeVisibleLogicalRangeChange(function(r) { syncRangeFrom(LW_MACD_CHART, r); });
+
+  function updateFloatingLegends(timeKey) {
+    if (!timeKey) return;
+    var bar = LAST_BARS.find(function(b) { return b.time === timeKey; });
+    if (bar) {
+      var idx = LAST_BARS.indexOf(bar);
+      var prevC = idx > 0 ? LAST_BARS[idx - 1].close : bar.open;
+      var chg = prevC > 0 ? ((bar.close - prevC) / prevC) * 100 : 0;
+      var dv = LAST_IS_FUT ? fmtContracts(bar.volume || 0) : fmtDollarVol(bar.close * (bar.volume || 0));
+      var e10 = LAST_EMA10_MAP[timeKey], e21 = LAST_EMA21_MAP[timeKey], e50 = LAST_EMA50_MAP[timeKey];
+      document.getElementById("chart-ohlc-legend").innerHTML =
+        '<span class="text-slate-400">' + timeKey + '</span>'
+        + '<span>O:' + bar.open.toFixed(LAST_DEC) + '</span><span>H:' + bar.high.toFixed(LAST_DEC) + '</span><span>L:' + bar.low.toFixed(LAST_DEC) + '</span>'
+        + '<span class="' + (chg >= 0 ? "text-emerald-400" : "text-rose-400") + ' font-bold">C:' + bar.close.toFixed(LAST_DEC) + ' (' + fmtPct(chg) + ')</span>'
+        + '<span class="text-amber-300">' + (LAST_IS_FUT ? "量:" : "額:") + dv + '</span>'
+        + (e10 ? '<span class="text-white">10E:' + e10.toFixed(LAST_DEC) + '</span>' : '')
+        + (e21 ? '<span class="text-teal-300">21E:' + e21.toFixed(LAST_DEC) + '</span>' : '')
+        + (e50 ? '<span class="text-amber-300">50E:' + e50.toFixed(LAST_DEC) + '</span>' : '');
+    }
+    if (LAST_RSI_MAP[timeKey] != null) {
+      document.getElementById("rsi-legend").textContent = "RSI(14): " + LAST_RSI_MAP[timeKey].toFixed(1);
+    }
+    var mm = LAST_MACD_MAP[timeKey];
+    if (mm) {
+      document.getElementById("macd-legend").innerHTML =
+        '<span class="text-sky-300">DIF: ' + mm.dif.toFixed(2) + '</span> · '
+        + '<span class="text-orange-300">SIG: ' + mm.sig.toFixed(2) + '</span> · '
+        + '<span class="' + (mm.hist >= 0 ? "text-emerald-400" : "text-rose-400") + '">HIST: ' + (mm.hist >= 0 ? "+" : "") + mm.hist.toFixed(2) + '</span>';
+    }
+  }
+
+  function syncCrosshair(src, param) {
+    if (SYNC_LOCK) return;
+    SYNC_LOCK = true;
+    try {
+      var t = param && param.time;
+      if (t) {
+        updateFloatingLegends(t);
+        if (src !== LW_CHART && LW_CHART && LW_CANDLE) {
+          var b = LAST_BARS.find(function(x) { return x.time === t; });
+          if (b) LW_CHART.setCrosshairPosition(b.close, t, LW_CANDLE);
+        }
+        if (src !== LW_RSI_CHART && IND_STATE.rsi && LW_RSI_CHART && LW_RSI_SER && LAST_RSI_MAP[t] != null) {
+          LW_RSI_CHART.setCrosshairPosition(LAST_RSI_MAP[t], t, LW_RSI_SER);
+        }
+        if (src !== LW_MACD_CHART && IND_STATE.macd && LW_MACD_CHART && LW_MACD_DIF && LAST_MACD_MAP[t]) {
+          LW_MACD_CHART.setCrosshairPosition(LAST_MACD_MAP[t].dif, t, LW_MACD_DIF);
+        }
+      } else {
+        if (src !== LW_CHART && LW_CHART) LW_CHART.clearCrosshairPosition();
+        if (src !== LW_RSI_CHART && LW_RSI_CHART) LW_RSI_CHART.clearCrosshairPosition();
+        if (src !== LW_MACD_CHART && LW_MACD_CHART) LW_MACD_CHART.clearCrosshairPosition();
+      }
+    } catch (e) {}
+    SYNC_LOCK = false;
+  }
+  LW_CHART.subscribeCrosshairMove(function(p) { syncCrosshair(LW_CHART, p); });
+  LW_RSI_CHART.subscribeCrosshairMove(function(p) { syncCrosshair(LW_RSI_CHART, p); });
+  LW_MACD_CHART.subscribeCrosshairMove(function(p) { syncCrosshair(LW_MACD_CHART, p); });
 }
 
 function resizeCharts() {
@@ -843,13 +1022,26 @@ function applyIndicatorVisibility() {
   if (LW_MA200) LW_MA200.applyOptions({ visible: IND_STATE.ma200 });
   if (LW_BB_UP) LW_BB_UP.applyOptions({ visible: IND_STATE.bb });
   if (LW_BB_LO) LW_BB_LO.applyOptions({ visible: IND_STATE.bb });
+  if (LW_AVWAP) LW_AVWAP.applyOptions({ visible: IND_STATE.avwap });
+  if (LW_RSLINE) LW_RSLINE.applyOptions({ visible: IND_STATE.rsline });
   document.getElementById("rsi-pane-wrap").classList.toggle("hidden", !IND_STATE.rsi);
   document.getElementById("macd-pane-wrap").classList.toggle("hidden", !IND_STATE.macd);
   document.querySelectorAll(".ind-toggle").forEach(function(btn) {
     var k = btn.getAttribute("data-ind");
     btn.className = "ind-toggle px-2 py-0.5 rounded border " + (IND_STATE[k] ? "ind-btn-on" : "ind-btn-off");
   });
-  setTimeout(resizeCharts, 40);
+  setTimeout(function() {
+    resizeCharts();
+    try {
+      if (LW_CHART) {
+        var r = LW_CHART.timeScale().getVisibleLogicalRange();
+        if (r) {
+          if (IND_STATE.rsi && LW_RSI_CHART) LW_RSI_CHART.timeScale().setVisibleLogicalRange(r);
+          if (IND_STATE.macd && LW_MACD_CHART) LW_MACD_CHART.timeScale().setVisibleLogicalRange(r);
+        }
+      }
+    } catch (e) {}
+  }, 50);
 }
 
 function isFuturesSymbol(sym) {
@@ -895,26 +1087,100 @@ function plotNativeBars(symbol, tf, bars, isReal) {
       LW_PRICE_LINES.push(LW_CANDLE.createPriceLine({ price: Number(scrRow.Base_Low), color: "#fb923c", lineWidth: 1, lineStyle: 3, axisLabelVisible: true, title: "Base Low" }));
     }
   }
+  // Overlay Paper Trade Fill / Current Stop / 2R Target if this symbol is in Paper Trade Book
+  var ptTrade = findPaperTrade(symbol);
+  if (ptTrade) {
+    if (Number(ptTrade.fill_price) > 0) {
+      LW_PRICE_LINES.push(LW_CANDLE.createPriceLine({ price: Number(ptTrade.fill_price), color: "#38bdf8", lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: "PT 買入 $" + ptTrade.fill_price }));
+    }
+    if (Number(ptTrade.current_stop) > 0) {
+      LW_PRICE_LINES.push(LW_CANDLE.createPriceLine({ price: Number(ptTrade.current_stop), color: "#ef4444", lineWidth: 1.8, lineStyle: 2, axisLabelVisible: true, title: "PT 移動止損 $" + ptTrade.current_stop }));
+    }
+    if (Number(ptTrade.target_2r) > 0) {
+      LW_PRICE_LINES.push(LW_CANDLE.createPriceLine({ price: Number(ptTrade.target_2r), color: "#22c55e", lineWidth: 1.5, lineStyle: 2, axisLabelVisible: true, title: "PT 2R目標 $" + ptTrade.target_2r }));
+    }
+  }
 
   // Dollar Volume for Equities vs Contract Volume for Futures
   var volFmt = isFut ? fmtContracts : fmtDollarVol;
   LW_DVOL.applyOptions({ priceFormat: { type: "custom", formatter: volFmt } });
   LW_DVOL_MA.applyOptions({ priceFormat: { type: "custom", formatter: volFmt } });
 
-  var vBars = [], vMa = [], vSum = 0;
+  LAST_BARS = bars; LAST_DEC = dec; LAST_IS_FUT = isFut;
+  LAST_EMA10_MAP = {}; LAST_EMA21_MAP = {}; LAST_EMA50_MAP = {}; LAST_RSI_MAP = {}; LAST_MACD_MAP = {};
+  var e10Arr = calcEma(bars, 10), e21Arr = calcEma(bars, 21), e50Arr = calcEma(bars, 50);
+  for (var i = 0; i < bars.length; i++) {
+    LAST_EMA10_MAP[bars[i].time] = e10Arr[i].value;
+    LAST_EMA21_MAP[bars[i].time] = e21Arr[i].value;
+    LAST_EMA50_MAP[bars[i].time] = e50Arr[i].value;
+  }
+
+  // YTD Anchored VWAP
+  var avwapArr = [], cumPV = 0, cumV = 0, curYr = String(bars[bars.length - 1].time).slice(0, 4);
+  for (var i = 0; i < bars.length; i++) {
+    if (String(bars[i].time).slice(0, 4) === curYr) {
+      var tp = (bars[i].high + bars[i].low + bars[i].close) / 3;
+      var vv = Math.max(1, bars[i].volume || 1);
+      cumPV += tp * vv; cumV += vv;
+      avwapArr.push({ time: bars[i].time, value: cumPV / cumV });
+    }
+  }
+  if (LW_AVWAP) LW_AVWAP.setData(avwapArr);
+
+  // RS Line vs SPY (if SPY cached)
+  var rsArr = [];
+  if (CANDLE_CACHE["SPY"] && CANDLE_CACHE["SPY"]["1D"] && symbol !== "SPY") {
+    var spyMap = {};
+    CANDLE_CACHE["SPY"]["1D"].forEach(function(sb) { spyMap[sb.time] = sb.close; });
+    for (var i = 0; i < bars.length; i++) {
+      if (spyMap[bars[i].time] > 0) rsArr.push({ time: bars[i].time, value: (bars[i].close / spyMap[bars[i].time]) * 100 });
+    }
+  }
+  if (LW_RSLINE) LW_RSLINE.setData(rsArr);
+
+  // Volume with Dry-Up (<50% 20D avg -> indigo/purple) & Pocket Pivot (up-day > max down-day vol in 10d -> gold)
+  var vBars = [], vMa = [], vSum = 0, rawVals = [];
   for (var i = 0; i < bars.length; i++) {
     var val = isFut ? (bars[i].volume || 0) : (bars[i].close * (bars[i].volume || 0));
-    vBars.push({ time: bars[i].time, value: val, color: bars[i].close >= bars[i].open ? "rgba(16,185,129,0.34)" : "rgba(244,63,94,0.34)" });
+    rawVals.push(val);
     vSum += val;
-    if (i >= 20) vSum -= (isFut ? (bars[i - 20].volume || 0) : (bars[i - 20].close * (bars[i - 20].volume || 0)));
-    vMa.push({ time: bars[i].time, value: vSum / Math.min(i + 1, 20) });
+    if (i >= 20) vSum -= rawVals[i - 20];
+    var avg20 = vSum / Math.min(i + 1, 20);
+    vMa.push({ time: bars[i].time, value: avg20 });
+
+    var isUp = bars[i].close >= bars[i].open;
+    var col = isUp ? "rgba(16,185,129,0.38)" : "rgba(244,63,94,0.38)";
+    if (IND_STATE.volsig && i >= 10) {
+      var maxDn10 = 0;
+      for (var j = i - 10; j < i; j++) { if (bars[j].close < bars[j].open) maxDn10 = Math.max(maxDn10, rawVals[j]); }
+      if (isUp && maxDn10 > 0 && val > maxDn10) col = "rgba(251,191,36,0.85)";
+      else if (avg20 > 0 && val < avg20 * 0.5) col = "rgba(129,140,248,0.65)";
+    }
+    vBars.push({ time: bars[i].time, value: val, color: col });
   }
   LW_DVOL.setData(vBars);
   LW_DVOL_MA.setData(vMa);
 
-  LW_RSI_SER.setData(calcRsiSeries(bars, 14));
+  var rsiArr = calcRsiSeries(bars, 14);
+  LW_RSI_SER.setData(rsiArr);
+  rsiArr.forEach(function(r) { LAST_RSI_MAP[r.time] = r.value; });
+
   var macd = calcMacdSeries(bars);
   LW_MACD_DIF.setData(macd.dif); LW_MACD_SIG.setData(macd.sig); LW_MACD_HIST.setData(macd.hist);
+  for (var i = 0; i < macd.dif.length; i++) {
+    LAST_MACD_MAP[macd.dif[i].time] = { dif: macd.dif[i].value, sig: macd.sig[i].value, hist: macd.hist[i].value };
+  }
+
+  // Initial legend display for latest bar + ADR(20)%
+  var lastB = bars[bars.length - 1];
+  var adrSum = 0, adrN = Math.min(20, bars.length);
+  for (var k = bars.length - adrN; k < bars.length; k++) { if (bars[k].low > 0) adrSum += ((bars[k].high - bars[k].low) / bars[k].low) * 100; }
+  var adr20 = adrSum / Math.max(1, adrN);
+  document.getElementById("chart-ohlc-legend").innerHTML =
+    '<span class="text-slate-400">' + lastB.time + '</span>'
+    + '<span>O:' + lastB.open.toFixed(dec) + '</span><span>H:' + lastB.high.toFixed(dec) + '</span><span>L:' + lastB.low.toFixed(dec) + '</span>'
+    + '<span class="text-white font-bold">C:' + lastB.close.toFixed(dec) + '</span>'
+    + '<span class="text-amber-300">ADR(20):' + adr20.toFixed(1) + '%</span>';
 
   applyIndicatorVisibility();
   var showCount = (tf === "1D") ? 180 : bars.length;
@@ -952,6 +1218,28 @@ function renderCandlestick(symbol, tfOverride) {
   document.getElementById("chart-collapsible-body").classList.remove("hidden");
 
   var inUni = (SUMMARY.universe_tickers || []).indexOf(ACTIVE_SYMBOL) !== -1;
+  if (!inUni && MASSIVE_PROXY_URL) {
+    document.getElementById("tv-embed-container").classList.add("hidden");
+    document.getElementById("lw-chart-container").classList.remove("hidden");
+    document.getElementById("indicator-toolbar").classList.remove("hidden");
+    var mask = document.getElementById("chart-loading-mask");
+    mask.classList.remove("hidden");
+    fetch(MASSIVE_PROXY_URL.replace(/\/+$/, "") + "?ticker=" + encodeURIComponent(ACTIVE_SYMBOL))
+      .then(function(r) { if (!r.ok) throw new Error("Worker HTTP " + r.status); return r.json(); })
+      .then(function(j) {
+        mask.classList.add("hidden");
+        var raw = j["1D"] || [];
+        if (raw.length < 5) throw new Error("無數據");
+        CANDLE_CACHE[ACTIVE_SYMBOL] = j;
+        var bars = (ACTIVE_TF === "1W") ? aggregateWeekly(raw) : raw;
+        plotNativeBars(ACTIVE_SYMBOL, ACTIVE_TF, bars, true);
+        showToast("⚡ 已透過 Cloudflare Worker 即時載入 " + ACTIVE_SYMBOL);
+      }).catch(function(e) {
+        mask.classList.add("hidden");
+        showToast("Worker 查詢失敗（" + e.message + "），已切換 TradingView");
+      });
+    return;
+  }
   if (!inUni) {
     var tvInt = ACTIVE_TF === "1H" ? "60" : (ACTIVE_TF === "1W" ? "W" : "D");
     document.getElementById("lw-chart-container").classList.add("hidden");
@@ -1518,7 +1806,8 @@ function renderScreenerTab() {
       + '<div class="grid grid-cols-3 gap-1.5">'
       + '<button type="button" data-sym="' + tk + '" class="view-candle-btn py-1.5 rounded-lg bg-[#16241e] text-amber-300 text-xs font-bold">2Y 帶線圖</button>'
       + '<button type="button" data-ticker="' + tk + '" data-entry="' + (pv > 0 ? pv : r.Price) + '" data-stop="' + (st5 > 0 ? st5 : bl) + '" data-atr="' + (r.ATR20 || 2) + '" class="send-calc-btn py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-semibold">帶入計算機</button>'
-      + '<button type="button" data-aisum="' + encodeURIComponent(r.AI_Summary || "") + '" class="copy-aisum-btn py-1.5 rounded-lg bg-sky-500/20 text-sky-300 text-xs font-bold">複製摘要</button></div></div>';
+      + '<button type="button" data-aisum="' + encodeURIComponent(r.AI_Summary || "") + '" class="copy-aisum-btn py-1.5 rounded-lg bg-sky-500/20 text-sky-300 text-xs font-bold">複製摘要</button></div>'
+      + '<button type="button" data-tk="' + tk + '" data-setup="' + encodeURIComponent(r.Setup || "") + '" data-tier="' + tier + '" data-pv="' + pv + '" data-st="' + (st5 > 0 ? st5 : bl) + '" class="gen-paper-order-btn w-full py-1 rounded-lg bg-emerald-950/70 hover:bg-emerald-900/70 border border-emerald-600/40 text-emerald-200 text-[11px] font-bold">📝 一鍵生成 Paper Trade 開倉指令</button></div>';
   }).join("") || '<p class="col-span-full text-xs text-slate-500">無符合篩選條件嘅 QM 候選股。</p>';
 
   hydrateScreenerMiniCandles(items);
@@ -1526,6 +1815,21 @@ function renderScreenerTab() {
   bindSendCalcButtons();
   document.querySelectorAll(".copy-aisum-btn").forEach(function(b) {
     b.addEventListener("click", function() { copyTextSafe(decodeURIComponent(b.getAttribute("data-aisum") || ""), "✅ 已複製該股 AI_Summary"); });
+  });
+  document.querySelectorAll(".gen-paper-order-btn").forEach(function(b) {
+    b.addEventListener("click", function() {
+      var tk = b.getAttribute("data-tk");
+      var setup = decodeURIComponent(b.getAttribute("data-setup") || "");
+      var tier = b.getAttribute("data-tier") || "S";
+      var pv = Number(b.getAttribute("data-pv") || 0);
+      var st = Number(b.getAttribute("data-st") || 0);
+      var riskBudget = Math.round(100000 * (LAST_SUGGESTED_RISK / 100));
+      var rps = Math.max(0.05, pv - st);
+      var sh = Math.floor(riskBudget / rps);
+      var t2r = +(pv + 2 * rps).toFixed(2);
+      var cmd = "開倉指令 | Ticker: " + tk + " | Setup: " + setup + " | Tier: " + tier + " | BUY_STOP: " + pv.toFixed(2) + " | Stop: " + st.toFixed(2) + " | Shares: " + sh + " | Risk: $" + Math.round(sh * rps) + " | 2R Target: " + t2r;
+      copyTextSafe(cmd, "✅ 已生成並複製 " + tk + " Paper Trade 開倉指令！");
+    });
   });
 }
 
@@ -1598,6 +1902,11 @@ function updateCalc() {
   document.getElementById("res-target-pct").textContent = "目標幅度：" + fmtPct((rewardPerShare / entry) * 100);
   var sellShares = Math.floor(shares * partialFrac);
   document.getElementById("res-freeroll").textContent = (rewardPerShare > 0 && sellShares > 0) ? ("到 $" + target.toFixed(2) + " 先沽 " + sellShares + " 股袋 +$" + Math.round(sellShares * rewardPerShare).toLocaleString() + "；餘下 " + (shares - sellShares) + " 股推平保 $" + entry.toFixed(2)) : "目標價需高於入場價";
+  document.getElementById("res-rladder").innerHTML = [1, 2, 3, 5].map(function(rm) {
+    var px = entry + rm * riskPerShare, prof = Math.round(shares * rm * riskPerShare);
+    return '<div class="p-1.5 rounded-lg bg-[#09110e] border border-[#1d2c25]"><span class="text-amber-300 font-extrabold">' + rm + 'R</span> · <span class="text-white font-bold">$' + px.toFixed(2) + '</span><br><span class="text-emerald-400">+$' + prof.toLocaleString() + '</span></div>';
+  }).join("");
+  try { localStorage.setItem("hub_v4_calc", JSON.stringify({ eq: eq, risk: riskPct, cap: capPct })); } catch(e){}
 }
 
 function bindCandleButtons() {
@@ -1621,6 +1930,234 @@ function bindSendCalcButtons() {
   });
 }
 
+
+var PAPER_DATA = null;
+var ACTIVE_PT_ATTR = "by_regime";
+
+var FALLBACK_PAPER_DATA = {
+  updated_at: "預覽（等待 V4.0 Actions 同步最新收市價）",
+  source: "QM_Paper_Command_Center (Built-in Day 1 Sync)",
+  account: {
+    starting_capital: 100000,
+    live_equity: 99961.15,
+    total_return_pct: -0.04,
+    realized_pnl_usd: 0,
+    unrealized_pnl_usd: -38.85,
+    cash_usd: 93065.35,
+    cash_pct: 93.1,
+    open_positions: 2,
+    open_risk_usd: 244.84,
+    open_risk_pct: 0.25,
+    max_dd_pct: -0.04,
+    closed_count: 0,
+    win_rate: null,
+    avg_win_r: 0,
+    avg_loss_r: 0,
+    expectancy_r: -0.08
+  },
+  trades: [
+    { order_id: "ORD_001", ticker: "KNSA", status: "OPEN", setup_tag: "Post_EP_Flag_A+", tier: "S", market_regime: "Defensive_Caution", entry_date: "2026-11-23", fill_price: 99.35, last_close: 98.69, init_stop: 92.65, current_stop: 95.29, target_2r: 112.75, shares: 37, remaining_shares: 37, risk_usd: 247.90, open_risk_usd: 150.22, unrealized_pnl: -24.42, unrealized_r: -0.10, realized_pnl: 0, realized_r: 0, mfe_r: 0.15, mae_r: -0.18, dist_stop_pct: 3.45, dist_2r_pct: 14.25, holding_days: 1, notes: "Day1_Defensive_0.25R" },
+    { order_id: "ORD_002", ticker: "GKOS", status: "OPEN", setup_tag: "Post_EP_Flag_A+", tier: "S", market_regime: "Defensive_Caution", entry_date: "2026-11-23", fill_price: 250.70, last_close: 249.59, init_stop: 231.50, current_stop: 243.41, target_2r: 289.10, shares: 13, remaining_shares: 13, risk_usd: 249.60, open_risk_usd: 94.77, unrealized_pnl: -14.43, unrealized_r: -0.06, realized_pnl: 0, realized_r: 0, mfe_r: 0.12, mae_r: -0.14, dist_stop_pct: 2.48, dist_2r_pct: 15.83, holding_days: 1, notes: "Day1_Defensive_0.25R" }
+  ],
+  pending_orders: [
+    { order_id: "ORD_003", plan_date: "2026-11-24", ticker: "CROX", setup_tag: "Post_EP_Flag_A+", tier: "S", trigger_price: 164.30, stop_loss: 153.85, shares: 23, risk_usd: 240.35, partial_2r_target: 185.20, sync_status: "NEW", notes: "Day2_Defensive_0.24R_XLY_Diversify" }
+  ],
+  control_group: [
+    { scan_date: "2026-11-20", ticker: "KIDS", tier: "S", decision: "WATCH", reason: "Low_DollarVol_12.7M", scan_close: 31.74, cur_close: 32.64, ret_pct: 2.84, max_up_pct: 3.18, max_dd_pct: -0.88, days_elapsed: 1 },
+    { scan_date: "2026-11-20", ticker: "CROX", tier: "S", decision: "WATCH", reason: "DCR_0.14_NearBaseLow", scan_close: 154.67, cur_close: 157.78, ret_pct: 2.01, max_up_pct: 3.60, max_dd_pct: 0.0, days_elapsed: 1 },
+    { scan_date: "2026-11-20", ticker: "DFIN", tier: "S", decision: "WATCH", reason: "DistToPivot_10.4pct", scan_close: 64.53, cur_close: 65.53, ret_pct: 1.55, max_up_pct: 2.28, max_dd_pct: -2.45, days_elapsed: 1 },
+    { scan_date: "2026-11-20", ticker: "RGR", tier: "S", decision: "WATCH", reason: "Low_DollarVol_17.4M", scan_close: 51.66, cur_close: 52.29, ret_pct: 1.22, max_up_pct: 1.80, max_dd_pct: -0.40, days_elapsed: 1 }
+  ],
+  equity_curve: [
+    { date: "Start", equity: 100000, spy_equity: 100000, cash_pct: 100, dd_pct: 0 },
+    { date: "2026-11-23", equity: 99961.15, spy_equity: 104710, cash_pct: 93.1, dd_pct: -0.04 }
+  ],
+  attribution: {
+    by_regime: [{ name: "Defensive_Caution", count: 2, win_rate: 0.0, avg_r: -0.08, total_r: -0.16, avg_mfe: 0.14, avg_mae: -0.16 }],
+    by_setup: [{ name: "Post_EP_Flag_A+", count: 2, win_rate: 0.0, avg_r: -0.08, total_r: -0.16, avg_mfe: 0.14, avg_mae: -0.16 }],
+    by_tier: [{ name: "Tier S", count: 2, win_rate: 0.0, avg_r: -0.08, total_r: -0.16, avg_mfe: 0.14, avg_mae: -0.16 }]
+  }
+};
+
+function findPaperTrade(sym) {
+  var src = PAPER_DATA || FALLBACK_PAPER_DATA;
+  if (!src || !src.trades) return null;
+  return src.trades.find(function(t) { return (t.ticker || "").toUpperCase() === sym; }) || null;
+}
+
+function ensurePaperLoaded() {
+  if (PAPER_DATA) { renderPaperTab(); return; }
+  fetch("./data/paper_trade.json?t=" + Date.now())
+    .then(function(r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(function(j) { PAPER_DATA = j; renderPaperTab(); })
+    .catch(function() {
+      PAPER_DATA = FALLBACK_PAPER_DATA;
+      renderPaperTab();
+    });
+}
+
+function renderPaperEquityCurve(curve) {
+  var box = document.getElementById("pt-equity-chart");
+  if (!curve || curve.length < 2) {
+    box.innerHTML = '<p class="text-xs text-slate-500 py-8 text-center">累積滿 2 個交易日後自動繪製淨值曲線。</p>';
+    return;
+  }
+  var w = 640, h = 210, padL = 54, padR = 16, padT = 18, padB = 26, pw = w - padL - padR, ph = h - padT - padB;
+  var vals = [];
+  for (var i = 0; i < curve.length; i++) { vals.push(curve[i].equity); vals.push(curve[i].spy_equity); }
+  var minV = Math.min.apply(null, vals) * 0.995, maxV = Math.max.apply(null, vals) * 1.005, span = (maxV - minV) || 1;
+  function xAt(idx) { return padL + (idx / (curve.length - 1)) * pw; }
+  function yAt(v) { return padT + ph - ((v - minV) / span) * ph; }
+
+  var pEq = [], pSpy = [], dots = "", xLbls = "";
+  for (var i = 0; i < curve.length; i++) {
+    var x = xAt(i).toFixed(1), ye = yAt(curve[i].equity).toFixed(1), ys = yAt(curve[i].spy_equity).toFixed(1);
+    pEq.push(x + "," + ye); pSpy.push(x + "," + ys);
+    dots += '<circle cx="' + x + '" cy="' + ye + '" r="3.8" fill="#d4af37" />';
+    xLbls += '<text x="' + x + '" y="' + (h - 6) + '" text-anchor="middle" fill="#94a3b8" font-size="10">' + curve[i].date + '</text>';
+  }
+  var baseY = yAt(100000).toFixed(1);
+  var last = curve[curve.length - 1];
+  var alpha = (((last.equity - 100000) / 100000) - ((last.spy_equity - 100000) / 100000)) * 100;
+  var aBadge = document.getElementById("pt-alpha-badge");
+  aBadge.textContent = "vs SPY Alpha: " + (alpha >= 0 ? "+" : "") + alpha.toFixed(2) + "%";
+  aBadge.className = "px-2 py-0.5 rounded bg-[#14221c] text-xs font-extrabold " + (alpha >= 0 ? "text-emerald-300" : "text-amber-300");
+
+  box.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" class="w-full h-auto min-w-[420px]">'
+    + '<line x1="' + padL + '" y1="' + baseY + '" x2="' + (w - padR) + '" y2="' + baseY + '" stroke="#334155" stroke-dasharray="3,3" />'
+    + '<text x="' + (padL - 6) + '" y="' + (padT + 6) + '" text-anchor="end" fill="#94a3b8" font-size="10">$' + Math.round(maxV).toLocaleString() + '</text>'
+    + '<text x="' + (padL - 6) + '" y="' + (padT + ph) + '" text-anchor="end" fill="#94a3b8" font-size="10">$' + Math.round(minV).toLocaleString() + '</text>'
+    + '<polyline fill="none" stroke="#64748b" stroke-width="1.7" stroke-dasharray="4,3" points="' + pSpy.join(" ") + '" />'
+    + '<polyline fill="none" stroke="#d4af37" stroke-width="2.5" points="' + pEq.join(" ") + '" />'
+    + dots + xLbls + '</svg>';
+}
+
+function renderPaperMaeMfe(trades) {
+  var box = document.getElementById("pt-maemfe-chart");
+  if (!trades || !trades.length) {
+    box.innerHTML = '<p class="text-xs text-slate-500 py-8 text-center">尚無交易紀錄。</p>';
+    return;
+  }
+  var show = trades.slice(-8);
+  var maxAbs = 2.5;
+  for (var i = 0; i < show.length; i++) {
+    maxAbs = Math.max(maxAbs, Math.abs(show[i].mae_r || 0) + 0.3, Math.abs(show[i].mfe_r || 0) + 0.3);
+  }
+  var w = 420, rowH = 26, h = Math.max(120, show.length * rowH + 28), padL = 56, padR = 16, pw = w - padL - padR;
+  var zeroX = padL + (1.2 / (1.2 + maxAbs)) * pw;
+  function xR(r) {
+    if (r < 0) return zeroX - (Math.min(1.2, Math.abs(r)) / 1.2) * (zeroX - padL);
+    return zeroX + (Math.min(maxAbs, r) / maxAbs) * (w - padR - zeroX);
+  }
+  var rowsSvg = "";
+  for (var i = 0; i < show.length; i++) {
+    var t = show[i], y = 18 + i * rowH;
+    var curR = (t.status === "OPEN") ? (t.unrealized_r || 0) : (t.realized_r || 0);
+    var xMae = xR(Math.min(0, t.mae_r || 0)), xMfe = xR(Math.max(0, t.mfe_r || 0)), xCur = xR(curR);
+    rowsSvg += '<text x="' + (padL - 6) + '" y="' + (y + 4) + '" text-anchor="end" fill="#f1f5f9" font-size="11" font-weight="bold">' + t.ticker + '</text>'
+      + '<rect x="' + xMae.toFixed(1) + '" y="' + (y - 4) + '" width="' + Math.max(2, zeroX - xMae).toFixed(1) + '" height="8" fill="rgba(244,63,94,0.65)" rx="2" />'
+      + '<rect x="' + zeroX.toFixed(1) + '" y="' + (y - 4) + '" width="' + Math.max(2, xMfe - zeroX).toFixed(1) + '" height="8" fill="rgba(16,185,129,0.65)" rx="2" />'
+      + '<circle cx="' + xCur.toFixed(1) + '" cy="' + y + '" r="4" fill="#ffffff" stroke="#070b0a" stroke-width="1.2" />';
+  }
+  box.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" class="w-full h-auto">'
+    + '<line x1="' + zeroX.toFixed(1) + '" y1="8" x2="' + zeroX.toFixed(1) + '" y2="' + (h - 16) + '" stroke="#475569" stroke-dasharray="3,3" />'
+    + '<text x="' + padL + '" y="' + (h - 4) + '" fill="#f43f5e" font-size="9">-1.0R 止損線</text>'
+    + '<text x="' + zeroX.toFixed(1) + '" y="' + (h - 4) + '" text-anchor="middle" fill="#94a3b8" font-size="9">0R 成本</text>'
+    + '<text x="' + (w - padR) + '" y="' + (h - 4) + '" text-anchor="end" fill="#10b981" font-size="9">+' + maxAbs.toFixed(1) + 'R</text>'
+    + rowsSvg + '</svg>';
+}
+
+function renderPaperAttribution() {
+  var d = PAPER_DATA || FALLBACK_PAPER_DATA;
+  var rows = (d.attribution && d.attribution[ACTIVE_PT_ATTR]) || [];
+  document.getElementById("pt-attr-table").innerHTML = '<table class="w-full text-left text-xs border-collapse">'
+    + '<thead><tr class="border-b border-[#22322b] text-slate-400">'
+    + '<th class="py-1.5 px-2">維度分類</th><th class="py-1.5 px-2 text-right">筆數</th><th class="py-1.5 px-2 text-right">勝率</th>'
+    + '<th class="py-1.5 px-2 text-right">平均 R</th><th class="py-1.5 px-2 text-right">累計 R</th>'
+    + '<th class="py-1.5 px-2 text-right">平均 MFE</th><th class="py-1.5 px-2 text-right">平均 MAE</th></tr></thead><tbody>'
+    + rows.map(function(r) {
+      return '<tr class="border-b border-[#14201b] hover:bg-[#0d1714]">'
+        + '<td class="py-2 px-2 font-extrabold text-white">' + r.name + '</td>'
+        + '<td class="py-2 px-2 text-right text-slate-300">' + r.count + '</td>'
+        + '<td class="py-2 px-2 text-right text-slate-200">' + r.win_rate.toFixed(1) + '%</td>'
+        + '<td class="py-2 px-2 text-right font-bold ' + pctClass(r.avg_r) + '">' + (r.avg_r >= 0 ? "+" : "") + r.avg_r.toFixed(2) + 'R</td>'
+        + '<td class="py-2 px-2 text-right font-extrabold ' + pctClass(r.total_r) + '">' + (r.total_r >= 0 ? "+" : "") + r.total_r.toFixed(2) + 'R</td>'
+        + '<td class="py-2 px-2 text-right text-emerald-300">+' + r.avg_mfe.toFixed(2) + 'R</td>'
+        + '<td class="py-2 px-2 text-right text-rose-300">' + r.avg_mae.toFixed(2) + 'R</td></tr>';
+    }).join("") + '</tbody></table>';
+}
+
+function renderPaperTab() {
+  var d = PAPER_DATA || FALLBACK_PAPER_DATA;
+  var acc = d.account || {};
+  document.getElementById("pt-source-badge").textContent = d.source || "Paper Ledger";
+  document.getElementById("pt-meta").textContent = (d.updated_at || "") + " · 實時追蹤持倉、移動止損距離、2R 分批目標及 PASS 對照組";
+  var croItems = [];
+  (d.trades || []).filter(function(t){ return t.status === "OPEN"; }).forEach(function(t) {
+    if (t.dist_stop_pct > 0 && t.dist_stop_pct <= 3.5) croItems.push('<span class="px-2 py-0.5 rounded bg-rose-950/70 border border-rose-500/50 text-rose-200">⚠️ ' + t.ticker + ' 距移動止損僅 ' + t.dist_stop_pct + '%</span>');
+    else croItems.push('<span class="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-600/40 text-emerald-200">✅ ' + t.ticker + ' 止損緩衝 ' + t.dist_stop_pct + '%</span>');
+  });
+  if ((acc.open_risk_pct || 0) <= 0.5) croItems.push('<span class="px-2 py-0.5 rounded bg-sky-950/60 border border-sky-600/40 text-sky-200">🛡️ 總開放風險 ' + Number(acc.open_risk_pct || 0).toFixed(2) + '%（安全）</span>');
+  document.getElementById("pt-cro-items").innerHTML = croItems.join("") || '<span class="text-slate-400">目前無持倉風險警報。</span>';
+
+  var totPnl = (acc.realized_pnl_usd || 0) + (acc.unrealized_pnl_usd || 0);
+  document.getElementById("pt-kpi-grid").innerHTML =
+    '<div class="p-2.5 rounded-xl bg-[#0b1310] border border-amber-500/40"><p class="text-[11px] text-slate-400">實時帳戶淨值</p><p class="text-lg font-extrabold text-amber-300">$' + Number(acc.live_equity || 100000).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + '</p><p class="text-[10px] ' + pctClass(acc.total_return_pct) + '">' + fmtPct(acc.total_return_pct) + '</p></div>'
+    + '<div class="p-2.5 rounded-xl bg-[#0b1310] border border-[#22322b]"><p class="text-[11px] text-slate-400">已實現 / 浮動盈虧</p><p class="text-base font-extrabold ' + pctClass(totPnl) + '">' + (totPnl >= 0 ? "+$" : "-$") + Math.abs(totPnl).toFixed(2) + '</p><p class="text-[10px] text-slate-400">最大回撤 ' + Number(acc.max_dd_pct || 0).toFixed(2) + '%</p></div>'
+    + '<div class="p-2.5 rounded-xl bg-[#0b1310] border border-[#22322b]"><p class="text-[11px] text-slate-400">持倉數 / 開放風險</p><p class="text-lg font-extrabold text-white">' + (acc.open_positions || 0) + ' 隻 · ' + Number(acc.open_risk_pct || 0).toFixed(2) + '%</p><p class="text-[10px] text-slate-400">風險額 $' + Number(acc.open_risk_usd || 0).toFixed(0) + '</p></div>'
+    + '<div class="p-2.5 rounded-xl bg-[#0b1310] border border-[#22322b]"><p class="text-[11px] text-slate-400">現金比例</p><p class="text-lg font-extrabold text-sky-300">' + Number(acc.cash_pct || 100).toFixed(1) + '%</p><p class="text-[10px] text-slate-400">$' + Math.round(acc.cash_usd || 0).toLocaleString() + '</p></div>'
+    + '<div class="p-2.5 rounded-xl bg-[#0b1310] border border-[#22322b]"><p class="text-[11px] text-slate-400">已平倉勝率</p><p class="text-lg font-extrabold text-emerald-300">' + (acc.win_rate != null ? (acc.win_rate.toFixed(1) + "%") : "持倉中") + '</p><p class="text-[10px] text-slate-400">已平 ' + (acc.closed_count || 0) + ' 單</p></div>'
+    + '<div class="p-2.5 rounded-xl bg-[#0b1310] border border-[#22322b]"><p class="text-[11px] text-slate-400">單筆期望值 (R)</p><p class="text-lg font-extrabold ' + pctClass(acc.expectancy_r) + '">' + ((acc.expectancy_r || 0) >= 0 ? "+" : "") + Number(acc.expectancy_r || 0).toFixed(2) + ' R</p><p class="text-[10px] text-slate-400">含未平倉浮動 R</p></div>';
+
+  renderPaperEquityCurve(d.equity_curve || []);
+  renderPaperMaeMfe(d.trades || []);
+  renderPaperAttribution();
+
+  // Active Book Cards
+  var trades = d.trades || [];
+  document.getElementById("pt-active-grid").innerHTML = trades.map(function(t) {
+    var isOpen = t.status === "OPEN";
+    var rVal = isOpen ? (t.unrealized_r || 0) : (t.realized_r || 0);
+    var pnlVal = isOpen ? (t.unrealized_pnl || 0) : (t.realized_pnl || 0);
+    return '<div class="p-3 rounded-xl border ' + (isOpen ? "border-amber-500/45 bg-[#0c1512]" : "border-[#22322b] bg-[#0a100e]") + ' flex flex-col justify-between gap-2">'
+      + '<div class="flex items-start justify-between"><div><div class="flex items-center gap-1.5">'
+      + '<span class="text-base font-extrabold text-white">' + t.ticker + '</span>'
+      + '<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200 text-[10px] font-extrabold">Tier ' + t.tier + '</span>'
+      + '<span class="px-1.5 py-0.5 rounded ' + (isOpen ? "bg-emerald-950 text-emerald-300" : "bg-slate-800 text-slate-300") + ' text-[10px] font-bold">' + t.status + ' · D' + t.holding_days + '</span>'
+      + '</div><p class="text-[11px] text-slate-400 mt-0.5">' + t.setup_tag + ' · 入場 ' + t.entry_date + '</p></div>'
+      + '<div class="text-right"><p class="text-sm font-extrabold ' + pctClass(rVal) + '">' + (rVal >= 0 ? "+" : "") + rVal.toFixed(2) + ' R</p><p class="text-[11px] ' + pctClass(pnlVal) + '">' + (pnlVal >= 0 ? "+$" : "-$") + Math.abs(pnlVal).toFixed(2) + '</p></div></div>'
+      + '<div class="grid grid-cols-3 gap-1 text-[10px] font-bold bg-[#080e0c] p-2 rounded-lg border border-[#1a2822]">'
+      + '<div>買入/現價:<br><span class="text-white">$' + t.fill_price.toFixed(2) + ' → $' + t.last_close.toFixed(2) + '</span></div>'
+      + '<div>移動止損:<br><span class="text-rose-300">$' + t.current_stop.toFixed(2) + ' (-' + t.dist_stop_pct + '%)</span></div>'
+      + '<div>2R 目標:<br><span class="text-emerald-300">$' + t.target_2r.toFixed(2) + ' (+' + t.dist_2r_pct + '%)</span></div></div>'
+      + '<div class="flex justify-between text-[10px] text-slate-400"><span>股數: <b class="text-slate-200">' + t.remaining_shares + ' 股</b> · 開放風險 <b class="text-amber-200">$' + t.open_risk_usd.toFixed(0) + '</b></span><span>MFE +<b>' + t.mfe_r.toFixed(2) + 'R</b> / MAE <b>' + t.mae_r.toFixed(2) + 'R</b></span></div>'
+      + '<button type="button" data-sym="' + t.ticker + '" class="view-candle-btn w-full py-1.5 rounded-lg bg-[#16241e] hover:bg-[#20332b] text-amber-300 text-xs font-bold">📈 展開 2Y 交易線圖（買入/止損/2R）</button></div>';
+  }).join("") || '<p class="col-span-full text-xs text-slate-500">暫無持倉紀錄。</p>';
+
+  // Pending Orders
+  var pend = d.pending_orders || [];
+  var pBox = document.getElementById("pt-pending-box");
+  pBox.classList.toggle("hidden", pend.length === 0);
+  document.getElementById("pt-pending-list").innerHTML = pend.map(function(p) {
+    return '<div class="p-2.5 rounded-lg bg-[#0d1714] border border-sky-700/40 text-xs flex items-center justify-between gap-2">'
+      + '<div><span class="font-extrabold text-white">' + p.ticker + '</span> <span class="text-sky-300 font-bold">BUY_STOP @ $' + p.trigger_price.toFixed(2) + '</span><p class="text-[10px] text-slate-400">止損 $' + p.stop_loss.toFixed(2) + ' · ' + p.shares + ' 股 ($' + p.risk_usd.toFixed(0) + ') · 2R $' + p.partial_2r_target.toFixed(2) + '</p></div>'
+      + '<button type="button" data-sym="' + p.ticker + '" class="view-candle-btn px-2 py-1 rounded bg-[#182620] text-amber-300 text-[11px] font-bold">看圖</button></div>';
+  }).join("");
+
+  // Control Group (PASS / WATCH)
+  var ctrl = d.control_group || [];
+  var avgCtrlRet = ctrl.length ? (ctrl.reduce(function(acc, x) { return acc + (x.ret_pct || 0); }, 0) / ctrl.length) : 0;
+  document.getElementById("pt-ctrl-summary").innerHTML = '追蹤 ' + ctrl.length + ' 隻 · 平均表現：<span class="' + pctClass(avgCtrlRet) + '">' + fmtPct(avgCtrlRet) + '</span>';
+  document.getElementById("pt-control-grid").innerHTML = ctrl.slice(0, 12).map(function(c) {
+    return '<button type="button" data-sym="' + c.ticker + '" class="view-candle-btn text-left p-2.5 rounded-xl bg-[#0b1310] border border-[#22322b] hover:border-amber-500/50">'
+      + '<div class="flex justify-between items-center"><span class="text-xs font-extrabold text-white">' + c.ticker + ' <span class="text-[10px] text-amber-300">[' + c.tier + ']</span></span><span class="text-xs font-extrabold ' + pctClass(c.ret_pct) + '">' + fmtPct(c.ret_pct) + '</span></div>'
+      + '<p class="text-[10px] text-slate-400 mt-0.5 truncate">' + c.decision + ' · ' + c.reason + '</p>'
+      + '<p class="text-[10px] text-slate-300 mt-0.5">$' + c.scan_close.toFixed(2) + ' → $' + c.cur_close.toFixed(2) + ' (最高 +' + c.max_up_pct + '%)</p></button>';
+  }).join("");
+
+  bindCandleButtons();
+}
+
 function switchMainTab(tab) {
   ACTIVE_MAINTAB = tab;
   document.querySelectorAll(".maintab-btn").forEach(function(b) {
@@ -1631,8 +2168,10 @@ function switchMainTab(tab) {
   document.getElementById("view-equities").classList.toggle("hidden", tab !== "equities");
   document.getElementById("view-futures").classList.toggle("hidden", tab !== "futures");
   document.getElementById("view-screener").classList.toggle("hidden", tab !== "screener");
+  document.getElementById("view-paper").classList.toggle("hidden", tab !== "paper");
   if (tab === "futures") { ensureFuturesLoaded(); if (ACTIVE_SYMBOL === "SPY") renderCandlestick("DXY", "1D"); }
   else if (tab === "screener") { ensureScreenerLoaded(); }
+  else if (tab === "paper") { ensurePaperLoaded(); }
 }
 
 function switchCalcMode(mode) {
@@ -1758,7 +2297,26 @@ function bindEventsOnce() {
   function triggerAny() { var v = (document.getElementById("any-ticker-input").value || "").trim().toUpperCase(); if (v) renderCandlestick(v, ACTIVE_TF); }
   document.getElementById("any-ticker-go").addEventListener("click", triggerAny);
   document.getElementById("any-ticker-input").addEventListener("keydown", function(ev) { if (ev.key === "Enter") triggerAny(); });
-  document.querySelectorAll(".ind-toggle").forEach(function(btn) { btn.addEventListener("click", function() { var k = btn.getAttribute("data-ind"); IND_STATE[k] = !IND_STATE[k]; applyIndicatorVisibility(); }); });
+  document.querySelectorAll(".ind-toggle").forEach(function(btn) { btn.addEventListener("click", function() { var k = btn.getAttribute("data-ind"); IND_STATE[k] = !IND_STATE[k]; if (k === "volsig" && LAST_BARS.length) plotNativeBars(ACTIVE_SYMBOL, ACTIVE_TF, LAST_BARS, true); else applyIndicatorVisibility(); }); });
+  document.querySelectorAll(".rng-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var n = Number(btn.getAttribute("data-rng") || 180);
+      if (LW_CHART && LAST_BARS.length) LW_CHART.timeScale().setVisibleLogicalRange({ from: Math.max(0, LAST_BARS.length - n), to: LAST_BARS.length + 3 });
+    });
+  });
+  document.getElementById("btn-set-proxy").addEventListener("click", function() {
+    var cur = MASSIVE_PROXY_URL || "https://massive-proxy.你的帳號.workers.dev";
+    var val = prompt("貼入你的 Cloudflare Worker 網址（留空則停用並改用 TradingView）：", cur);
+    if (val !== null) {
+      MASSIVE_PROXY_URL = val.trim();
+      try { localStorage.setItem("hub_v4_proxy_url", MASSIVE_PROXY_URL); } catch(e){}
+      showToast(MASSIVE_PROXY_URL ? "✅ 已儲存 Cloudflare Worker 網址！" : "已停用 Worker 中轉");
+    }
+  });
+  try {
+    var sc = JSON.parse(localStorage.getItem("hub_v4_calc") || "null");
+    if (sc && sc.eq) { document.getElementById("calc-equity").value = sc.eq; document.getElementById("calc-risk").value = sc.risk; document.getElementById("calc-cap").value = sc.cap; }
+  } catch(e){}
 
   document.querySelectorAll(".sview-btn").forEach(function(btn) {
     btn.addEventListener("click", function(ev) {
@@ -1809,6 +2367,24 @@ function bindEventsOnce() {
     document.getElementById(id).addEventListener("input", updateCalc);
     document.getElementById(id).addEventListener("change", updateCalc);
   });
+  document.querySelectorAll(".ptattr-btn").forEach(function(b) {
+    b.addEventListener("click", function() {
+      ACTIVE_PT_ATTR = b.getAttribute("data-ptattr");
+      document.querySelectorAll(".ptattr-btn").forEach(function(x) {
+        x.className = (x.getAttribute("data-ptattr") === ACTIVE_PT_ATTR) ? "ptattr-btn px-2.5 py-1 rounded bg-amber-500/20 text-amber-300" : "ptattr-btn px-2.5 py-1 rounded text-slate-400";
+      });
+      renderPaperAttribution();
+    });
+  });
+  document.getElementById("btn-pt-copy-ledger").addEventListener("click", function() {
+    var d = PAPER_DATA || FALLBACK_PAPER_DATA;
+    var acc = d.account || {};
+    var lines = ["【AI Paper Trade 戰報 " + (d.updated_at || "") + "】淨值 $" + acc.live_equity + " (" + fmtPct(acc.total_return_pct) + ") | 現金 " + acc.cash_pct + "% | 開放風險 " + acc.open_risk_pct + "%"];
+    (d.trades || []).forEach(function(t) {
+      lines.push("- " + t.ticker + " [" + t.status + "] 買入 $" + t.fill_price + " → 現價 $" + t.last_close + " (" + (t.unrealized_r >= 0 ? "+" : "") + t.unrealized_r + "R) | 移動止損 $" + t.current_stop + " | 2R $" + t.target_2r);
+    });
+    copyTextSafe(lines.join("\n"), "✅ 已複製最新 Paper Trade 持倉摘要");
+  });
   document.getElementById("pdf-search").addEventListener("input", renderPdfHub);
   document.getElementById("pdf-show-dups").addEventListener("change", renderPdfHub);
 }
@@ -1831,6 +2407,7 @@ function finalizeBoot(dataObj, isLive) {
   bindEventsOnce();
   initCharts();
   applyDateReport(startDate);
+  fetch("./data/paper_trade.json?t=" + Date.now()).then(function(r){return r.ok?r.json():null;}).then(function(j){if(j)PAPER_DATA=j;}).catch(function(){});
   renderCandlestick("SPY", "1D");
   renderPdfHub();
   updateCalc();
